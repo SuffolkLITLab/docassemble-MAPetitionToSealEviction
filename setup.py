@@ -46,7 +46,7 @@ def find_package_data(where='.', package='', exclude=standard_exclude, exclude_d
 setup(name='docassemble.MAPetitionToSealEviction',
       version='1.0',
       description=('Petition to seal eviction'),
-      long_description='# docassemble.MAPetitionToSealEviction\r\n\r\nPetition to seal eviction\r\n\r\n## Author\r\n\r\nTaline Torossian\r\n\r\n',
+      long_description='# docassemble.PetitionToSealEviction\r\n\r\nPetition to seal eviction\r\n\r\n## Author\r\n\r\nTaline Torossian\r\n\r\n',
       long_description_content_type='text/markdown',
       author='Taline Torossian',
       author_email='Taline.Torossian@su.suffolk.edu',

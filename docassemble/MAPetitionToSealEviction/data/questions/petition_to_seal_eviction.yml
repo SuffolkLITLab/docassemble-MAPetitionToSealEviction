@@ -34,7 +34,7 @@ code: |
   set_progress(56)
   eviction_not_transferred
   has_eviction_file
-  business_org_name
+  # business_org_name
   signature_date
   trial_court.division
   set_progress(70)
