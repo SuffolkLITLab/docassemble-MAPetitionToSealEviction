@@ -1,0 +1,186 @@
+---
+#################### Interview order #####################
+comment: |
+  Controls order and branching logic for questions specific to this form
+id: interview_order_create_notice_of_hearing
+code: |
+  # Set the allowed courts for this interview
+  allowed_courts = ['Boston Municipal Court', 'District Court', 'Housing Court', 'Superior Court']
+  nav.set_section("review_create_notice_of_hearing")
+  user_role = "plaintiff"
+  user_ask_role = "plaintiff"
+  users.gather()
+  set_parts(subtitle=str(users))
+  users[0].address.address
+  users[0].phone_number
+  set_progress(20)
+  respondents.gather()
+  trial_court.division
+  trial_court.address.address
+  set_progress(40)
+  docket_number
+  hearing_date
+  signature_date
+  interview_order_create_notice_of_hearing = True
+---
+id: Create_Notice_of_Hearing
+continue button field: create_notice_of_hearing_intro
+question: |
+  Create Notice of Hearing
+subquestion: |
+  This interview will help you create a Notice of Hearing.
+  
+  Before you get started, please gather:
+  
+    1. Any court documents from the prior eviction action
+    2. Name of respondent-landlord
+    3. Docket number for your eviction sealing hearing
+    4. Date and time of the hearing
+  
+  When you are finished, you will need to:
+  
+  1. Print the form
+  2. Sign the form
+  3. Bring or mail the form to the civil clerk's office of appropriate court
+
+  If you are a litigant-tenant, you can use this interview to create a Notice of Hearing for an upcoming eviction sealing petition hearing.
+
+  Most people take about 5 minutes to complete this interview.
+---
+id: Hearing Information
+question: |
+  Hearing Information
+subquestion: |
+  Please provide the following information for your hearing.
+fields:
+  - "Date of Hearing": hearing_date
+    datatype: date
+  - "Time of Hearing": hearing_time
+  - "Courtroom Number": courtroom_number
+---
+id: create notice of hearing review screen
+event: review_create_notice_of_hearing
+question: |
+  Review your answers
+review:
+  - Edit: users.revisit
+    button: |
+      **Users**
+
+      % for item in users:
+        * ${ item }
+      % endfor
+  - Edit: trial_court
+    button: |
+      **Trial court**
+  
+      % if defined("trial_court.division"):
+      * division: ${ trial_court.division }
+      % endif
+      % if defined("trial_court.address.address"):
+      * address: ${ trial_court.address.block() }
+      % endif
+  - Edit: signature_date
+    button: |
+      **Date of Signature**:
+      ${ signature_date }
+  - Edit: respondents.revisit
+    button: |
+      **Respondents**
+
+      % for item in respondents:
+        * ${ item }
+      % endfor
+  - Edit: hearing_date
+    button: |
+      **Date of Hearing**:
+      ${ hearing_date }
+  - Edit: docket_number
+    button: |
+      **Docket number**:
+      ${ docket_number }
+  - Edit: courtroom_number
+    button: |
+      **Courtroom Number**:
+      ${ courtroom_number }
+  - Edit: hearing_time
+    button: |
+      **Time of Hearing**:
+      ${ hearing_time }
+---
+continue button field: users.revisit
+question: |
+  Edit users
+subquestion: |
+  ${ users.table }
+
+  ${ users.add_action() }
+---
+table: users.table
+rows: users
+columns:
+  - Name: |
+      row_item.name.full() if defined("row_item.name.first") else ""
+  - Signature: |
+      row_item.signature if defined("row_item.signature") else ""
+  - Address: |
+      row_item.address.block() if defined("row_item.address.address") else ""
+  - Phone number: |
+      row_item.phone_number if defined("row_item.phone_number") else ""
+edit:
+  - name.first
+  - signature
+  - address.address
+  - phone_number
+confirm: True
+
+---
+continue button field: respondents.revisit
+question: |
+  Edit respondents
+subquestion: |
+  ${ respondents.table }
+
+  ${ respondents.add_action() }
+---
+table: respondents.table
+rows: respondents
+columns:
+  - Name: |
+      row_item.name.full() if defined("row_item.name.first") else ""
+edit:
+  - name.first
+confirm: True
+
+---
+id: download create_notice_of_hearing
+event: create_notice_of_hearing_download
+question: |
+  All done
+subquestion: |
+  Thank you ${users}. Your form is ready to download and deliver.
+  
+  View, download and send your form below. Click the "Edit answers" button to fix any mistakes.
+
+  ${ action_button_html(url_action('review_create_notice_of_hearing'), label='Edit answers', color='info') }
+  
+  
+  ${ al_user_bundle.download_list_html() }
+  
+
+  ${ al_user_bundle.send_button_html(show_editable_checkbox=True) }
+
+progress: 100
+---
+# ALDocument objects specify the metadata for each template
+objects:
+  - notice_of_hearing_attachment: ALDocument.using(title="Create Notice of Hearing", filename="create_notice_of_hearing", enabled=True, has_addendum=False, )
+---
+attachment:
+  name: create notice of hearing
+  filename: notice_of_hearing
+  variable name: notice_of_hearing_attachment[i]
+  skip undefined: True
+  docx template file: notice_of_hearing.docx
+  tagged pdf: True
+

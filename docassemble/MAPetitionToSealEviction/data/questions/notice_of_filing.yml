@@ -1,0 +1,155 @@
+---
+#################### Interview order #####################
+comment: |
+  Controls order and branching logic for questions specific to this form
+id: interview_order_notice_of_filing_for_petition_to_se
+code: |
+  # Set the allowed courts for this interview
+  allowed_courts = ['Boston Municipal Court', 'District Court', 'Housing Court', 'Superior Court']
+  nav.set_section("review_notice_of_filing_for_petition_to_se")
+  user_role = "plaintiff"
+  user_ask_role = "plaintiff"
+  plaintiffs.gather()
+  landlords = defendants
+  defendants.gather()
+  eviction_type
+  file_date
+  docket_number
+  trial_court.address.address
+  interview_order_notice_of_filing_for_petition_to_se = True
+
+---
+id: Notice_of_Filing_for_Petition_to_Seal
+continue button field: notice_of_filing_for_petition_to_se_intro
+question: |
+  This interview will help you create a Notice of Filing for your Petition to Seal.
+subquestion: |
+  If you are an evicted tenant, you can use this interview to notify the landlord who evicted you that you have filed a petition to seal the eviction proceedings.
+  
+  **Before you get started, please gather:**
+  
+    1. The docket or other case materials (such as a letter from the court) from the eviction action.
+    2. Your petition to seal. 
+  
+  **When you are finished, you will need to:**
+  
+    1. Print and sign the notice form.
+    2. Send the completed notice form to the landlord who evicted you.
+    
+    **IMPORTANT:** you only need to create a notice if you faced an eviction action for nonpayment of rent or for fault, or if you have satisfied any judgment entered against you in a nonpayment or fault action. 
+    If none of these apply to you do not need to create a notice of filing.
+
+
+  Most people take about 10 minutes to complete this interview.
+---
+id: Screen four
+question: |
+  What type of eviction action was brought against you?
+fields:
+  - "Eviction type": eviction_type
+    input type: radio
+    choices:
+      - nonpayment
+      - fault
+      - nonpayment_satisfied
+      - judgment_satisfied
+---
+id: Screen five
+question: |
+  When did you file the Petition to Seal?
+fields:
+  - "Date of Filing": file_date
+    datatype: date
+---
+id: preview notice_of_filing
+question: |
+  Preview your form before you sign it
+subquestion: |
+  Here is a preview of the form you will sign on the next page.   
+  
+  ${ al_court_bundle.as_pdf(key='preview') }
+
+  Click the image to open it in a new tab. Click the "Edit answers" button
+  to edit your answers.
+
+  ${ action_button_html(url_action('review_notice_of_filing_for_petition_to_se'), label='Edit answers', color='info') }
+  
+  Remember to come back to this window to continue and sign your form.
+continue button field: notice_of_filing_for_petition_to_se_preview_question    
+---
+code: |
+  signature_fields = []
+---
+code: |
+  # This is a placeholder for the addresses that will be searched
+  # for matching address to court. Edit if court venue is based on 
+  # a different address than the user's
+  [user.address.address for user in users.complete_elements()]
+  addresses_to_search = [user.address for user in users.complete_elements()]
+---
+id: notice of filing review screen
+event: review_notice_of_filing_for_petition_to_se
+question: |
+  Review your answers
+review:
+  - Edit: trial_court
+    button: |
+      **Trial court**  
+      % if defined("trial_court.division"):
+      * division: ${ trial_court.division }
+      % endif
+      % if defined("trial_court.department"):
+      * department: ${ trial_court.department }
+      % endif
+  - Edit: landlords_name_last
+    button: |
+      **Landlords name last**:
+      ${ landlords_name_last }
+  - Edit: eviction_type
+    button: |
+      **Eviction type**:
+      ${ eviction_type }
+  - Edit: file_date
+    button: |
+      **Date of File**:
+      ${ file_date }
+  - Edit: landlords_address_line_two
+    button: |
+      **Landlords address line two**:
+      ${ landlords_address_line_two }
+  - Edit: docket_number
+    button: |
+      **Docket number**:
+      ${ docket_number }
+  - Edit: users_name_first
+    button: |
+      **Users name first**:
+      ${ users_name_first }
+  - Edit: landlords_name_first
+    button: |
+      **Landlords name first**:
+      ${ landlords_name_first }
+  - Edit: users_name_last
+    button: |
+      **Users name last**:
+      ${ users_name_last }
+  - Edit: landlords_address_line_one
+    button: |
+      **Landlords address line one**:
+      ${ landlords_address_line_one }
+---
+# ALDocument objects specify the metadata for each template
+objects:
+  - notice_of_filing_attachment: ALDocument.using(title="Notice of Filing for Petition to Seal", filename="notice_of_filing", enabled=True, has_addendum=False, )
+---
+# Each attachment defines a key in an ALDocument. We use `i` as the placeholder here so the same template is 
+# used for "preview" and "final" keys, and logic in the template checks the value of 
+# `i` to show or hide the user's signature
+---
+attachment:
+  name: notice of filing
+  filename: notice_of_filing
+  variable name: notice_of_filing_attachment[i]
+  skip undefined: True
+  docx template file: notice_of_filing.docx
+  tagged pdf: True

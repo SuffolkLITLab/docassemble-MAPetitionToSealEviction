@@ -1,0 +1,162 @@
+---
+include:
+  - docassemble.AssemblyLine:assembly_line.yml
+  - docassemble.MassAccess:massaccess.yml
+  - shared.yml
+  - notice_of_filing.yml
+  - notice_of_hearing.yml
+  - petition_to_seal_eviction.yml
+---
+metadata:
+  title: >-
+    Petition to seal eviction
+  short title: >-
+    Petition to seal eviction
+  description: |-
+    This interview helps someone in Massachusetts remove an eviction case from public records.
+  can_I_use_this_form: |
+    Welcome! This online form helps you draft a petition to ask a Court to seal an eviction court file from the public record so it does not show up in a background check or credit report.
+  before_you_start: |
+    To use this form you will need:
+    
+    1. a copy of your eviction court case papers. If an Eviction Order was entered against you, it will have the information you need. 
+    
+    When you are finished, you will need to:
+    
+    1. Next step instructions
+    2. a draft of a petition to seal your eviction record form
+  maturity: production
+  estimated_completion_minutes: 15
+  estimated_completion_delta: 5
+  LIST_topics: 
+    - "HO-02-06-00-00"
+  tags:
+    - "HO-02-06-00-00"
+  authors:
+    - Taline Torossian
+    - Rami Nabhan
+    - Nicole Dimitri
+    - Michael Bergin
+  original_form: []
+  original_form_published_on: ""
+  allowed_courts: 
+    - "Boston Municipal Court"
+    - "District Court"
+    - "Housing Court"
+    - "Superior Court"
+  typical_role: "defendant"
+  al_weaver_version: "1.11.0"
+  generated_on: "2024-10-08"
+  languages:
+    - en
+  jurisdiction: NAM-US-US+MA
+  review_date: 2024-10-08
+  form_titles:
+    - Petition to seal eviction
+  form_numbers: []
+  update_notes: |
+---
+code: |
+  # This controls the default country and list of states in address field questions
+  AL_DEFAULT_COUNTRY = "US"
+---
+code: |
+  # This controls the default state in address field questions
+  AL_DEFAULT_STATE = "MA"
+---
+code: |
+  al_form_type = "existing_case" 
+---
+code: |
+  github_repo_name =  'docassemble-MAPetitionToSealEviction'
+---
+code: |
+  interview_short_title = "Remove eviction case from public records"
+---
+sections:
+  - section_intro: Introduction
+  - section_about_you: About you
+  - section_about_case: About the eviction case
+  - review_petition_to_seal_eviction: Review your petition
+  - section_download: Download
+---
+###################### Main order ######################
+# This refers to and runs the interview order blocks for the 3 included files:
+# petition
+# notice of filing
+# notice of hearing
+# Ultimately, we want to merge these 3 interview order blocks so it's a more comfortable question flow
+mandatory: True
+code: |
+  al_intro_screen
+  petition_to_seal_eviction_intro
+  interview_order_petition_to_seal_eviction
+  interview_order_notice_of_filing_for_petition_to_se # Temporary - we should combine this with the other interview order block
+  interview_order_create_notice_of_hearing # Same as above
+  signature_date
+  # Store anonymous data for analytics / statistics
+  store_variables_snapshot(
+      persistent=True,
+      data={
+          "zip": showifdef("users[0].address.zip"),
+          "reached_interview_end": True,
+      },
+  )
+  petition_to_seal_eviction_download
+
+  
+---
+id: download petition_to_seal_eviction
+event: petition_to_seal_eviction_download
+question: |
+  All done
+subquestion: |
+  Thank you ${users}. Your form is ready to download and deliver.
+  
+  View, download and send your form below. Click the "Edit answers" button to fix any mistakes.
+
+  ${ action_button_html(url_action('review_petition_to_seal_eviction'), label='Edit answers', color='info') }
+  
+  
+  ${ al_user_bundle.download_list_html() }
+  
+
+  ${ al_user_bundle.send_button_html(show_editable_checkbox=True) }
+
+progress: 100
+---
+# ALDocument objects specify the metadata for each template
+objects:
+  - petition_to_seal_eviction_post_interview_instructions: ALDocument.using(title="Instructions", filename="petition_to_seal_eviction_next_steps.docx", enabled=True, has_addendum=False)
+---
+# Bundles group the ALDocuments into separate downloads, such as for court and for the user
+objects:
+  - al_user_bundle: ALDocumentBundle.using(
+              elements=[
+                petition_to_seal_eviction_post_interview_instructions,
+                petition_to_seal_eviction_attachment,
+                notice_of_filing_attachment,
+                notice_of_hearing_attachment
+              ], 
+              filename="petition_to_seal_eviction",
+              title="All forms to download for your records",
+              enabled=True
+            )
+  - al_court_bundle: ALDocumentBundle.using(
+              elements=[
+                petition_to_seal_eviction_attachment,
+                notice_of_filing_attachment,
+                notice_of_hearing_attachment
+              ], 
+              filename="petition_to_seal_eviction",
+              title="All forms to deliver to court",
+              enabled=True
+            )
+---
+attachment:
+  name: Post-interview-Instructions
+  filename: petition_to_seal_eviction_next_steps
+  docx template file: petition_to_seal_eviction_next_steps.docx
+  variable name: petition_to_seal_eviction_post_interview_instructions[i]
+  skip undefined: True
+  tagged pdf: True
