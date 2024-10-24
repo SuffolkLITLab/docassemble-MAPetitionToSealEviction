@@ -1,0 +1,631 @@
+---
+include:
+  - docassemble.AssemblyLine:assembly_line.yml
+  - docassemble.MassAccess:massaccess.yml
+---
+metadata:
+  title: >-
+    Petition to seal eviction
+  short title: >-
+    Petition to seal eviction
+  description: |-
+    This interview helps someone in Massachusetts remove eviction case from public records.
+  can_I_use_this_form: |
+    Welcome! This online form helps you draft a petition to ask a Court to seal an eviction court file from the public record so it does not show up in a background check or credit report.
+  before_you_start: |
+    To use this form you will need:
+    
+    1. a copy of your eviction court case papers. If an Eviction Order was entered against you, it will have the information you need. 
+    
+    When you are finished, you will need to:
+    
+    1. Next step instructions
+    2. a draft of a petition to seal your eviction record form
+  maturity: production
+  estimated_completion_minutes: 15
+  estimated_completion_delta: 5
+  LIST_topics: 
+    - "HO-00-00-00-00"
+  tags:
+    - "HO-00-00-00-00"
+  authors:
+    - Taline Torossian
+  original_form: []
+  original_form_published_on: ""
+  allowed_courts: 
+    - "Boston Municipal Court"
+    - "District Court"
+    - "Housing Court"
+    - "Superior Court"
+  typical_role: "defendant"
+  al_weaver_version: "1.11.0"
+  generated_on: "2024-10-08"
+  languages:
+    - en
+  jurisdiction: NAM-US-US+MA
+  review_date: 2024-10-08
+  form_titles:
+    - Petition to seal eviction
+  form_numbers: []
+  update_notes: |
+---
+code: |
+  # This controls the default country and list of states in address field questions
+  AL_DEFAULT_COUNTRY = "US"
+---
+code: |
+  # This controls the default state in address field questions
+  AL_DEFAULT_STATE = "MA"
+---
+code: |
+  github_repo_name =  'docassemble-PetitionToSealEviction'
+---
+code: |
+  interview_short_title = "Remove eviction case from public records"
+---
+code: |
+  al_form_type = "existing_case" 
+---
+objects:
+  - users: ALPeopleList.using(there_are_any=True)
+  - other_parties: ALPeopleList.using(there_are_any=True)
+---
+sections:
+  - review_petition_to_seal_eviction: Review your answers
+---
+#################### Interview order #####################
+comment: |
+  Controls order and branching logic for questions specific to this form
+id: interview_order_petition_to_seal_eviction
+code: |
+  # Set the allowed courts for this interview
+  allowed_courts = ['Boston Municipal Court', 'District Court', 'Housing Court', 'Superior Court']
+  nav.set_section("review_petition_to_seal_eviction")
+  user_role = "defendant"
+  user_ask_role = "defendant"
+  set_parts(subtitle=str(users))
+  Remove_eviction_from_public_record
+  Instructions
+  After_you_finish_this_program
+  role
+  users.gather()
+  set_progress(14)
+  other_parties.gather()
+  unknown_occupants
+  set_progress(28)
+  trial_court
+  docket_number
+ 
+  Have_you_contacted_the_other_parties_about_removing_the_eviction_from_the_public_record
+  original_eviction_outcome_dismissed
+  non_payment_cured_judgment_satisfied
+  set_progress(42)
+  non_payment_hardship_appeal_expired
+  fault_eviction_no_prior_action
+  eviction_judgment_entered_landlord_no_criminal_conviction
+  notice_mail
+  notice_date
+  set_progress(56)
+  eviction_not_transferred
+  has_eviction_file
+  business_org_name
+  signature_date
+  trial_court.division
+  set_progress(70)
+  docket_number
+  trial_court.department
+  interview_order_petition_to_seal_eviction = True
+---
+###################### Main order ######################
+comment: |
+  This block includes the logic for standalone interviews.
+  Delete mandatory: True to include in another interview
+mandatory: True
+code: |
+  al_intro_screen
+  petition_to_seal_eviction_intro
+  interview_order_petition_to_seal_eviction
+  signature_date
+  # Store anonymous data for analytics / statistics
+  store_variables_snapshot(
+      persistent=True,
+      data={
+          "zip": showifdef("users[0].address.zip"),
+          "reached_interview_end": True,
+      },
+  )
+  petition_to_seal_eviction_download
+---
+id: Petition_to_seal_eviction
+question: |
+  Petition to seal eviction
+subquestion: |
+  <strong>To use this form you will need:</strong>
+  
+  1. a copy of your eviction court case papers. 
+  
+  <span style="color: darkblue; font-weight: bold; font-style: italic;">Note:</span> If an Eviction Order was entered against you, it will have the information you need. 
+  
+  <strong>When you are finished, you will be able to download:</strong>
+  
+  1. Next step instructions
+  2. a draft of a petition to seal your eviction record form
+ 
+continue button field: petition_to_seal_eviction_intro
+next: remove_eviction_from_public_record
+---
+id: Remove_eviction_from_public_record
+question: |
+  Remove eviction from public record
+subquestion: |
+  <strong>Welcomel, ${users.familiar()}</strong> This program helps you ask a judge to remove an eviction court file from the public record so it does not show up in a background check or credit report. 
+  
+continue button field: Remove_eviction_from_public_record
+next: Instructions
+---
+terms:
+  Eviction Order: |
+    An Eviction Order is a court-issued order that allows a landlord to remove a tenant and their belongings from a rental property. 
+  Unknown Occupants: |
+    Uknown Occupuants are people who are living in a property without the owner's permission, but who are not the tenant on the lease.
+---
+id: Instructions
+question: |
+   Instructions
+subquestion: |
+  To use this program you will need a copy of your eviction court case papers.
+  
+  If an {Eviction Order} was entered against you, it will have the information you need.
+    
+  <strong>Set aside 10 to 15 minutes to finish this program.</strong> 
+continue button field: Instructions
+next: After_you_finish_this_program
+---
+id: After_you_finish_this_program
+question: |
+  After you finish this program
+subquestion: |
+  After you download your <strong>Petition to Remove Eviction Court File from Public Record</strong>, you must file it with the court. 
+  
+  <strong>*This program does not file your forms for you.*</strong>
+  
+  You may need to schedule a motion hearing for the judge to hear your motion. The scheduling process is different depending on your location and case type. Check with your local circuit clerk for how to schedule a motion hearing.
+  
+  Finally, you will need to send your forms to the other parties. If someone has a lawyer, you only need to send it to their lawyer.
+  
+  To learn more, you can read and download the instructions at the end of this program.
+continue button field: After_you_finish_this_program
+next: Required_materials
+---
+id: Required_materials
+question: |
+  Required Materials
+subquestion: |
+  Do you have your eviction case file in front of you?
+fields:
+  - "Yes I have my eviction case file in front of me": has_eviction_file
+    datatype: yesnoradio
+  - "I do not have my eviction case file in front of me": does_not_have_file
+    datatype: yesnoradio
+continue button field: Required_materials
+next: tenant_or_landlord
+---
+id: tenant_or_landlord
+question: |
+  Are you the tenant or the landlord?
+subquestion: |
+  If you are listed as a <span style="color: darkblue;">*defendant*</span> in the Eviction Order or other court papers, you should click <strong>Tenant</strong>.
+  
+  If you are listed as a <span style="color: darkblue;">*plaintiff*</span>  in the Eviction Order or other court papers, you should click <strong>Landlord</strong>.
+fields:
+  - "I am the": role
+    input type: radio
+    choices:
+      - "Tenant"
+      - "Landlord"
+next: What_is_your_name
+
+---
+id: Is anyone else listed as a defendant on the Eviction Complaint
+question: |
+  Is anyone else listed as a defendant on the Eviction Complaint?  
+subquestion: |
+  These would be the other tenants listed on the eviction court papers.
+  
+  You said you are the Defendant. The other people on your side of the case would be co-defendants.
+  
+  The other defendants should be listed with you at the top of the Eviction Complaint.
+  
+  <span style="color: darkblue; font-weight: bold; font-style: italic;">Note:</span> If {Unknown Occupants} are listed on the {Eviction Order} as defendants, you can add them to your forms on another screen.
+fields:
+  - "Anyone else?": anyone_else
+    datatype: yesnoradio
+---
+id: Are Unknown Occupants listed as defendants on your Eviction Complaint
+question: |
+  Are “Unknown Occupants” listed as defendants on your Eviction Complaint?
+subquestion: |
+  Answer Yes if they were listed on the Eviction Complaint. They could be listed as defendants or there might be a checkbox.
+fields:
+  - "Unknown occupants": unknown_occupants
+    datatype: yesnoradio
+---
+id: Have you contacted the other parties about removing the eviction from the public record
+question: |
+  Have you contacted the other parties about removing the eviction from the public record?
+subquestion: |
+  It may be helpful if the parties have agreed to remove the eviction court file from the public record.
+  
+  If everyone agrees with removing the eviction from public record, the judge may be more likely to remove it.
+  
+  An agreement is not required. You can ask the judge even if there is no agreement.
+continue button field: Have_you_contacted_the_other_parties_about_removing_the_eviction_from_the_public_record
+---
+id: What was the outcome of your eviction
+question: |
+  What was the outcome of your eviction?
+fields:
+  - "This eviction was dismissed": original_eviction_outcome_dismissed
+    datatype: yesnoradio
+  - "This eviction resulted in a judgment in my favor": original_eviction_outcome_favor
+    datatype: yesnoradio
+---
+id: What was the reason for your eviction
+question: |
+  What was the reason for your eviction?
+fields:
+  - "The court issued a decision deeming the judgment satisfied": non_payment_cured_judgment_satisfied
+    datatype: yesnoradio
+  - "This eviction was for non-payment of rent but I paid all amounts due in the judgment or agreement": non_payment_cured
+    datatype: yesnoradio
+  - "A notice of satisfaction has been filed with the court": non_payment_cured_notice_filed
+    datatype: yesnoradio
+  - "This was a no-fault eviction": no_fault_eviction
+    datatype: yesnoradio
+---
+id: This eviction was for non payment of rent I was not able to pay the rent due to economic hardship
+question: |
+  This eviction was for non-payment of rent I was not able to pay the rent due to economic hardship
+subquestion: |
+  and
+fields:
+  - "It has been at least 4 years since the appeal period expired": non_payment_hardship_appeal_expired
+    datatype: yesnoradio
+  - "No non-payment eviction or lessor action was brought against me in the 4 years before this request": non_payment_hardship_no_prior_action
+    datatype: yesnoradio
+---
+id: This eviction was a fault eviction
+question: |
+  This eviction was a fault eviction
+subquestion: |
+  and
+fields:
+  - "No non-payment eviction or lessor action was brought against me in the 4 years before this request": fault_eviction_no_prior_action
+    datatype: yesnoradio
+  - "This was a fault eviction": fault_eviction
+    datatype: yesnoradio
+  - "It has been at least 7 years since the appeal period expired": fault_eviction_appeal_expired
+    datatype: yesnoradio
+---
+id: Judgement was entered for the landlord
+question: |
+  Judgement was entered for the landlord
+subquestion: |
+  and
+fields:
+  - "I have not been convicted of any criminal offense during these 7 years": eviction_judgment_entered_landlord_no_criminal_conviction
+    datatype: yesnoradio
+  - "It has been at least 7 years since the appeal period expired": eviction_judgment_entered_landlord_seven_years
+    datatype: yesnoradio
+  - "No fault action has been brought against me in the 7 years before this request": eviction_judgment_entered_landlord_no_prior_action
+    datatype: yesnoradio
+---
+id: Notice to the landlord in this action
+question: |
+  Notice to the landlord in this action
+subquestion: |
+  I gave notice to the landlord in this action by
+fields:
+  - "I gave notice to the landlord in this action by mail": notice_mail
+    datatype: yesnoradio
+  - "I gave notice to the landlord in this action by ...": custom
+    input type: area
+  - "I gave notice to the landlord in this action by delivering it": notice_delivery
+    datatype: yesnoradio
+---
+id: When did you give notice of this action to the landlord
+question: |
+  When did you give notice of this action to the landlord?
+subquestion: |
+  A copy of this petition was given as a notice to the landlord on
+fields:
+  - "Date": notice_date
+    datatype: date
+---
+id: Was this eviction action transferred to the Housing Court
+question: |
+  Was this eviction action transferred to the Housing Court?
+subquestion: |
+  The eviction started in District/Municipal /Superior Court and was transferred to Housing Court. The decision on this petition will apply to all eviction records in the initial court upon its receipt of the decision.
+fields:
+  - "The eviction was not transferred": eviction_not_transferred
+    datatype: yesnoradio
+  - "This eviction action was transferred to the Housing Court": eviction_transferred
+    datatype: yesnoradio
+---
+id: preview petition_to_seal_eviction
+question: |
+  Preview your form before you sign it
+subquestion: |
+  Here is a preview of the form you will sign on the next page.   
+  
+  ${ al_court_bundle.as_pdf(key='preview') }
+
+  Click the image to open it in a new tab. Click the "Edit answers" button
+  to edit your answers.
+
+  ${ action_button_html(url_action('review_petition_to_seal_eviction'), label='Edit answers', color='info') }
+  
+  Remember to come back to this window to continue and sign your form.
+continue button field: petition_to_seal_eviction_preview_question    
+---
+code: |
+  signature_fields = ['users[0].signature']
+---
+code: |
+  # This is a placeholder for the addresses that will be searched
+  # for matching address to court. Edit if court venue is based on 
+  # a different address than the user's
+  [user.address.address for user in users.complete_elements()]
+  addresses_to_search = [user.address for user in users.complete_elements()]
+---
+id: petition to seal eviction review screen
+event: review_petition_to_seal_eviction
+question: |
+  Review your answers
+review:
+  - Edit: plaintiff_name
+    button: |
+      **Plantiff name**:
+      > ${ single_paragraph(plaintiff_name) }
+  - Edit: users.revisit
+    button: |
+      **Users**
+
+      % for item in users:
+        * ${ item }
+      % endfor
+  - Edit: non_payment_cured_judgment_satisfied
+    button: |
+      **The court issued a decision deeming the judgment satisfied**:
+      ${ non_payment_cured_judgment_satisfied }
+  - Edit: eviction_not_transferred
+    button: |
+      **The eviction was not transferred**:
+      ${ eviction_not_transferred }
+  - Edit: signature_date
+    button: |
+      **Date of Signature**:
+      ${ signature_date }
+  - Edit: anyone_else
+    button: |
+      **Anyone else?**:
+      ${ anyone_else }
+  - Edit: any_other_plaintiff
+    button: |
+      **Anyone else?**:
+      ${ any_other_plaintiff }
+  - Edit: suffix
+    button: |
+      **Suffix**:
+      > ${ single_paragraph(suffix) }
+  - Edit: trial_court
+    button: |
+      **Trial court**
+  
+      % if defined("trial_court.division"):
+      * division: ${ trial_court.division }
+      % endif
+      % if defined("trial_court.department"):
+      * department: ${ trial_court.department }
+      % endif
+  - Edit: eviction_judgment_entered_landlord_no_criminal_conviction
+    button: |
+      **I have not been convicted of any criminal offense during these 7 years**:
+      ${ eviction_judgment_entered_landlord_no_criminal_conviction }
+  - Edit: business_org
+    button: |
+      **Business or Organization name?**:
+      > ${ single_paragraph(business_org) }
+  - Edit: eo_county
+    button: |
+      **County**:
+      ${ eo_county }
+  - Edit: notice_mail
+    button: |
+      **I gave notice to the landlord in this action by mail**:
+      ${ notice_mail }
+  - Edit: dockett_number
+    button: |
+      **Case number**:
+      > ${ single_paragraph(dockett_number) }
+  - Edit: custom
+    button: |
+      **I gave notice to the landlord in this action by ...**:
+      > ${ single_paragraph(custom) }
+  - Edit: notice_delivery
+    button: |
+      **I gave notice to the landlord in this action by delivering it**:
+      ${ notice_delivery }
+  - Edit: docket_number
+    button: |
+      **Docket number**:
+      ${ docket_number }
+  - Edit: first_name
+    button: |
+      **First name**:
+      > ${ single_paragraph(first_name) }
+  - Edit: eviction_judgment_entered_landlord_seven_years
+    button: |
+      **It has been at least 7 years since the appeal period expired**:
+      ${ eviction_judgment_entered_landlord_seven_years }
+  - Edit: Tenant
+    button: |
+      **Tenant**:
+      ${ tenant }
+  - Edit: last_name
+    button: |
+      **Last name**:
+      > ${ single_paragraph(last_name) }
+  - Edit: notice_date
+    button: |
+      **Date**:
+      ${ notice_date }
+  - Edit: non_payment_hardship_appeal_expired
+    button: |
+      **It has been at least 4 years since the appeal period expired**:
+      ${ non_payment_hardship_appeal_expired }
+  - Edit: fault_eviction_no_prior_action
+    button: |
+      **No non-payment eviction or lessor action was brought against me in the 4 years before this request**:
+      ${ fault_eviction_no_prior_action }
+  - Edit: non_payment_cured
+    button: |
+      **This eviction was for non-payment of rent but I paid all amounts due in the judgment or agreement**:
+      ${ non_payment_cured }
+  - Edit: fault_eviction
+    button: |
+      **This was a fault eviction**:
+      ${ fault_eviction }
+  - Edit: non_payment_cured_notice_filed
+    button: |
+      **A notice of satisfaction has been filed with the court**:
+      ${ non_payment_cured_notice_filed }
+  - Edit: person
+    button: |
+      **Person**:
+      ${ person }
+  - Edit: unknown_occupants
+    button: |
+      **Unknown occupants**:
+      ${ unknown_occupants }
+  - Edit: has_eviction_file
+    button: |
+      **Yes I have my eviction case file in front of me**:
+      ${ has_eviction_file }
+  - Edit: middle_name
+    button: |
+      **Middle name**:
+      > ${ single_paragraph(middle_name) }
+  - Edit: landlord
+    button: |
+      **Landlord**:
+      ${ landlord }
+  - Edit: eviction_judgment_entered_landlord_no_prior_action
+    button: |
+      **No fault action has been brought against me in the 7 years before this request**:
+      ${ eviction_judgment_entered_landlord_no_prior_action }
+  - Edit: original_eviction_outcome_dismissed
+    button: |
+      **This eviction was dismissed**:
+      ${ original_eviction_outcome_dismissed }
+  - Edit: fault_eviction_appeal_expired
+    button: |
+      **It has been at least 7 years since the appeal period expired**:
+      ${ fault_eviction_appeal_expired }
+  - Edit: does_not_have_file
+    button: |
+      **I do not have my eviction case file in front of me**:
+      ${ does_not_have_file }
+  - Edit: original_eviction_outcome_favor
+    button: |
+      **This eviction resulted in a judgment in my favor**:
+      ${ original_eviction_outcome_favor }
+  - Edit: eviction_transferred
+    button: |
+      **This eviction action was transferred to the Housing Court**:
+      ${ eviction_transferred }
+  - Edit: no_fault_eviction
+    button: |
+      **This was a no-fault eviction**:
+      ${ no_fault_eviction }
+  - Edit: non_payment_hardship_no_prior_action
+    button: |
+      **No non-payment eviction or lessor action was brought against me in the 4 years before this request**:
+      ${ non_payment_hardship_no_prior_action }
+  - Edit: business_org_name
+    button: |
+      **Business or Organization name**:
+      > ${ single_paragraph(business_org_name) }
+---
+continue button field: users.revisit
+question: |
+  Edit users
+subquestion: |
+  ${ users.table }
+
+  ${ users.add_action() }
+---
+table: users.table
+rows: users
+columns:
+  - Name: |
+      row_item.name.full() if defined("row_item.name.first") else ""
+  - Signature: |
+      row_item.signature if defined("row_item.signature") else ""
+edit:
+  - name.first
+  - signature
+confirm: True
+
+---
+id: download petition_to_seal_eviction
+event: petition_to_seal_eviction_download
+question: |
+  All done
+subquestion: |
+  Thank you ${users}. Your form is ready to download and deliver.
+  
+  View, download and send your form below. Click the "Edit answers" button to fix any mistakes.
+
+  ${ action_button_html(url_action('review_petition_to_seal_eviction'), label='Edit answers', color='info') }
+  
+  
+  ${ al_user_bundle.download_list_html() }
+  
+
+  ${ al_user_bundle.send_button_html(show_editable_checkbox=True) }
+
+progress: 100
+---
+# ALDocument objects specify the metadata for each template
+objects:
+  - petition_to_seal_eviction_Post_interview_instructions: ALDocument.using(title="Instructions", filename="petition_to_seal_eviction_next_steps.docx", enabled=True, has_addendum=False)
+  - petition_to_seal_eviction_attachment: ALDocument.using(title="Petition to seal eviction", filename="petition_to_seal_eviction", enabled=True, has_addendum=False, )
+---
+# Bundles group the ALDocuments into separate downloads, such as for court and for the user
+objects:
+  - al_user_bundle: ALDocumentBundle.using(elements=[petition_to_seal_eviction_Post_interview_instructions, petition_to_seal_eviction_attachment], filename="petition_to_seal_eviction", title="All forms to download for your records", enabled=True)
+  - al_court_bundle: ALDocumentBundle.using(elements=[petition_to_seal_eviction_attachment],  filename="petition_to_seal_eviction", title="All forms to deliver to court", enabled=True)
+---
+# Each attachment defines a key in an ALDocument. We use `i` as the placeholder here so the same template is 
+# used for "preview" and "final" keys, and logic in the template checks the value of 
+# `i` to show or hide the user's signature
+attachment:
+  name: Post-interview-Instructions
+  filename: petition_to_seal_eviction_next_steps
+  docx template file: petition_to_seal_eviction_next_steps.docx
+  variable name: petition_to_seal_eviction_Post_interview_instructions[i]
+  skip undefined: True
+  tagged pdf: True
+---
+attachment:
+  name: petition to seal eviction
+  filename: petition_to_seal_eviction
+  variable name: petition_to_seal_eviction_attachment[i]
+  skip undefined: True
+  docx template file: petition_to_seal_eviction.docx
+  tagged pdf: True
+
+
+
