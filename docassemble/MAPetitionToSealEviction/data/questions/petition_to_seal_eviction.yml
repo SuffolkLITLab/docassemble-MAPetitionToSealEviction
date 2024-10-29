@@ -148,15 +148,6 @@ fields:
   - "Anyone else?": anyone_else
     datatype: yesnoradio
 ---
-id: Are Unknown Occupants listed as defendants on your Eviction Complaint
-question: |
-  Are “Unknown Occupants” listed as defendants on your Eviction Complaint?
-subquestion: |
-  Answer Yes if they were listed on the Eviction Complaint. They could be listed as defendants or there might be a checkbox.
-fields:
-  - "Unknown occupants": unknown_occupants
-    datatype: yesnoradio
----
 id: Have you contacted the other parties about removing the eviction from the public record
 question: |
   Have you contacted the other parties about removing the eviction from the public record?
