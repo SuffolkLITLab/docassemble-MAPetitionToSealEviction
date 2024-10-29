@@ -17,7 +17,6 @@ code: |
   users.gather()
   set_progress(14)
   other_parties.gather()
-  unknown_occupants
   set_progress(28)
   trial_court
   docket_number
