@@ -17,7 +17,6 @@ code: |
   users.gather()
   set_progress(14)
   other_parties.gather()
-  unknown_occupants
   set_progress(28)
   trial_court
   docket_number
@@ -146,15 +145,6 @@ subquestion: |
   <span style="color: darkblue; font-weight: bold; font-style: italic;">Note:</span> If {Unknown Occupants} are listed on the {Eviction Order} as defendants, you can add them to your forms on another screen.
 fields:
   - "Anyone else?": anyone_else
-    datatype: yesnoradio
----
-id: Are Unknown Occupants listed as defendants on your Eviction Complaint
-question: |
-  Are “Unknown Occupants” listed as defendants on your Eviction Complaint?
-subquestion: |
-  Answer Yes if they were listed on the Eviction Complaint. They could be listed as defendants or there might be a checkbox.
-fields:
-  - "Unknown occupants": unknown_occupants
     datatype: yesnoradio
 ---
 id: Have you contacted the other parties about removing the eviction from the public record
