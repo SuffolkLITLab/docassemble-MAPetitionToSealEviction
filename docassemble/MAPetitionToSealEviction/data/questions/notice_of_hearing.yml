@@ -26,7 +26,7 @@ code: |
 id: Create_Notice_of_Hearing
 continue button field: create_notice_of_hearing_intro
 question: |
-  Create Notice of Hearing
+  Notice of Hearing
 subquestion: |
   This interview will help you create a Notice of Hearing.
   
@@ -174,10 +174,10 @@ progress: 100
 ---
 # ALDocument objects specify the metadata for each template
 objects:
-  - notice_of_hearing_attachment: ALDocument.using(title="Create Notice of Hearing", filename="create_notice_of_hearing", enabled=True, has_addendum=False, )
+  - notice_of_hearing_attachment: ALDocument.using(title="Notice of Hearing", filename="notice_of_hearing", enabled=True, has_addendum=False, )
 ---
 attachment:
-  name: create notice of hearing
+  name: notice of hearing
   filename: notice_of_hearing
   variable name: notice_of_hearing_attachment[i]
   skip undefined: True

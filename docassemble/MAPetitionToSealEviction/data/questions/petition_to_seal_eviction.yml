@@ -48,14 +48,17 @@ question: |
 subquestion: |
   <strong>To use this form you will need:</strong>
   
-  1. a copy of your eviction court case papers. 
+  1. A copy of any court papers from your eviction case. The papers should include:
+      - Your docket number
+      - The name and address of the court
+      - The name of the plaintiff in your eviction case (your landlord)
   
-  <span style="color: darkblue; font-weight: bold; font-style: italic;">Note:</span> If an Eviction Order was entered against you, it will have the information you need. 
+  <span style="color: darkblue; font-weight: bold; font-style: italic;">Note:</span> If an Eviction Order was entered against you, the court papers from the eviction case will have all the information you need to complete this form.
   
   <strong>When you are finished, you will be able to download:</strong>
   
-  1. Next step instructions
-  2. a draft of a petition to seal your eviction record form
+  1. Your next steps instructions
+  2. A draft of the petition to seal your eviction records
  
 continue button field: petition_to_seal_eviction_intro
 next: remove_eviction_from_public_record
@@ -64,7 +67,7 @@ id: Remove_eviction_from_public_record
 question: |
   Remove eviction from public record
 subquestion: |
-  <strong>Welcomel, ${users.familiar()}</strong> This program helps you ask a judge to remove an eviction court file from the public record so it does not show up in a background check or credit report. 
+  <strong>Welcome, ${users.familiar()}</strong>. This program will help you fill out the forms you need to ask a judge to remove your eviction case file from public record. Once your eviction record is sealed, it will no longer show up on any background checks or credit reports.
   
 continue button field: Remove_eviction_from_public_record
 next: Instructions
@@ -73,7 +76,7 @@ terms:
   Eviction Order: |
     An Eviction Order is a court-issued order that allows a landlord to remove a tenant and their belongings from a rental property. 
   Unknown Occupants: |
-    Uknown Occupuants are people who are living in a property without the owner's permission, but who are not the tenant on the lease.
+    Unknown Occupuants are people who are living in a property without the owner's permission, but who are not the tenant on the lease.
 ---
 id: Instructions
 question: |
@@ -83,7 +86,7 @@ subquestion: |
   
   If an {Eviction Order} was entered against you, it will have the information you need.
     
-  <strong>Set aside 10 to 15 minutes to finish this program.</strong> 
+  <strong>Set aside 10 to 15 minutes to finish this form.</strong> 
 continue button field: Instructions
 next: After_you_finish_this_program
 ---
