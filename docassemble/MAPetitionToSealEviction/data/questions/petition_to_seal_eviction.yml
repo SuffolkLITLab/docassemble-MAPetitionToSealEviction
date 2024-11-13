@@ -22,25 +22,25 @@ code: |
   docket_number
  
   Have_you_contacted_the_other_parties_about_removing_the_eviction_from_the_public_record
-  original_eviction_outcome_dismissed
-  non_payment_cured_judgment_satisfied
-  set_progress(42)
-  non_payment_hardship_appeal_expired
-  fault_eviction_no_prior_action
-  eviction_judgment_entered_landlord_no_criminal_conviction
-  notice_mail
-  notice_date
-  set_progress(56)
-  eviction_not_transferred
-  has_eviction_file
-  # business_org_name
+  if not original_eviction_outcome_dismissed: 
+    non_payment_cured_judgment_satisfied
+    set_progress(42)
+    non_payment_hardship_appeal_expired
+    fault_eviction_no_prior_action
+    eviction_judgment_entered_landlord_no_criminal_conviction
+    notice_mail
+    notice_date
+    set_progress(56)
+    eviction_not_transferred
+    # has_eviction_file
+    # business_org_name
   signature_date
   trial_court.division
   set_progress(70)
   docket_number
   trial_court.department
   interview_order_petition_to_seal_eviction = True
-
+mandatory: true
 ---
 id: Petition_to_seal_eviction
 question: |
@@ -67,7 +67,9 @@ id: Remove_eviction_from_public_record
 question: |
   Remove eviction from public record
 subquestion: |
-  <strong>Welcome, ${users.familiar()}</strong>. This program will help you fill out the forms you need to ask a judge to remove your eviction case file from public record. Once your eviction record is sealed, it will no longer show up on any background checks or credit reports.
+  <strong>Welcome, ${users.familiar()}</strong>. This program will help you fill out the forms you need to ask a judge to remove your eviction case file from public record. 
+  
+  Once your eviction record is sealed, it will no longer show up on any background checks or credit reports.
   
 continue button field: Remove_eviction_from_public_record
 next: Instructions
@@ -104,20 +106,6 @@ subquestion: |
   
   To learn more, you can read and download the instructions at the end of this program.
 continue button field: After_you_finish_this_program
-next: Required_materials
----
-id: Required_materials
-question: |
-  Required Materials
-subquestion: |
-  Do you have your eviction case file in front of you?
-fields:
-  - "Yes I have my eviction case file in front of me": has_eviction_file
-    datatype: yesnoradio
-  - "I do not have my eviction case file in front of me": does_not_have_file
-    datatype: yesnoradio
-continue button field: Required_materials
-next: tenant_or_landlord
 ---
 id: tenant_or_landlord
 question: |
@@ -165,9 +153,9 @@ id: What was the outcome of your eviction
 question: |
   What was the outcome of your eviction?
 fields:
-  - "This eviction was dismissed": original_eviction_outcome_dismissed
+  - "This eviction action was dismissed": original_eviction_outcome_dismissed
     datatype: yesnoradio
-  - "This eviction resulted in a judgment in my favor": original_eviction_outcome_favor
+  - "This eviction action resulted in a judgment in my favor": original_eviction_outcome_favor
     datatype: yesnoradio
 ---
 id: What was the reason for your eviction
