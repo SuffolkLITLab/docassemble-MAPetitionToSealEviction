@@ -13,7 +13,6 @@ code: |
   Remove_eviction_from_public_record
   Instructions
   After_you_finish_this_program
-  role
   users.gather()
   set_progress(14)
   other_parties.gather()
@@ -106,22 +105,6 @@ subquestion: |
   
   To learn more, you can read and download the instructions at the end of this program.
 continue button field: After_you_finish_this_program
----
-id: tenant_or_landlord
-question: |
-  Are you the tenant or the landlord?
-subquestion: |
-  If you are listed as a <span style="color: darkblue;">*defendant*</span> in the Eviction Order or other court papers, you should click <strong>Tenant</strong>.
-  
-  If you are listed as a <span style="color: darkblue;">*plaintiff*</span>  in the Eviction Order or other court papers, you should click <strong>Landlord</strong>.
-fields:
-  - "I am the": role
-    input type: radio
-    choices:
-      - "Tenant": Tenant
-      - "Landlord": Landlord
-next: What_is_your_name
-
 ---
 id: Is anyone else listed as a defendant on the Eviction Complaint
 question: |
