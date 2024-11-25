@@ -20,6 +20,8 @@ code: |
   trial_court
   docket_number
  
+  eviction_not_transferred
+  eviction_transferred
   Have_you_contacted_the_other_parties_about_removing_the_eviction_from_the_public_record
   if not original_eviction_outcome_dismissed: 
     non_payment_cured_judgment_satisfied
@@ -30,7 +32,6 @@ code: |
     notice_mail
     notice_date
     set_progress(56)
-    eviction_not_transferred
     # has_eviction_file
     # business_org_name
   signature_date
@@ -213,16 +214,20 @@ fields:
   - "Date": notice_date
     datatype: date
 ---
-id: Was this eviction action transferred to the Housing Court
+id: Was this eviction action transferred to another court.
 question: |
-  Was this eviction action transferred to the Housing Court?
+  Was this eviction action transferred to another court?  
 subquestion: |
-  The eviction started in District/Municipal /Superior Court and was transferred to Housing Court. The decision on this petition will apply to all eviction records in the initial court upon its receipt of the decision.
-fields:
-  - "The eviction was not transferred": eviction_not_transferred
-    datatype: yesnoradio
-  - "This eviction action was transferred to the Housing Court": eviction_transferred
-    datatype: yesnoradio
+    If your eviction action was transferred to another court, you will need to file a Motion to Seal your Eviction Action in <strong>* BOTH *</strong> courts. If you do not file a Motion to Seal your Eviction Action in both courts, your eviction action will still show up.
+fields: 
+  - "Yes, this eviction action was transferred to another court.": eviction_transferred
+    datatype: yesno
+  - "No, this eviction action was not transferred to another court.": eviction_not_transferred
+    datatype: noyes
+---
+#id: This eviction action was transferred 
+ # - "This eviction action was transferred to the Housing Court": ] eviction_transferred
+  #  datatype: yesnoradio
 ---
 id: preview petition_to_seal_eviction
 question: |
