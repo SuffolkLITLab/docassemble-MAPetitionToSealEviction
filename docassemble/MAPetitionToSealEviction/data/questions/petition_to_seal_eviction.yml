@@ -40,7 +40,6 @@ code: |
   docket_number
   trial_court.department
   interview_order_petition_to_seal_eviction = True
-mandatory: true
 ---
 id: Petition_to_seal_eviction
 question: |
