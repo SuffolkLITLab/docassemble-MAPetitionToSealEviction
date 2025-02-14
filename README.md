@@ -1,8 +1,8 @@
 # docassemble.PetitionToSealEviction
 
-Petition to seal eviction
+Petition to Seal Eviction
 
 ## Author
 
-Rami Nabhan
-Taline Torossian
+Taline
+

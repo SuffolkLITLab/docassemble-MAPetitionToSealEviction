@@ -1,6 +1,6 @@
 import os
 import sys
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages
 from fnmatch import fnmatchcase
 from distutils.util import convert_path
 
@@ -45,15 +45,14 @@ def find_package_data(where='.', package='', exclude=standard_exclude, exclude_d
 
 setup(name='docassemble.MAPetitionToSealEviction',
       version='1.0',
-      description=('Petition to seal eviction'),
-      long_description='# docassemble.PetitionToSealEviction\r\n\r\nPetition to seal eviction\r\n\r\n## Author\r\n\r\nRami Nabhan\r\nTaline Torossian\r\n',
+      description=('Petition to Seal Eviction'),
+      long_description='# docassemble.PetitionToSealEviction\r\n\r\nPetition to Seal Eviction\r\n\r\n## Author\r\n\r\nTaline\r\n\r\n',
       long_description_content_type='text/markdown',
-      author='Rami Nabhan',
+      author='Taline',
       author_email='rami.nabhan@su.suffolk.edu',
       license='The MIT License',
       url='https://courtformsonline.org',
-      packages=find_packages(),
-      namespace_packages=['docassemble'],
+      packages=find_namespace_packages(),
       install_requires=['docassemble.AssemblyLine>=3.2.0'],
       zip_safe=False,
       package_data=find_package_data(where='docassemble/MAPetitionToSealEviction/', package='docassemble.MAPetitionToSealEviction'),
