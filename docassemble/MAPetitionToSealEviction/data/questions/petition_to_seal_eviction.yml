@@ -93,9 +93,8 @@ code: |
   user_ask_role = "defendant"
   case_dismissed
   if not case_dismissed:
-    def_for
-    def_against
-    if case_dismissed:
+    judgment_outcome
+    if judgment_outcome == "landlord":
       eviction_reason_nonpayment
       eviction_reason_fault
       eviction_reason_nofault
@@ -106,13 +105,17 @@ code: |
           non_payment_cured
         if not non_payment:
           non_payment_hardship 
-    set_progress(14)
-    fe_appl_period_exp
-    no_fault
-    ejp_appl_period_exp
-    no_judgmt_appl_exp
-    set_progress(28)
     judgment_date
+    if judgment_date > today().minus(years=7).minus(days=10):
+      continue_inapplicable
+    if judgment_date > today().minus(years=4).minus(days=10):
+      continue_inapplicable
+  set_progress(14)
+  fe_appl_period_exp
+  no_fault
+  ejp_appl_period_exp
+  no_judgmt_appl_exp
+  set_progress(28)
   notice_date
   trial_court.department
   trial_court.division
@@ -330,25 +333,17 @@ fields:
   - "Judgment Date": judgment_date
     datatype: date
 ---
-id: Judgment in my Favor
+id: Judgment Outcome
 question: |
-  Judgment in my favor
+  Judgment Outcome
 subquestion: |
-  My eviction action resulted in a judgment for me.
+  What was the outcome of you eviction judgment?
 fields:
-  - "Judgement was in my favor": def_for
-    datatype: yesnoradio
-    required: False
---- 
-id: Judgment Against Me
-question: |
-  Judgment Against Me
-subquestion: |
-  My eviction action resulted in a judgment against me.
-fields:
-  - "Judgment for Landlord": def_against
-    datatype: yesnoradio
-    required: False
+  - "Judgment was entered for": judgment_outcome
+    datatype: radio
+    choices:
+      - Landlord: landlord
+      - Me: tenant
 ---
 id: Eviction Action Dismissed
 question: |
