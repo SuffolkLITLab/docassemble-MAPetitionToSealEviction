@@ -93,15 +93,19 @@ code: |
   user_ask_role = "defendant"
   case_dismissed
   if not case_dismissed:
-    eviction_reason_nonpayment
-    eviction_reason_fault
-    eviction_reason_nofault
-    eviction_reason_139
-    non_payment
-    non_payment_hardship
-    non_payment_cured
     def_for
     def_against
+    if case_dismissed:
+      eviction_reason_nonpayment
+      eviction_reason_fault
+      eviction_reason_nofault
+      eviction_reason_139
+      if eviction_reason_nonpayment:
+        non_payment
+        if non_payment:
+          non_payment_cured
+        if not non_payment:
+          non_payment_hardship 
     set_progress(14)
     fe_appl_period_exp
     no_fault
@@ -196,25 +200,25 @@ id: Non Payment Paid
 question: |
   Non-Payment Paid
 subquestion: |
-  My eviction action was for non-payment and I have paid all amounts due.
+  How was your payment deemed satisfied?
 fields:
-  - "All Amounts Paid": non_payment_cured
-    datatype: yesnoradio
+  - "My landlord filed Notice of Satisfaction": plan_filed_notice
+    datatype: yesno
     required: False
-  - "Landlord Filed Notice of Satisfaction": plan_filed_notice
-    datatype: yesnoradio
+  - "A Judge deemed all unpaid rent satisfied": court_deemed_paid
+    datatype: yesno
     required: False
-  - "Judge Deemed Payment Satisfied": court_deemed_paid
-    datatype: yesnoradio
+  - "My payment has not been officially deemed satisfied": non_payment_cured
+    datatype: yesno
     required: False
 ---
 id: Non Payment Not Paid
 question: |
   Non-Payment Not Paid
 subquestion: |
-  My eviction action was for non-payment of rent and I have still not paid
+  Have you paid all amounts due in your eviction action?
 fields:
-  - "Non-Payment Judgment Not Paid": non_payment
+  - " ": non_payment
     datatype: yesnoradio
     required: False
 ---
@@ -222,9 +226,9 @@ id: Non Payment Not Paid for Hardship
 question: |
   Non-Payment Not Paid for Hardship
 subquestion: |
-  My eviction action was for non-payment of rent, I was unable to pay due to economic hardship, and the appeal period has expired.
+  Were you not able to pay all amounts due because of economic hardship?
 fields:
-  - "Unable to Pay Amount of Judgment": non_payment_hardship
+  - " ": non_payment_hardship
     datatype: yesnoradio
     required: False
 ---
@@ -326,13 +330,23 @@ fields:
   - "Judgment Date": judgment_date
     datatype: date
 ---
-id: Judgment in My Favor
+id: Judgment in my Favor
 question: |
-  Judgment in My Favor
+  Judgment in my favor
 subquestion: |
-  My eviction action resulted in a judgment in my favor.
+  My eviction action resulted in a judgment for me.
 fields:
-  - "Judgment in my Favor": def_for
+  - "Judgement was in my favor": def_for
+    datatype: yesnoradio
+    required: False
+--- 
+id: Judgment Against Me
+question: |
+  Judgment Against Me
+subquestion: |
+  My eviction action resulted in a judgment against me.
+fields:
+  - "Judgment for Landlord": def_against
     datatype: yesnoradio
     required: False
 ---
@@ -343,16 +357,6 @@ subquestion: |
   My eviction action was dismissed.
 fields:
   - "Eviction Case Was Dismissed": case_dismissed
-    datatype: yesnoradio
-    required: False
----
-id: Judgment Against Me
-question: |
-  Judgment Against Me
-subquestion: |
-  My eviction action resulted in a judgment against me.
-fields:
-  - "Judgment for Landlord": def_against
     datatype: yesnoradio
     required: False
 ---
