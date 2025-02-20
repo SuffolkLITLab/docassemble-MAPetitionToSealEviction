@@ -76,7 +76,7 @@ code: |
 ---
 objects:
   - attorneys: ALPeopleList
-  - other_parties: ALPeopleList
+  - other_parties: ALPeopleList.using(there_are_any=True)
   - users: ALPeopleList.using(there_are_any=True)
 ---
 sections:
@@ -151,7 +151,6 @@ code: |
   users[0].address.address
   set_progress(56)
   users[0].phone_number
-  users[0].signature
   attorneys.name
   attorneys.email
   signature_date
