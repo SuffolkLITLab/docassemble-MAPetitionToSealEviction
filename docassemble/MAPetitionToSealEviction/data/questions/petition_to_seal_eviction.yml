@@ -3,6 +3,7 @@ include:
   - docassemble.AssemblyLine:assembly_line.yml
   - docassemble.MassAccess:massaccess.yml
   - docassemble.MATCTheme:matc_theme.yml
+  - docassemble.ALToolbox:collapse_template.yml
 ---
 metadata:
   title: >-
@@ -54,7 +55,7 @@ metadata:
   jurisdiction: NAM-US-US+MA
   review_date: 2025-02-06
   form_titles:
-    - Petition to Seal Eviction
+    - Petition to seal eviction
   form_numbers: []
   update_notes: |
 ---
@@ -70,18 +71,29 @@ code: |
   github_repo_name =  'docassemble-PetitionToSealEviction'
 ---
 code: |
-  interview_short_title = "File a Petition to Seal an Eviction"
+  interview_short_title = "File a petition to seal an eviction"
 ---
 code: |
   al_form_type = "existing_case" 
 ---
 objects:
-  - attorneys: ALPeopleList
+  - attorneys: ALPeopleList.using(complete_attribute=['bbo_number', 'address.address', 'phone_number'])
   - other_parties: ALPeopleList.using(there_are_any=True)
   - users: ALPeopleList.using(there_are_any=True)
 ---
 sections:
-  - review_petition_to_seal_eviction: Review your answers
+  - intro: Introduction
+  - status: Eviction case details
+  - reason: Reason for your eviction
+  - date: Date of judgment
+  - user_info: About you
+  - landlord_info: Landlord information
+  - attorney_info: Attorney information
+  - court_info: Court information
+  - notice: Notice requirement    
+  - review: Review your form
+  - signature: Signature
+  - submit: Submit
 ---
 #################### Interview order #####################
 comment: |
@@ -90,7 +102,55 @@ id: interview_order_petition_to_seal_eviction
 code: |
   # Set the allowed courts for this interview
   allowed_courts = ['District Court', 'Housing Court', 'Superior Court']
-  nav.set_section("review_petition_to_seal_eviction")
+  
+  nav.set_section("intro")
+  al_intro_screen  
+  petition_to_seal_eviction_intro
+
+  nav.set_section("status")
+  case_dismissed  
+  judgment_outcome
+
+  nav.set_section("reason")
+  eviction_reason_nonpayment
+  non_payment
+  non_payment_cured
+  non_payment_hardship
+  non_payment_action
+
+  nav.set_section("date")
+  judgment_date
+
+  nav.set_section("notice")
+  notice_date
+
+  nav.set_section("court_info")
+  trial_court
+  docket_number
+
+  nav.set_section("landlord_info")
+  other_parties[0].name.first
+  other_parties.there_is_another
+
+  nav.set_section("user_info")
+  users[0].name.first
+  users.there_is_another
+  users[0].email
+  users[0].address.address
+
+  nav.set_section("attorney_info")
+  attorneys.name
+
+  nav.set_section("review")
+  petition_to_seal_eviction_preview_question
+
+  nav.set_section("signature")
+  saw_signature_choice
+  users[0].signature
+
+  nav.set_section("submit")
+  petition_to_seal_eviction_download
+  
   user_role = "defendant"
   user_ask_role = "defendant"
   case_dismissed
@@ -182,7 +242,7 @@ code: |
 id: Petition_to_Seal_Eviction
 continue button field: petition_to_seal_eviction_intro
 question: |
-  Petition to Seal an Eviction
+  Petition to seal an eviction
 subquestion: |
   
   If you are a tenant who has been evicted, you can use this interview to request that a court seal this eviction from public record.  
@@ -202,7 +262,7 @@ subquestion: |
 ---
 id: Eviction Reason
 question: |
-  Reason for Eviction
+  Reason for eviction
 subquestion: |
   What was the reason for your eviction?
 fields:
@@ -217,7 +277,7 @@ fields:
 ---
 id: Off Ramp
 question: |
-  Failure to Qualify
+  Failure to qualify
 subquestion: |
   Based on your answers, you do not meet the legal requirements for your eviction record to be sealed under Massachusetts law. Would you like to exit the interview?
 fields:
@@ -226,7 +286,7 @@ fields:
 ---
 id: Non Payment Paid
 question: |
-  Satisfaction of Amounts Due
+  Satisfaction of amounts due
 subquestion: |
   How was your rent payment deemed satisfied?
 fields:
@@ -242,7 +302,7 @@ fields:
 ---
 id: Non Payment Not Paid
 question: |
-  Status of Unpaid Rent
+  Status of unpaid rent
 subquestion: |
   Have you paid all amounts due from your eviction action?
 fields:
@@ -252,7 +312,7 @@ fields:
 ---
 id: Non Payment Not Paid for Hardship
 question: |
-  Reason for Non-Payment
+  Reason for non-payment
 subquestion: |
   Were you unable to pay the rent because of economic hardship?
 fields:
@@ -262,7 +322,7 @@ fields:
 ---
 id: Non Payment Action
 question: |
-  Other Non-Payment Evictions
+  Other non-payment evictions
 subquestion: |
   Has any other non-payment evictions or lessor actions been brought against you in Massachusetts in the past 4 years?
 fields:
@@ -272,7 +332,7 @@ fields:
 ---
 id: Fault Eviction
 question: |
-  Other Eviction Actions
+  Other eviction actions
 subquestion: |
   Has any other eviction action been brought against you in Massachusetts in the past 7 years?
 fields:
@@ -282,7 +342,7 @@ fields:
 ---
 id: Fault Action Section 139
 question: |
-  Civil Action under G.L. c. 139, §19 
+  Civil action under G.L. c. 139, §19 
 subquestion: |
   Have either of the following actions been brought against you in Massachusetts in the past 7 years?
 fields:
@@ -295,7 +355,7 @@ fields:
 ---
 id: Prior Criminal Offenses
 question: |
-  Prior Criminal Offenses under G.L. c. 139, §19
+  Prior criminal offenses under G.L. c. 139, §19
 subquestion: |
   Have you been convicted of any criminal offense listed in G.L. c. 139, §19 in the past 7 years?
 fields:
@@ -325,7 +385,7 @@ fields:
 ---
 id: Petitioner Signature
 question: |
-  Your Signature
+  Your signature
 subquestion: |
   Sign your name below
 fields:
@@ -333,7 +393,7 @@ fields:
 ---
 id: Attorney Information
 question: |
-  Attorney Information
+  Attorney information
 subquestion: |
   Enter your attorney's information
 fields:
@@ -344,7 +404,7 @@ fields:
 ---
 id: Date of Judgment
 question: |
-  Date of Judgment
+  Date of judgment
 subquestion: |
   What was the judgment date of your eviction action?
 fields:
@@ -353,7 +413,7 @@ fields:
 ---
 id: Judgment Outcome
 question: |
-  Judgment Outcome
+  Judgment outcome
 subquestion: |
   What was the outcome of your eviction action?
 fields:
@@ -365,7 +425,7 @@ fields:
 ---
 id: Eviction Action Dismissed
 question: |
-  Case Dismissal Status
+  Case dismissal status
 subquestion: |
   Was your eviction action dismissed by the applicable court?
 fields:
