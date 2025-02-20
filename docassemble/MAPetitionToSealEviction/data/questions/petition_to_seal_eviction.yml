@@ -11,15 +11,16 @@ metadata:
   description: |-
     This interview helps someone in Massachusetts file a Petition to Seal a prior eviction from public record.
   can_I_use_this_form: |
-    If you are a tenant-defendant, you can use this interview to petition a court to seal a past eviction from public record.
+    If you are a tenant (defendant) who was evicted more than seven (7) years ago, you can use this interview to petition a court to seal the past eviction from public record.
   before_you_start: |
     This interview will help you file a Petition to Seal an Eviction.
     
     Before you get started, please gather:
     
-    1. Eviction Action Court Docket Number
-    2. Landlord (Plaintiff) Name and Address
-    3. Any Documents from the Eviction Action
+    1. The name of the court your eviction action was heard in
+    2. The docket number of your eviction action
+    3. Any other documents relating to your eviction action
+    3. The name and email of your attorney (if you have one)
     
     When you are finished, you will need to:
     
@@ -99,37 +100,59 @@ code: |
       eviction_reason_fault
       eviction_reason_nofault
       eviction_reason_139
-      if eviction_reason_nonpayment:
+      if eviction_reason_fault:
+        prior_eviction_action
+        if prior_eviction_action:
+          continue_inapplicable
+      elif eviction_reason_nonpayment:
         non_payment
         if non_payment:
           non_payment_cured
         if not non_payment:
-          non_payment_hardship 
-    judgment_date
-    if judgment_date > today().minus(years=7).minus(days=10):
-      continue_inapplicable
-    if judgment_date > today().minus(years=4).minus(days=10):
-      continue_inapplicable
+          non_payment_hardship
+          if non_payment_hardship:
+            non_payment_action
+            if non_payment_action:
+              continue_inapplicable
+            if not non_payment_action:
+              judgment_date
+          if not non_payment_hardship:
+            continue_inapplicable
+      elif eviction_reason_139:
+        prior_fault_action_139
+        if prior_fault_action_139:
+          continue_inapplicable
+        prior_139_action
+        if prior_139_action:
+          continue_inapplicable
+        prior_139_offense
+        if prior_139_offense:
+          continue_inapplicable
+      elif eviction_reason_nofault:
+          judgment_date
+      judgment_date
+      if judgment_date > today().minus(years=7).minus(days=10):
+        continue_inapplicable
+      if judgment_date > today().minus(years=4).minus(days=10):
+        continue_inapplicable
+      notice_date
+      notice_recipient
+      notice_type
   set_progress(14)
-  fe_appl_period_exp
-  no_fault
-  ejp_appl_period_exp
-  no_judgmt_appl_exp
   set_progress(28)
-  notice_date
   trial_court.department
   trial_court.division
   docket_number
   set_progress(42)
   other_parties.gather()
-  users[0].siganture
   users.gather()
   set_parts(subtitle=str(users))
   users[0].email
   users[0].address.address
   set_progress(56)
   users[0].phone_number
-  attorneys_name
+  users[0].signature
+  attorneys.name
   attorneys.email
   signature_date
   interview_order_petition_to_seal_eviction = True
@@ -159,27 +182,27 @@ code: |
 id: Petition_to_Seal_Eviction
 continue button field: petition_to_seal_eviction_intro
 question: |
-  Petition to Seal Eviction
+  Petition to Seal an Eviction
 subquestion: |
-  This interview will help you file a Petition to Seal an Eviction.
   
-  Before you get started, please gather:
+  If you are a tenant who has been evicted, you can use this interview to request that a court seal this eviction from public record.  
   
-  1. Eviction Action Court Docket Number
-  2. Landlord (Plaintiff) Name and Address
-  3. Any Documents from the Eviction Action
-  
-  When you are finished, you will need to:
-  
-  E-File the petition with the applicable court
+  This interview will help you file the Petition to Seal an Eviction.
+    
+    Before you get started, please gather:
+    
+    1. The name of the court that your eviction action was heard in
+    2. The docket number of your eviction action
+    3. Any other documents relating to your eviction action
+    3. The name and email of your attorney (if you have one)
 
-  If you are a tenant-defendant, you can use this interview to petition a court to seal a past eviction from public record.
+  <b>NOTE:</b> When you are finished, you will need to E-File this petition with the court.
 
   Most people take about 10 minutes to complete this interview.
 ---
 id: Eviction Reason
 question: |
-  Reason for eviction
+  Reason for Eviction
 subquestion: |
   What was the reason for your eviction?
 fields:
@@ -189,37 +212,39 @@ fields:
     datatype: yesno
   - "No Fault": eviction_reason_nofault
     datatype: yesno
-  - "Action under 139": eviction_reason_139
+  - "Civil action under G.L. c. 139, §19 ": eviction_reason_139
     datatype: yesno
 ---
 id: Off Ramp
 question: |
-  Does Not Apply to User
+  Failure to Qualify
+subquestion: |
+  Based on your answers, you do not meet the legal requirements for your eviction record to be sealed under Massachusetts law. Would you like to exit the interview?
 fields:
-  - "Continue": continue_inapplicable
+  - "": continue_inapplicable
     datatype: yesnoradio
 ---
 id: Non Payment Paid
 question: |
-  Non-Payment Paid
+  Satisfaction of Amounts Due
 subquestion: |
-  How was your payment deemed satisfied?
+  How was your rent payment deemed satisfied?
 fields:
-  - "My landlord filed Notice of Satisfaction": plan_filed_notice
+  - "My landlord filed a notice of satisfaction with the court": plan_filed_notice
     datatype: yesno
     required: False
-  - "A Judge deemed all unpaid rent satisfied": court_deemed_paid
+  - "A judge deemed all amounts due in rent were paid": court_deemed_paid
     datatype: yesno
     required: False
-  - "My payment has not been officially deemed satisfied": non_payment_cured
+  - "My payment has not been deemed satisfied by the court": non_payment_cured
     datatype: yesno
     required: False
 ---
 id: Non Payment Not Paid
 question: |
-  Non-Payment Not Paid
+  Status of Unpaid Rent
 subquestion: |
-  Have you paid all amounts due in your eviction action?
+  Have you paid all amounts due from your eviction action?
 fields:
   - " ": non_payment
     datatype: yesnoradio
@@ -227,57 +252,54 @@ fields:
 ---
 id: Non Payment Not Paid for Hardship
 question: |
-  Non-Payment Not Paid for Hardship
+  Reason for Non-Payment
 subquestion: |
-  Were you not able to pay all amounts due because of economic hardship?
+  Were you unable to pay the rent because of economic hardship?
 fields:
   - " ": non_payment_hardship
     datatype: yesnoradio
     required: False
 ---
-id: Fault Eviction
+id: Non Payment Action
 question: |
-  Fault Eviction
+  Other Non-Payment Evictions
 subquestion: |
-  My eviction was a fault eviction and the appeal period has expired.
+  Has any other non-payment evictions or lessor actions been brought against you in Massachusetts in the past 4 years?
 fields:
-  - "Fault Eviction Appeal Period Expired": fe_appl_period_exp
-    datatype: yesnoradio
-    required: False
-  - "Eviction Was Fault": fault_eviction
+  - "": non_payment_action
     datatype: yesnoradio
     required: False
 ---
-id: No Fault Eviction
+id: Fault Eviction
 question: |
-  No Fault Eviction
+  Other Eviction Actions
 subquestion: |
-  My eviction was no fault and the appeal period has expired.
+  Has any other eviction action been brought against you in Massachusetts in the past 7 years?
 fields:
-  - "Eviction Was No Fault": no_fault
+  - "": prior_eviction_action
     datatype: yesnoradio
     required: False
 ---
 id: Fault Action Section 139
 question: |
-  Fault Action (Section 139)
+  Civil Action under G.L. c. 139, §19 
 subquestion: |
-  My eviction action was filed under Section 139, judgment entered for the landlord, the appeal period has expired, and I have not been convicted of any crimes during the appeal period.
+  Have either of the following actions been brought against you in Massachusetts in the past 7 years?
 fields:
-  - "Appeal Period Expired in 139 Case": ejp_appl_period_exp
+  - "Any Fault Eviction Action": prior_fault_action_139
     datatype: yesnoradio
     required: False
-  - "Judgment For Landlord in 139 Case": eviction_judgmt_plan
+  - "Civil Action Under G.L. c. 139, §19": prior_139_action
     datatype: yesnoradio
     required: False
 ---
-id: Fault Action Judgment For Section 139
+id: Prior Criminal Offenses
 question: |
-  Fault Action Judgment For (Section 139)
+  Prior Criminal Offenses under G.L. c. 139, §19
 subquestion: |
-  My eviction action was filed under Section 139, judgment did not enter for the landlord, and the appeal period has expired.
+  Have you been convicted of any criminal offense listed in G.L. c. 139, §19 in the past 7 years?
 fields:
-  - "No Judgment in Section 139 Case": no_judgmt_appl_exp
+  - "": prior_139_offense
     datatype: yesnoradio
     required: False
 ---
@@ -285,33 +307,29 @@ id: Notice
 question: |
   Notice
 subquestion: |
-  Notice was given to the Plaintiff in the following manner.
+  You must give notice of this petition to all parties. How do you intend to notify your landlord?
 fields:
   - "Date of Notice": notice_date
     datatype: date
-  - "Notice Given by Email": email
-    datatype: yesno
-    required: False
-  - "Notice Given to Plaintiff": plaintiff_notice
-    datatype: yesno
-    required: False
-  - "Notice Given by Mail": mail
-    datatype: yesno
-    required: False
-  - "Notice Given in Person": in_person
-    datatype: yesno
-    required: False
-  - "Notice Given to Plaintiff's Lawyer": plaintiff_lawyer
-    datatype: yesno
-    required: False
+  - "I attend to send notice to the:": notice_recipient
+    datatype: radio
+    choices:
+      - Plaintiff: plaintiff
+      - Plaintiff's Attorney: plaintiff lawyer
+  - "I attend to send notice by:": notice_type
+    datatype: radio
+    choices:
+      - Email: email
+      - Mail: mail
+      - In Person: in person
 ---
-id: Petitioner Information
+id: Petitioner Signature
 question: |
-  Petitioner Information
+  Your Signature
 subquestion: |
-  Enter your information
+  Sign your name below
 fields:
-  - "Your Signature": users[0].siganture
+  - users[0].signature: signature
 ---
 id: Attorney Information
 question: |
@@ -319,9 +337,9 @@ question: |
 subquestion: |
   Enter your attorney's information
 fields:
-  - "Attorney Email": attorneys.email
+  - "Attorney Name": attorneys.name
     required: False
-  - "Attorney Name": attorneys_name
+  - "Attorney Email": attorneys.email
     required: False
 ---
 id: Date of Judgment
@@ -337,21 +355,21 @@ id: Judgment Outcome
 question: |
   Judgment Outcome
 subquestion: |
-  What was the outcome of you eviction judgment?
+  What was the outcome of your eviction action?
 fields:
-  - "Judgment was entered for": judgment_outcome
+  - "Judgment was entered:": judgment_outcome
     datatype: radio
     choices:
-      - Landlord: landlord
-      - Me: tenant
+      - Against Me: landlord
+      - In My Favor: tenant
 ---
 id: Eviction Action Dismissed
 question: |
-  Eviction Action Dismissed
+  Case Dismissal Status
 subquestion: |
-  My eviction action was dismissed.
+  Was your eviction action dismissed by the applicable court?
 fields:
-  - "Eviction Case Was Dismissed": case_dismissed
+  - "Case Dismissed": case_dismissed
     datatype: yesnoradio
     required: False
 ---
@@ -372,7 +390,7 @@ subquestion: |
 continue button field: petition_to_seal_eviction_preview_question    
 ---
 code: |
-  signature_fields = ['users[0].siganture']
+  signature_fields = ['users[0].signature']
 ---
 code: |
   # This is a placeholder for the addresses that will be searched
@@ -400,10 +418,6 @@ review:
       % for item in users:
         * ${ item }
       % endfor
-  - Edit: def_against
-    button: |
-      **Judgment for Landlord**:
-      ${ word(yesno(def_against)) }
   - Edit: docket_number
     button: |
       **Docket number**:
@@ -411,7 +425,6 @@ review:
   - Edit: other_parties.revisit
     button: |
       **Other parties**
-
       % for item in other_parties:
         * ${ item }
       % endfor
@@ -453,10 +466,6 @@ review:
     button: |
       **Notice Given by Email**:
       ${ word(yesno(email)) }
-  - Edit: def_for
-    button: |
-      **Judgment in my Favor**:
-      ${ word(yesno(def_for)) }
   - Edit: plaintiff_notice
     button: |
       **Notice Given to Plaintiff**:
@@ -485,10 +494,6 @@ review:
     button: |
       **Notice Given in Person**:
       ${ word(yesno(in_person)) }
-  - Edit: fe_appl_period_exp
-    button: |
-      **Fault Eviction Appeal Period Expired**:
-      ${ word(yesno(fe_appl_period_exp)) }
   - Edit: case_dismissed
     button: |
       **Eviction Case Was Dismissed**:
@@ -501,10 +506,6 @@ review:
     button: |
       **Notice Given to Plaintiff's Lawyer**:
       ${ word(yesno(plaintiff_lawyer)) }
-  - Edit: eviction_judgmt_plan
-    button: |
-      **Judgment For Landlord in 139 Case**:
-      ${ word(yesno(eviction_judgmt_plan)) }
   - Edit: judgment_date
     button: |
       **Judgment Date**:
@@ -547,8 +548,8 @@ rows: users
 columns:
   - Email: |
       row_item.email if defined("row_item.email") else ""
-  - Siganture: |
-      row_item.siganture if defined("row_item.siganture") else ""
+  - Signature: |
+      row_item.signature if defined("row_item.signature") else ""
   - Name: |
       row_item.name.full() if defined("row_item.name.first") else ""
   - Address: |
@@ -557,7 +558,7 @@ columns:
       row_item.phone_number if defined("row_item.phone_number") else ""
 edit:
   - email
-  - siganture
+  - signature
   - name.first
   - address.address
   - phone_number
