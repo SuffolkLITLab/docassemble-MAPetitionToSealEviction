@@ -106,57 +106,15 @@ code: |
   nav.set_section("intro")
   al_intro_screen  
   petition_to_seal_eviction_intro
-
-  nav.set_section("status")
-  case_dismissed  
-  judgment_outcome
-
-  nav.set_section("reason")
-  eviction_reason_nonpayment
-  non_payment
-  non_payment_cured
-  non_payment_hardship
-  non_payment_action
-
-  nav.set_section("date")
-  judgment_date
-
-  nav.set_section("notice")
-  notice_date
-
-  nav.set_section("court_info")
-  trial_court
-  docket_number
-
-  nav.set_section("landlord_info")
-  other_parties[0].name.first
-  other_parties.there_is_another
-
-  nav.set_section("user_info")
-  users[0].name.first
-  users.there_is_another
-  users[0].email
-  users[0].address.address
-
-  nav.set_section("attorney_info")
-  attorneys.name
-
-  nav.set_section("review")
-  petition_to_seal_eviction_preview_question
-
-  nav.set_section("signature")
-  saw_signature_choice
-  users[0].signature
-
-  nav.set_section("submit")
-  petition_to_seal_eviction_download
   
   user_role = "defendant"
   user_ask_role = "defendant"
+  nav.set_section("status")
   case_dismissed
   if not case_dismissed:
     judgment_outcome
     if judgment_outcome == "landlord":
+      nav.set_section("reason")
       eviction_reason_nonpayment
       eviction_reason_fault
       eviction_reason_nofault
@@ -176,6 +134,7 @@ code: |
             if non_payment_action:
               continue_inapplicable
             if not non_payment_action:
+              nav.set_section("date")
               judgment_date
           if not non_payment_hardship:
             continue_inapplicable
@@ -190,28 +149,35 @@ code: |
         if prior_139_offense:
           continue_inapplicable
       elif eviction_reason_nofault:
+          nav.set_section("date")
           judgment_date
+      nav.set_section("date")
       judgment_date
       if judgment_date > today().minus(years=7).minus(days=10):
         continue_inapplicable
       if judgment_date > today().minus(years=4).minus(days=10):
         continue_inapplicable
+      nav.set_section("notice")
       notice_date
       notice_recipient
       notice_type
   set_progress(14)
   set_progress(28)
+  nav.set_section("court_info")
   trial_court.department
   trial_court.division
   docket_number
   set_progress(42)
+  nav.set_section("landlord_info")
   other_parties.gather()
+  nav.set_section("user_info")
   users.gather()
   set_parts(subtitle=str(users))
   users[0].email
   users[0].address.address
   set_progress(56)
   users[0].phone_number
+  nav.set_section("attorney_info")
   attorneys.name
   attorneys.email
   signature_date
