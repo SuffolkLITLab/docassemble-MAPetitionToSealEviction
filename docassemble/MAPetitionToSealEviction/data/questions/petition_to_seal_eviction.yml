@@ -106,6 +106,9 @@ code: |
   nav.set_section("intro")
   al_intro_screen  
   petition_to_seal_eviction_intro
+  user_type_answer
+  if user_type_answer == "attorney":
+    attorney_message
   
   user_role = "defendant"
   user_ask_role = "defendant"
@@ -226,6 +229,25 @@ subquestion: |
 
   Most people take about 10 minutes to complete this interview.
 ---
+id: User Type
+question: |
+  Petitioner or Attorney
+subquestion: |
+  Are you the tenant in this action or the attorney representing them?
+fields:
+  - "I am the:": user_type_answer
+    datatype: radio
+    choices:
+      - Tenant: tenant
+      - Attorney: attorney
+---
+id: Attorney Message
+continue button field: attorney_message
+question: |
+  Attorneys: Your Client Must Be Present
+subquestion: |
+  In order to fill out this form as an attorney, you must have your client present and prepared to sign under the penalty of perjury. 
+---
 id: Eviction Reason
 question: |
   Reason for eviction
@@ -290,7 +312,7 @@ id: Non Payment Action
 question: |
   Other non-payment evictions
 subquestion: |
-  Has any other non-payment evictions or lessor actions been brought against you in Massachusetts in the past 4 years?
+  Have any other evictions been brought against you in Massachusetts in the past 4 years for not paying your rent?
 fields:
   - "": non_payment_action
     datatype: yesnoradio
@@ -331,18 +353,18 @@ fields:
 ---
 id: Notice
 question: |
-  Notice
+  Serving the other side
 subquestion: |
   You must give notice of this petition to all parties. How do you intend to notify your landlord?
 fields:
   - "Date of Notice": notice_date
     datatype: date
-  - "I attend to send notice to the:": notice_recipient
+  - "I intend to send notice to:": notice_recipient
     datatype: radio
     choices:
       - Plaintiff: plaintiff
       - Plaintiff's Attorney: plaintiff lawyer
-  - "I attend to send notice by:": notice_type
+  - "I intend to send notice by:": notice_type
     datatype: radio
     choices:
       - Email: email
@@ -395,7 +417,7 @@ question: |
 subquestion: |
   Was your eviction action dismissed by the applicable court?
 fields:
-  - "Case Dismissed": case_dismissed
+  - " ": case_dismissed
     datatype: yesnoradio
     required: False
 ---
