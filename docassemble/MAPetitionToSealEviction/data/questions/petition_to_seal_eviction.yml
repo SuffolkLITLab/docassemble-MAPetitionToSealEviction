@@ -80,6 +80,16 @@ objects:
   - attorneys: ALPeopleList.using(complete_attribute=['bbo_number', 'address.address', 'phone_number'])
   - other_parties: ALPeopleList.using(there_are_any=True)
   - users: ALPeopleList.using(there_are_any=True)
+  - users[i].tenancy_address: ALAddress
+---
+code: |
+  if al_person_answering == "attorney":
+    attorneys.there_are_any = True
+---
+code: |
+  # Limit to 1 attorney
+  if attorneys.number() >= 1:
+    attorneys.there_is_another = False
 ---
 sections:
   - intro: Introduction
@@ -90,7 +100,7 @@ sections:
   - landlord_info: Landlord information
   - attorney_info: Attorney information
   - court_info: Court information
-  - notice: Notice requirement    
+  - notice: Serving the other side   
   - review: Review your form
   - signature: Signature
   - submit: Submit
@@ -101,13 +111,13 @@ comment: |
 id: interview_order_petition_to_seal_eviction
 code: |
   # Set the allowed courts for this interview
-  allowed_courts = ['District Court', 'Housing Court', 'Superior Court']
+  allowed_courts = ['District Court', 'Boston Municipal Court', 'Housing Court', 'Superior Court']
   
   nav.set_section("intro")
   al_intro_screen  
   petition_to_seal_eviction_intro
-  user_type_answer
-  if user_type_answer == "attorney":
+  al_person_answering
+  if al_person_answering == "attorney":
     attorney_message
   
   user_role = "defendant"
@@ -126,6 +136,9 @@ code: |
         prior_eviction_action
         if prior_eviction_action:
           continue_inapplicable
+        if judgment_date > today().minus(years=7).minus(days=10):
+          continue_inapplicable
+        fe_appl_period_exp
       elif eviction_reason_nonpayment:
         non_payment
         if non_payment:
@@ -139,6 +152,8 @@ code: |
             if not non_payment_action:
               nav.set_section("date")
               judgment_date
+              if judgment_date > today().minus(years=4).minus(days=10):
+                continue_inapplicable
           if not non_payment_hardship:
             continue_inapplicable
       elif eviction_reason_139:
@@ -151,38 +166,47 @@ code: |
         prior_139_offense
         if prior_139_offense:
           continue_inapplicable
+        nav.set_section("date")
+        if judgment_date > today().minus(years=7).minus(days=10):
+          continue_inapplicable
+        ejp_appl_period_exp
       elif eviction_reason_nofault:
           nav.set_section("date")
           judgment_date
       nav.set_section("date")
       judgment_date
-      if judgment_date > today().minus(years=7).minus(days=10):
-        continue_inapplicable
-      if judgment_date > today().minus(years=4).minus(days=10):
-        continue_inapplicable
       nav.set_section("notice")
-      notice_date
-      notice_recipient
-      notice_type
-  set_progress(14)
-  set_progress(28)
-  nav.set_section("court_info")
-  trial_court.department
-  trial_court.division
-  docket_number
-  set_progress(42)
-  nav.set_section("landlord_info")
-  other_parties.gather()
+    else: # Judgment for tenant
+      if eviction_reason_139:
+        no_judgmt_appl_exp
+
+  if not showifdef("continue_inapplicable"): # User clicked past the exit screen
+    user_probably_qualifies
   nav.set_section("user_info")
   users.gather()
   set_parts(subtitle=str(users))
   users[0].email
-  users[0].address.address
-  set_progress(56)
+  users[0].address.has_no_address # Allow for homeless users
+  set_progress(50)
   users[0].phone_number
+
+  nav.set_section("court_info")
+  users[0].tenancy_address.address
+  trial_court.department
+  trial_court.division
+  docket_number
+  set_progress(75)
+  nav.set_section("landlord_info")
+  other_parties.gather()
   nav.set_section("attorney_info")
-  attorneys.name
-  attorneys.email
+  if al_person_answering == "attorney":
+    attorneys.gather()
+
+  set_progress(90)
+  notice_date
+  notice_recipient
+  notice_type
+
   signature_date
   interview_order_petition_to_seal_eviction = True
 ---
@@ -204,7 +228,9 @@ code: |
           "reached_interview_end": True,
       },
   )
+  set_progress(99)
   petition_to_seal_eviction_preview_question
+  users[0].states_above_true
   basic_questions_signature_flow
   petition_to_seal_eviction_download
 ---
@@ -213,163 +239,240 @@ continue button field: petition_to_seal_eviction_intro
 question: |
   Petition to seal an eviction
 subquestion: |
-  
-  If you are a tenant who has been evicted, you can use this interview to request that a court seal this eviction from public record.  
-  
-  This interview will help you file the Petition to Seal an Eviction.
-    
-    Before you get started, please gather:
-    
-    1. The name of the court that your eviction action was heard in
-    2. The docket number of your eviction action
-    3. Any other documents relating to your eviction action
-    3. The name and email of your attorney (if you have one)
+  If you are a tenant whose landlord filed an eviction case against you, 
+  you can use this interview to ask a judge to seal the court information.
 
-  <b>NOTE:</b> When you are finished, you will need to E-File this petition with the court.
+  Not all tenants qualify to seal their eviction records. This interview will:
+
+  * Help you understand if you can seal your eviction records.
+  * Make a "Petition to Seal eviction" for you to file with the court.
+
+  Before you get started, please gather:
+    
+  1. The name of the court that your eviction action was heard in
+  1. Information about the reason for your eviction
+  1. The date of the **final decision** (judgment) in your eviction action
+  1. Information about any other eviction cases that you have had since the case you are trying to seal.
+
+  Some of the information you need can be found in:
+
+  * The notice to quit you got from your landlord
+  * The summons and complaint
+  * The final document from the court that says that a judgment entered against you or the landlord
+
+  You can also find some of this information on [MassCourts.org](https://masscourts.org):up-right-from-square:(opens in new tab).
+
+  <b>NOTE:</b> When you are finished, you will need to eFile this petition with the court.
 
   Most people take about 10 minutes to complete this interview.
 ---
 id: User Type
 question: |
-  Petitioner or Attorney
-subquestion: |
-  Are you the tenant in this action or the attorney representing them?
+  Are you the tenant or the attorney for the tenant?
 fields:
-  - "I am the:": user_type_answer
+  - "I am the:": al_person_answering
     datatype: radio
     choices:
-      - Tenant: tenant
-      - Attorney: attorney
+      - Tenant asking to seal my eviction case: user
+      - Attorney for the tenant: attorney
 ---
 id: Attorney Message
 continue button field: attorney_message
+decoration: circle-info
 question: |
-  Attorneys: Your Client Must Be Present
+  Your client will need to sign this form
 subquestion: |
-  In order to fill out this form as an attorney, you must have your client present and prepared to sign under the penalty of perjury. 
+  The petition you are about to make must be signed by your client under the pains and penalties of perjury.
+
+  Make sure the tenant is here with you to sign this form.
+continue button label: I understand
+# TODO: set up remote signing functionality
 ---
 id: Eviction Reason
 question: |
-  Reason for eviction
+  Why did your landlord ask the court to evict you?
 subquestion: |
-  What was the reason for your eviction?
+  To answer this question, look at the paperwork that you got from your landlord or on Masscourts.org.
+
+  You can pick more than one reason.
+
+  ${ collapse_template(eviction_reason_template) }
+
+  The landlord told the court in the summons and complaint that:
 fields:
-  - "Non-Payment of Rent": eviction_reason_nonpayment
-    datatype: yesno
-  - "Fault": eviction_reason_fault
-    datatype: yesno
-  - "No Fault": eviction_reason_nofault
-    datatype: yesno
-  - "Civil action under G.L. c. 139, §19 ": eviction_reason_139
-    datatype: yesno
+  - "Nonpayment of rent: I allegedly owed money for rent ": eviction_reason_nonpayment
+    datatype: yesnowide
+  - "Fault: I allegedly broke the lease other than owing rent. For example: a noise complaint or damage to the apartment, or repeatedly paying the rent late.": eviction_reason_fault
+    datatype: yesnowide
+  - "No fault: They did not want to rent to me any longer, but not because of something I did": eviction_reason_nofault
+    datatype: yesnowide
+  - "139 § 19: I allegedly broke the law and they filed an emergency eviction under G.L. c. 139, § 19. For example, they claim I had drugs, had an illegal weapon, acted violently, or violated another criminal law.": eviction_reason_139
+    datatype: yesnowide
+---
+template: eviction_reason_template
+subject: |
+  How do I know what eviction reason to write?
+content: |
+  Look at the paperwork that you got from your landlord and from the court. Look for the key words:
+
+  * "Nonpayment of rent"
+  * "Breach of lease"
+  * "No fault" or "without the fault of the tenant"
+  * "139 § 19" or "nuisance" 
+
+  It may list one reason, or more than one reason. Check the box for as many reasons as you see.
+
+  Even if you were evicted for a "fault" reason, your landlord may have also listed a "nonpayment" reason.
+  Make sure to also check the box for "fault" if the landlord said in the court paperwork that you broke another part of the lease.
 ---
 id: Off Ramp
+decoration: hand
 question: |
-  Failure to qualify
+  You may not be able to seal your eviction record yet
 subquestion: |
-  Based on your answers, you do not meet the legal requirements for your eviction record to be sealed under Massachusetts law. Would you like to exit the interview?
-fields:
-  - "": continue_inapplicable
-    datatype: yesnoradio
+  Based on your answers, you do not meet the legal requirements for your eviction record to be sealed under Massachusetts law.
+
+  You can file the petition anyway, but no boxes that qualify you for sealing are checked. The court may reject your petition.
+
+  If you have any questions, you can contact a lawyer or legal services organization for help.
+sets: continue_inapplicable
+buttons:
+  - Keep going anyway:
+      code: |
+        continue_inapplicable = True
+  - Restart: restart
+  - Exit: exit
+---
+id: may qualify
+decoration: circle-check
+question: |
+  You may qualify to seal your eviction record
+subquestion: |
+  Based on the answers that you gave, you may qualify to seal your eviction record under Massachusetts law.
+
+  Only the court can make the final decision.
+
+  The next questions will complete the petition for you to file with the court.
+continue button field: user_probably_qualifies
 ---
 id: Non Payment Paid
 question: |
-  Satisfaction of amounts due
+  Satisfaction of judgment
 subquestion: |
-  How was your rent payment deemed satisfied?
+  Even if you paid all of the rent due, you cannot seal the eviction
+  until the payment was officially recorded by the court.
+
+  This is called "satisfaction of judgment."
+
+  Did any of the following happen?
 fields:
-  - "My landlord filed a notice of satisfaction with the court": plan_filed_notice
+  - "My landlord filed a notice of satisfaction of judgment with the court": plan_filed_notice
     datatype: yesno
-    required: False
   - "A judge deemed all amounts due in rent were paid": court_deemed_paid
     datatype: yesno
-    required: False
   - "My payment has not been deemed satisfied by the court": non_payment_cured
     datatype: yesno
-    required: False
+    uncheck others: True
+  - note: |
+      **You may want to file a motion to deem the judgment satisfied.**
+
+      If you have paid all the money you owed, but the court has not deemed the judgment 
+      satisfied, you may want to file a motion to deem the judgment satisfied.
+
+      If you are able to, you may also want to ask your landlord to file a notice of 
+      satisfaction of judgment with the court.
+
+      Most tenants should **stop** the interview now and come back after the judgment
+      is officially satisfied in the court's records.
+    show if: non_payment_cured
 ---
 id: Non Payment Not Paid
 question: |
-  Status of unpaid rent
-subquestion: |
-  Have you paid all amounts due from your eviction action?
+  Have you paid all of the money you owed your landlord?
 fields:
-  - " ": non_payment
+  - I paid all of the money owed: non_payment
     datatype: yesnoradio
-    required: False
----
-id: Non Payment Not Paid for Hardship
-question: |
-  Reason for non-payment
-subquestion: |
-  Were you unable to pay the rent because of economic hardship?
-fields:
-  - " ": non_payment_hardship
+  - I could not pay all of the money owed because I had an economic hardship: non_payment_hardship
     datatype: yesnoradio
-    required: False
+    show if: 
+      variable: non_payment
+      is: False
 ---
 id: Non Payment Action
 question: |
-  Other non-payment evictions
+  Other evictions for nonpayment of rent
 subquestion: |
-  Have any other evictions been brought against you in Massachusetts in the past 4 years for not paying your rent?
+  In the last 4 years, since **${ today().minus(years=4) }**, have any other evictions been brought against you in Massachusetts for not paying your rent?
 fields:
-  - "": non_payment_action
+  - A landlord has started a new case for me about nonpayment of rent since ${ today().minus(years=4) }: non_payment_action
     datatype: yesnoradio
-    required: False
 ---
 id: Fault Eviction
 question: |
-  Other eviction actions
+  Do you have any other recent eviction cases?
 subquestion: |
-  Has any other eviction action been brought against you in Massachusetts in the past 7 years?
+  The judge needs to know about evictions in the last **7 years**.
 fields:
-  - "": prior_eviction_action
+  - Has a landlord filed a new eviction case against you at any time since ${ today().minus(years=7) }?: prior_eviction_action
     datatype: yesnoradio
-    required: False
 ---
 id: Fault Action Section 139
 question: |
-  Civil action under G.L. c. 139, §19 
+  Evictions for a fault reason
 subquestion: |
-  Have either of the following actions been brought against you in Massachusetts in the past 7 years?
+  In the last 7 years (since ${ today().minus(years=7) }), has a landlord asked a judge to evict you 
+  for one of these reasons?
 fields:
-  - "Any Fault Eviction Action": prior_fault_action_139
+  - "Any fault reason: breaking the lease for a reason other than nonpayment of rent.": prior_fault_action_139
     datatype: yesnoradio
-    required: False
-  - "Civil Action Under G.L. c. 139, §19": prior_139_action
+  - "139, §19: an emergency eviction for criminal activity": prior_139_action
     datatype: yesnoradio
-    required: False
 ---
 id: Prior Criminal Offenses
 question: |
-  Prior criminal offenses under G.L. c. 139, §19
+  Criminal offenses listed under G.L. c. 139, § 19
 subquestion: |
-  Have you been convicted of any criminal offense listed in G.L. c. 139, §19 in the past 7 years?
+  Since **${ today().minus(years=7) }**, have you been convicted of a crime listed in G.L. c. 139, § 19?
+
+  These crimes include:
+
+  * Drug offenses
+  * Illegal weapons
+  * Prostitution
+  * Illegal gambling
+  * Illegal keeping or sale of alcohol, or habitually serving alcohol to somoene who is intoxicated or who you had reason to know would operate a vehicle under the influence
+  * Violence or threats against an employee in a public or subsidized housing unit
+
 fields:
-  - "": prior_139_offense
+  - Have you been convicted of one of the above crimes in the last 7 years?: prior_139_offense
     datatype: yesnoradio
-    required: False
 ---
 id: Notice
 question: |
   Serving the other side
 subquestion: |
-  You must give notice of this petition to all parties. How do you intend to notify your landlord?
+  You need to give a copy of the petition to your former landlord, or their attorney if
+  they have one.
+
+  This is called "service of process". Before you can file, you need to tell the
+  court how you will serve the other side.
+
+  I intend to serve notice on ${ other_parties } by:
 fields:
-  - "Date of Notice": notice_date
-    datatype: date
-  - "I intend to send notice to:": notice_recipient
+  - "Giving a copy of the petition to:": notice_recipient
     datatype: radio
     choices:
-      - Plaintiff: plaintiff
-      - Plaintiff's Attorney: plaintiff lawyer
+      - ${ other_parties }: plaintiff
+      - The Attorney for ${ other_parties }: plaintiff lawyer
   - "I intend to send notice by:": notice_type
     datatype: radio
     choices:
       - Email: email
       - Mail: mail
       - In Person: in person
+  - "Date I will deliver notice": notice_date
+    datatype: date
+    default: ${ today().format("yyyy-MM-dd") }
 ---
 id: Petitioner Signature
 question: |
@@ -379,47 +482,106 @@ subquestion: |
 fields:
   - users[0].signature: signature
 ---
+sets:
+  - attorneys[0].name.first
 id: Attorney Information
 question: |
   Attorney information
-subquestion: |
-  Enter your attorney's information
 fields:
-  - "Attorney Name": attorneys.name
+  - code: |
+      attorneys[0].name_fields()
+  - Email: attorneys[0].email
     required: False
-  - "Attorney Email": attorneys.email
+  - Phone number: attorneys[0].phone_number
     required: False
+  - BBO Number: attorneys[0].bbo_number
+    required: False
+  - code: |
+      attorneys[0].address_fields()
 ---
 id: Date of Judgment
 question: |
-  Date of judgment
+  When was the court decision final?
 subquestion: |
-  What was the judgment date of your eviction action?
+  The date that the court decision was final is called the **judgment date**.
+
+  The judgment date could be:
+
+  * The date the judge made a decision, or
+  * A date that you and the landlord agreed judgment would enter in writing. 
+  
+  It might **not** be the same as the date you signed any agreement. Look at the paperwork you
+  have to be sure.
 fields:
-  - "Judgment Date": judgment_date
-    datatype: date
+  - "Judgment entered on:": judgment_date
+    datatype: ThreePartsDate
 ---
-id: Judgment Outcome
+sets:
+  - users[0].tenancy_address.address
+id: tenancy_address
 question: |
-  Judgment outcome
-subquestion: |
-  What was the outcome of your eviction action?
+  Where did you live when the landlord filed the eviction?
 fields:
-  - "Judgment was entered:": judgment_outcome
-    datatype: radio
-    choices:
-      - Against Me: landlord
-      - In My Favor: tenant
+  - code: |
+      users[0].tenancy_address.address_fields(default_state='MA')
 ---
 id: Eviction Action Dismissed
 question: |
-  Case dismissal status
+  How did your eviction case end?
 subquestion: |
-  Was your eviction action dismissed by the applicable court?
+  ${ collapse_template(case_outcome_template) }
 fields:
-  - " ": case_dismissed
-    datatype: yesnoradio
-    required: False
+  - My case was: case_outcome
+    datatype: radio
+    choices:
+      - "**Dismissed** by the judge or in a written agreement": dismissed
+      - "**Settled**, with judgment for my landlord or for me": settled
+      - Decided by a judge: decided
+      - I do not know: unknown
+  - note: |
+      ${ collapse_template(judgment_entered_template) }
+    js show if: |
+      val("case_outcome") == "decided" || val("case_outcome") == "settled" || val("case_outcome") == "unknown"
+  - And the person who judgment entered for was: judgment_outcome
+    datatype: radio
+    choices:
+      - The landlord: landlord
+      - Me: tenant
+      - I do not know: unknown
+    js show if: |
+      val("case_outcome") == "decided" || val("case_outcome") == "settled" || val("case_outcome") == "unknown"
+---
+template: case_outcome_template
+subject: |
+  How do I know how the case ended?
+content: |
+  Look at the final decision from the court or the final document you signed to see how your case ended.
+
+  If you signed an agreement, it might have been an agreement to dismiss the case,
+  or an agreement that said one party had a judgment against them.
+
+  * If your agreement is a "stipulation of dismissal", you usually should check the box for "dismissed."
+  * If your agreement is called an "agreement for judgment," you usually should check the box for "settled."
+
+  Your document may use either title, or a different title. Look closely at the document to see what it says.
+
+  You may also find the information on [MassCourts.org](https://masscourts.org):up-right-from-square: (opens in new tab).
+---
+template: judgment_entered_template
+subject: |
+  How do I know who the judgment entered for?
+content: | 
+  If you lost the case at trial, judgment entered for your landlord. If you won, judgment entered for you.
+
+  If you signed an agreement, You need to look at the agreement you signed to see who the judgment entered for.
+  If you promised to do something in the future, like pay back rent or change your behavior, the 
+  judgment may have entered for your landlord even if you did what the landlord asked you to
+  do.
+
+  You may also find the information on [MassCourts.org](https://masscourts.org):up-right-from-square: (opens in new tab).
+---
+code: |
+  case_dismissed = case_outcome == "dismissed"
 ---
 id: preview petition_to_seal_eviction
 question: |
@@ -441,11 +603,106 @@ code: |
   signature_fields = ['users[0].signature']
 ---
 code: |
-  # This is a placeholder for the addresses that will be searched
-  # for matching address to court. Edit if court venue is based on 
-  # a different address than the user's
-  [user.address.address for user in users.complete_elements()]
-  addresses_to_search = [user.address for user in users.complete_elements()]
+  addresses_to_search = [users[0].tenancy_address]
+---
+if: |
+  len(all_matches) and all_courts.filter_courts(allowed_courts) 
+id: choose a court (courts matching provided address were found)
+question: |
+  What court was your case decided in?
+subquestion: |
+  Look at your court paperwork. Match the name listed there.
+
+  Most eviction cases are filed in the Housing Court.
+
+  The first choices below are courts that match the address you said you lived in
+  at the time of your eviction case. If you do not see your court, 
+  select "A court not listed here" and select the court name below.
+fields:
+  - no label: trial_court
+    datatype: object_radio
+    choices: all_matches
+    none of the above: |
+      A court not listed here
+    disable others: True
+    object labeler: court_short_description
+    show if: 
+      code: |
+        len(all_matches)      
+  - no label: trial_court
+    datatype: object
+    object labeler: court_short_label
+    choices: all_courts.filter_courts(allowed_courts)
+---
+id: name of landlord
+question: |
+  What was the name of your landlord?
+subquestion: |
+  Answer this question about the **first** landlord you had. If
+  more than one name is listed as the landlord on the eviction paperwork,
+  you can give those names next.
+fields:
+  - Landlord's full name: other_parties[i].name.first
+    under text: |
+      Match the exact name listed on your court paperwork.
+---
+id: any other opposing parties
+question: |
+  Was there any **other** landlord listed on your eviction paperwork?
+subquestion: |
+  You have already told us about ${ other_parties.complete_elements() }
+fields:
+  - no label: other_parties.there_is_another
+    datatype: yesnoradio
+---
+id: any other users
+question: |
+  Was another tenant listed on the eviction paperwork?
+subquestion: |
+  So far you have told us about ${comma_and_list(users.complete_elements())}.
+fields:
+  - no label: users.there_is_another
+    datatype: yesnoradio
+---
+sets:
+  - users[0].address.has_no_address
+id: user i's address
+question: |
+  % if al_person_answering == "user":
+  What is your address now?
+  % else:
+  What is ${ users[0] }'s address now?
+  % endif
+fields:
+  - code: |
+      users[0].address_fields(allow_no_address=True)
+---
+id: your contact information
+question: |
+  What is your contact information?
+subquestion: |
+  If you do not have a phone number or email address,
+  write the phone number or email of someone who can reach you.
+fields:  
+  - Mobile number: users[0].mobile_number
+    required: False
+  - Other phone number: users[0].phone_number
+    required: False
+  - Email address: users[0].email    
+    datatype: email
+    required: False
+
+---
+######### logic ###############
+---
+code: |
+  no_judgmt_appl_exp = eviction_reason_139 and judgment_outcome == "tenant" and judgment_date.plus(days=10) < today()
+---
+code: |
+  ejp_appl_period_exp = eviction_reason_139 and judgment_outcome == "landlord" and not prior_139_action and not prior_139_offense and judgment_date.plus(years=7).plus(days=10) < today()
+---
+code: |
+  fe_appl_period_exp = eviction_reason_fault and judgment_outcome == "landlord" and not prior_eviction_action and judgment_date.plus(years=7).plus(days=10) < today()
 ---
 id: petition to seal eviction review screen
 event: review_petition_to_seal_eviction
@@ -640,6 +897,14 @@ subquestion: |
   
   View, download and send your form below. Click the "Edit answers" button to fix any mistakes.
 
+  % if defined("continue_inapplicable"):
+  <div class="alert alert-warning" role="alert">
+    <strong>Important:</strong> Your answers do not appear to meet the legal requirements to seal your eviction record. The court may reject your petition.
+    We recommend that you talk to an attorney before continuing to file your document.
+  </div>
+
+  % endif
+
   ${ action_button_html(url_action('review_petition_to_seal_eviction'), label='Edit answers', color='info') }
   
   
@@ -678,6 +943,5 @@ attachment:
   skip undefined: True
   docx template file: petition_to_seal_eviction.docx
   tagged pdf: True
-
 
 
