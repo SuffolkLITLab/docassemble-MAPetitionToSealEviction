@@ -97,9 +97,9 @@ sections:
   - reason: Reason for your eviction
   - date: Date of judgment
   - user_info: About you
+  - court_info: Court information
   - landlord_info: Landlord information
   - attorney_info: Attorney information
-  - court_info: Court information
   - notice: Serving the other side   
   - review: Review your form
   - signature: Signature
@@ -182,6 +182,7 @@ code: |
 
   if not showifdef("continue_inapplicable"): # User clicked past the exit screen
     user_probably_qualifies
+  
   nav.set_section("user_info")
   users.gather()
   set_parts(subtitle=str(users))
@@ -195,14 +196,20 @@ code: |
   trial_court.department
   trial_court.division
   docket_number
+  
   set_progress(75)
   nav.set_section("landlord_info")
   other_parties.gather()
+  other_parties[0].name.first
+  other_parties.there_is_another
+  
   nav.set_section("attorney_info")
   if al_person_answering == "attorney":
     attorneys.gather()
+    attorneys[0].bbo_number
 
   set_progress(90)
+  nav.set_section("notice")
   notice_date
   notice_recipient
   notice_type
