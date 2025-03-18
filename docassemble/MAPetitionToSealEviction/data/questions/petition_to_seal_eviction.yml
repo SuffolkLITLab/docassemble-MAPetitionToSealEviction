@@ -4,7 +4,7 @@ include:
   - docassemble.MassAccess:massaccess.yml
   - docassemble.MATCTheme:matc_theme.yml
   - docassemble.ALToolbox:collapse_template.yml
-  - docassemble.docassemble.MANoticeOfAppearanceForm:notice_of_appearance_form.yml
+  - docassemble.MANoticeOfAppearanceForm:notice_of_appearance_form.yml
 ---
 metadata:
   title: >-
@@ -284,7 +284,7 @@ fields:
       - Tenant asking to seal my eviction case: user
       - Attorney for the tenant: attorney
   - Is this your **first** appearance on behalf of this tenant?: attorney_first_appearance
-    datatype: yesno
+    datatype: yesnoradio
     show if:
       variable: al_person_answering
       is: "attorney"
@@ -292,6 +292,7 @@ fields:
       Okay. Because this is your first appearance in this eviction case, 
       we will also make a **notice of appearance** form for you. The notice
       of appearance will be filed along with the Petition to Seal Eviction.
+    show if: attorney_first_appearance
 ---
 id: Attorney Message
 continue button field: attorney_message
