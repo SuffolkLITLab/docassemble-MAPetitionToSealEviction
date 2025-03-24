@@ -4,6 +4,7 @@ include:
   - docassemble.MassAccess:massaccess.yml
   - docassemble.MATCTheme:matc_theme.yml
   - docassemble.ALToolbox:collapse_template.yml
+  - support_efiling.yml
 ---
 metadata:
   title: >-
@@ -112,6 +113,8 @@ id: interview_order_petition_to_seal_eviction
 code: |
   # Set the allowed courts for this interview
   allowed_courts = ['District Court', 'Boston Municipal Court', 'Housing Court', 'Superior Court']
+  user_role = "defendant"
+  user_ask_role = "defendant"
   
   nav.set_section("intro")
   al_intro_screen  
@@ -119,9 +122,13 @@ code: |
   al_person_answering
   if al_person_answering == "attorney":
     attorney_message
-  
-  user_role = "defendant"
-  user_ask_role = "defendant"
+
+  if can_check_efile:
+    tyler_login
+  user_started_case
+  if can_check_efile:
+    lead_contact = users[0]
+
   nav.set_section("status")
   case_dismissed
   if not case_dismissed:
@@ -226,6 +233,12 @@ code: |
   al_intro_screen
   petition_to_seal_eviction_intro
   interview_order_petition_to_seal_eviction
+
+  nav.set_section('review_efile_info')
+  if can_check_efile:
+    all_required_screens_shown
+    ready_to_efile
+
   signature_date
   # Store anonymous data for analytics / statistics
   store_variables_snapshot(
@@ -913,12 +926,26 @@ subquestion: |
   % endif
 
   ${ action_button_html(url_action('review_petition_to_seal_eviction'), label='Edit answers', color='info') }
+
+
+  <!-- E-File button -->
+  % if not (defined('efile') and efile):
+  <h2 class="h4">E-File your form</h2>
   
+  Click the "E-File" button below to e-file your form.
   
+  ${ action_button_html(url_ask([{'recompute': ['efile']}]), label='E-File', id_tag='efile-button', icon='file-export', size='md')}
+
+  % endif
+
+  
+  <h2 class="h4">Download for your records</h2>
   ${ al_user_bundle.download_list_html() }
   
 
   ${ al_user_bundle.send_button_html(show_editable_checkbox=True) }
+
+  
 
 progress: 100
 ---

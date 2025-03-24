@@ -1,0 +1,121 @@
+---
+include:
+  - docassemble.EFSPIntegration:efiling_integration.yml
+---
+code: |
+  form_uses_efiling = True
+---
+code: |
+  is_initial_filing = False
+---
+################### Case codes ##########################
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts?with_names=true
+
+
+################### COURTS ###################
+# Housing - Central (Worcester)
+# http://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/535
+
+# Housing - Eastern (Boston)
+# http://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/537
+
+# District Court - Concord
+# http://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/383
+
+# District Court - Ipswich
+# http://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/384
+
+# BMC - East Boston
+# http://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/408
+
+# BMC - Brighton
+# http://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/418
+
+
+# ################### CATEGORIES ###################
+# Small Claims code is the same for all of these (5990)
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/535/categories
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/537/categories SAME
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/383/categories
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/384/categories
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/408/categories
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/418/categories
+
+
+# ################### CASE TYPES ###################
+# Case type codes are all the same (5991-5994 )
+# "Small Claim $2001 - $5000", "Small Claim over $5000", "Small Claim $501 - $2000", "Small Claims $500 or less"
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/535/case_types?category_id=5990
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/537/case_types?category_id=5990
+
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/383/case_types?category_id=5990
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/384/case_types?category_id=5990
+
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/408/case_types?category_id=5990
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/418/case_types?category_id=5990
+
+
+# ################### FILING TYPES ###################
+# 6143 is missing in all of these (Statement of Small Claims entered through e-file process)
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/535/filing_types
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/537/filing_types
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/383/filing_types
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/384/filing_types
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/408/filing_types
+# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/418/filing_types
+
+---
+code: |
+  jurisdiction_id = 'massachusetts'
+---
+code: |
+  proxy_conn = ProxyConnection(credentials_code_block='tyler_login', default_jurisdiction=jurisdiction_id)
+---
+code: |
+  # Can be filed in District Court, BMC, and Housing Court.
+  # I think we don't need this, since filing type isn't limited to either case category
+  efile_case_category_filters = ['Summary Process', 'Civil']
+  # This value will be selected at a lower priority, only if there's an ambiguous match.
+  efile_case_category_default = '8530' # 8730 on staging
+  efile_case_category_exclude = None
+
+  # Case type is not needed in this interview: there are multiple allowed case types within the broader summary process
+  # Not sure this is right way to specify this yet. TODO: investigate
+  efile_case_type_filters = ['SP', 'Temporary Restraining Order', 'Civil']
+
+  efile_case_type_default = ''
+  efile_case_type_exclude = None
+---
+code: |
+  # https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/537/filing_types/101805
+
+  petition_to_seal_eviction.filing_type_filters = ['Petition to Seal Eviction Record', 'Seal Eviction']
+  petition_to_seal_eviction.filing_type_default = '101805'
+---
+code: |
+  users[i].party_type_filters = ['Defendant/Appellant', 'Defendant/Petitioner']
+  users[i].party_type_default = '1729'
+  users[i].party_type_exclude = None
+---
+code: |
+  other_parties[i].party_type_filters = ['Plaintiff/Appellee', 'Plaintiff/Respondent']
+  other_parties[i].party_type_default = '1736'
+  other_parties[i].party_type_exclude = None
+---
+id: user-wants-efile
+question: |
+  Do you want to e-file this document directly with the court?
+subquestion: |
+  You are able to electronically-file (e-file) this document with the court your eviction was filed in!
+  
+  This means you don't have to print out the document. The court
+  will communicate with you through your email or phone.
+
+  You will have to use your eFileMA account to e-file this document. 
+  If you don't wish to use your account or don't wish to make an account,
+  you can choose not to efile.
+  
+  If you don't have a eFileMA account, you can make one in the next screens.
+fields:
+  - Do you want to e-file?: user_wants_efile
+    datatype: yesnoradio
