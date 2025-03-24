@@ -5,6 +5,7 @@ include:
   - docassemble.MATCTheme:matc_theme.yml
   - docassemble.ALToolbox:collapse_template.yml
   - support_efiling.yml
+  - docassemble.MANoticeOfAppearanceForm:notice_of_appearance_form.yml
 ---
 metadata:
   title: >-
@@ -207,8 +208,6 @@ code: |
   set_progress(75)
   nav.set_section("landlord_info")
   other_parties.gather()
-  other_parties[0].name.first
-  other_parties.there_is_another
   
   nav.set_section("attorney_info")
   if al_person_answering == "attorney":
@@ -222,6 +221,11 @@ code: |
   notice_type
 
   signature_date
+
+  # Trigger definitions for notice of appearance
+  petitioners
+  respondents
+
   interview_order_petition_to_seal_eviction = True
 ---
 ###################### Main order ######################
@@ -295,6 +299,16 @@ fields:
     choices:
       - Tenant asking to seal my eviction case: user
       - Attorney for the tenant: attorney
+  - Is this your **first** appearance on behalf of this tenant?: attorney_first_appearance
+    datatype: yesnoradio
+    show if:
+      variable: al_person_answering
+      is: "attorney"
+  - note: |
+      Okay. Because this is your first appearance in this eviction case, 
+      we will also make a **notice of appearance** form for you. The notice
+      of appearance will be filed along with the Petition to Seal Eviction.
+    show if: attorney_first_appearance
 ---
 id: Attorney Message
 continue button field: attorney_message
@@ -620,7 +634,10 @@ subquestion: |
 continue button field: petition_to_seal_eviction_preview_question    
 ---
 code: |
-  signature_fields = ['users[0].signature']
+  if al_person_answering == "attorney":
+    signature_fields = ['attorneys[0].signature', 'users[0].signature']
+  else:
+    signature_fields = ['users[0].signature']
 ---
 code: |
   addresses_to_search = [users[0].tenancy_address]
@@ -956,8 +973,26 @@ objects:
 ---
 # Bundles group the ALDocuments into separate downloads, such as for court and for the user
 objects:
-  - al_user_bundle: ALDocumentBundle.using(elements=[petition_to_seal_eviction_Post_interview_instructions, petition_to_seal_eviction_attachment], filename="petition_to_seal_eviction", title="All forms to download for your records", enabled=True)
-  - al_court_bundle: ALDocumentBundle.using(elements=[petition_to_seal_eviction_attachment],  filename="petition_to_seal_eviction", title="All forms to deliver to court", enabled=True)
+  - al_user_bundle: ALDocumentBundle.using(elements=[
+              petition_to_seal_eviction_Post_interview_instructions,
+              petition_to_seal_eviction_attachment,
+              notice_of_appearance_form_attachment,
+            ],
+            filename="petition_to_seal_eviction",
+            title="All forms to download for your records", 
+            enabled=True
+          )
+  - al_court_bundle: ALDocumentBundle.using(elements=[
+            petition_to_seal_eviction_attachment,
+            notice_of_appearance_form_attachment,
+          ],
+          filename="petition_to_seal_eviction",
+          title="All forms to deliver to court",
+          enabled=True
+          )
+---
+code: |
+  notice_of_appearance_form_attachment.enabled = al_person_answering == "attorney" and attorney_first_appearance
 ---
 # Each attachment defines a key in an ALDocument. We use `i` as the placeholder here so the same template is 
 # used for "preview" and "final" keys, and logic in the template checks the value of 
