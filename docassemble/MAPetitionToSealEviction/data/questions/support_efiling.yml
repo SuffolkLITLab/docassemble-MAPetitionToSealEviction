@@ -1,6 +1,7 @@
 ---
 include:
   - docassemble.EFSPIntegration:efiling_integration.yml
+  - docassemble.EFSPIntegration:case_search.yml
 ---
 code: |
   form_uses_efiling = True
@@ -8,6 +9,19 @@ code: |
 code: |
   is_initial_filing = False
 ---
+objects:
+  - case_search: EFCaseSearch.using(court_id=trial_court.tyler_code)
+---
+code: |
+  target_case = case_search
+---
+#########################################################
+# Staging docket number:
+# City = Boston
+# Court = Housing - Eastern (Boston)
+# Docket number: 22H84CV000003
+
+
 ################### Case codes ##########################
 # https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts?with_names=true
 
@@ -89,6 +103,8 @@ code: |
 code: |
   # https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/537/filing_types/101805
 
+  al_court_bundle.filing_type_filters = ['Petition to Seal Eviction Record', 'Seal Eviction']
+  al_court_bundle.filing_type_default = '101805'
   petition_to_seal_eviction.filing_type_filters = ['Petition to Seal Eviction Record', 'Seal Eviction']
   petition_to_seal_eviction.filing_type_default = '101805'
 ---
@@ -119,3 +135,54 @@ subquestion: |
 fields:
   - Do you want to e-file?: user_wants_efile
     datatype: yesnoradio
+
+---
+comment: |
+  TODO: this might need to be modified to prevent loading the old address on the user? Presumably they moved by now
+
+  It's not easy to understand where the address comes from yet, though.
+need:
+  - users
+  - to_add_participants
+  - is_user_party
+  - is_other_party
+  - other_parties
+only sets: add_existing_users
+code: |
+  weird_roles = []
+  other_parties.clear()
+  for partip in to_add_participants:
+    partip.is_new = False
+    if is_user_party(partip):
+      users.append(partip.copy_deep(f'users[{len(users.elements)}]'))
+      if hasattr(users[-1].address, 'address'):
+        users[-1].address.geocode()
+    elif is_other_party(partip):
+      other_parties.append(partip.copy_deep(f'other_parties[{len(other_parties.elements)}]'))
+      if hasattr(other_parties[-1].address, 'address'):
+        other_parties[-1].address.geocode()
+    else:
+      weird_roles.append(partip)
+      log(f'partip: {partip} has weird role: {partip.party_type}')
+  # If there are any roles that can't be placed, be we also couldn't find an opposing party,
+  # the weird roles are more than likely the opposing party
+  if weird_roles:
+    if len(other_parties.elements) == 0:
+      for weird_party in weird_roles:
+        other_parties.append(weird_party.copy_deep(f'other_parties[{len(other_parties.elements)}]'))
+  add_existing_users = True
+---
+code: |
+  for user in users.complete_elements():
+    if hasattr(user, 'address') and hasattr(user.address, 'address'):
+      invalidate(user.attr_name("address.address"))
+      invalidate(user.attr_name("address.unit"))
+      invalidate(user.attr_name("address.city"))
+      invalidate(user.attr_name("address.state"))
+      invalidate(user.attr_name("address.zip"))
+  invalidate_address_information_once = True
+---
+code: |
+  if case_search.found_case:
+    if hasattr(case_search.found_case, 'docket_number') and case_search.found_case.docket_number:
+      docket_number = case_search.found_case.docket_number

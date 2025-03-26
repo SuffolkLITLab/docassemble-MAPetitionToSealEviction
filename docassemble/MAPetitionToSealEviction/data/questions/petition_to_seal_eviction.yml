@@ -43,6 +43,7 @@ metadata:
   authors:
     - Taline
     - Rami
+    - Quinten Steenhuis
   original_form: []
   original_form_published_on: 2025-02-06
   allowed_courts: 
@@ -126,6 +127,11 @@ code: |
 
   if can_check_efile:
     tyler_login
+    if case_search.case_was_found:
+      previous_case_id = case_search.found_case.tracking_id
+      add_existing_users
+    invalidate_address_information_once # Don't assume tenant is at the same address as in original case
+
   user_started_case
   if can_check_efile:
     lead_contact = users[0]
@@ -200,7 +206,7 @@ code: |
   users[0].phone_number
 
   nav.set_section("court_info")
-  users[0].tenancy_address.address
+  # users[0].tenancy_address.address
   trial_court.department
   trial_court.division
   docket_number
@@ -240,7 +246,12 @@ code: |
 
   nav.set_section('review_efile_info')
   if can_check_efile:
-    all_required_screens_shown
+    users[0].is_form_filler
+    efile_case_category
+    efile_case_type
+    cross_references.gather()
+    show_any_disclaimers
+    review_fees
     ready_to_efile
 
   signature_date
@@ -552,6 +563,7 @@ fields:
 ---
 sets:
   - users[0].tenancy_address.address
+  - users[0].tenancy_address.city
 id: tenancy_address
 question: |
   Where did you live when the landlord filed the eviction?
