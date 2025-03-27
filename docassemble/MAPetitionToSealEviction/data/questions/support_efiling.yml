@@ -88,25 +88,31 @@ code: |
 code: |
   # Can be filed in District Court, BMC, and Housing Court.
   # I think we don't need this, since filing type isn't limited to either case category
-  efile_case_category_filters = ['Summary Process', 'Civil']
-  # This value will be selected at a lower priority, only if there's an ambiguous match.
-  efile_case_category_default = '8530' # 8730 on staging
-  efile_case_category_exclude = None
+  # efile_case_category_filters = ['Summary Process', 'Civil']
+  # # This value will be selected at a lower priority, only if there's an ambiguous match.
+  # efile_case_category_default = '8530' # 8730 on staging
+  # efile_case_category_exclude = None
 
-  # Case type is not needed in this interview: there are multiple allowed case types within the broader summary process
-  # Not sure this is right way to specify this yet. TODO: investigate
-  efile_case_type_filters = ['SP', 'Temporary Restraining Order', 'Civil']
+  # # Case type is not needed in this interview: there are multiple allowed case types within the broader summary process
+  # # Not sure this is right way to specify this yet. TODO: investigate
+  # efile_case_type_filters = None # ['SP', 'Temporary Restraining Order', 'Civil']
 
-  efile_case_type_default = ''
-  efile_case_type_exclude = None
+  # efile_case_type_default = ''
+  # efile_case_type_exclude = None
+---
+code: |
+  if can_check_efile and case_search.case_was_found:
+    efile_case_category = case_search.found_case.category
+    efile_case_type = case_search.found_case.case_type
 ---
 code: |
   # https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/537/filing_types/101805
 
   al_court_bundle.filing_type_filters = ['Petition to Seal Eviction Record', 'Seal Eviction']
   al_court_bundle.filing_type_default = '101805'
-  petition_to_seal_eviction.filing_type_filters = ['Petition to Seal Eviction Record', 'Seal Eviction']
-  petition_to_seal_eviction.filing_type_default = '101805'
+  
+  petition_to_seal_eviction_attachment.filing_type_filters = ['Petition to Seal Eviction Record', 'Seal Eviction']
+  petition_to_seal_eviction_attachment.filing_type_default = '101805'
 ---
 code: |
   users[i].party_type_filters = ['Defendant/Appellant', 'Defendant/Petitioner']
@@ -186,3 +192,35 @@ code: |
   if case_search.found_case:
     if hasattr(case_search.found_case, 'docket_number') and case_search.found_case.docket_number:
       docket_number = case_search.found_case.docket_number
+---
+code: |
+  petition_to_seal_eviction_attachment.filing_description = "Petition to Seal Eviction Record"
+  petition_to_seal_eviction_attachment.reference_number = docket_number
+
+  al_court_bundle.filing_description = "Petition to Seal Eviction Record"
+  al_court_bundle.reference_number = docket_number
+---
+code: |
+  needs_all_info = False
+---
+generic object: ALDocument
+id: extra e-filing questions
+question: |
+  Additional e-filing information
+fields:
+  - Add a courtesy email: x.has_courtesy_copies
+    datatype: yesno
+  - Courtesy emails (one per line): x.courtesy_copies_raw
+    datatype: area
+    show if: x.has_courtesy_copies
+---
+generic object: ALDocumentBundle
+id: extra e-filing questions
+question: |
+  Additional e-filing information
+fields:
+  - Add a courtesy email: x.has_courtesy_copies
+    datatype: yesno
+  - Courtesy emails (one per line): x.courtesy_copies_raw
+    datatype: area
+    show if: x.has_courtesy_copies

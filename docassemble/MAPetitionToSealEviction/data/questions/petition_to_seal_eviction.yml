@@ -251,6 +251,8 @@ code: |
     efile_case_type
     cross_references.gather()
     show_any_disclaimers
+    petition_to_seal_eviction_attachment.completed # Trigger the e-filing specific variables. I don't really like this being hidden like it is now though!
+    al_court_bundle.completed
     review_fees
     ready_to_efile
 
