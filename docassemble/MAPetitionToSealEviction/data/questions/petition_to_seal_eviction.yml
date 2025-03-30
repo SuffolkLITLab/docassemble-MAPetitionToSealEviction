@@ -253,27 +253,26 @@ subquestion: |
   If you are a tenant whose landlord filed an eviction case against you, 
   you can use this interview to ask a judge to seal the court information.
 
-  Not all tenants qualify to seal their eviction records. This interview will:
+  Not all tenants qualify to seal their eviction records. This interview should not be used by commercial tenants seeking to seal an eviction:
 
-  * Help you understand if you can seal your eviction records.
-  * Make a "Petition to Seal eviction" for you to file with the court.
+  * Help you understand if you can seal your eviction record using this interview.
+  * Fill-out a Petition to Seal Eviction Record Pursuant to G.L. c. 239, § 16 to file with the court.
 
   Before you get started, please gather:
     
-  1. The name of the court that your eviction action was heard in
-  1. Information about the reason for your eviction
-  1. The date of the **final decision** (judgment) in your eviction action
-  1. Information about any other eviction cases that you have had since the case you are trying to seal.
+  1. The <a href="https://www.mass.gov/info-details/how-to-search-court-dockets?_gl=1*1t4lg0v*_ga*Mjc1NTYwNDQxLjE3NDE2MjkwMjA.*_" style="text-decoration: none; color: green; font-weight: bold;">docket number</a> of the eviction case you want to seal
+  2. The name of the court that your eviction case was heard in
+  3. Information about the reason for your eviction
+  4. The date of the **final decision** (judgment) in your eviction case
+  5. Eviction cases you have had since the case you are trying to seal, including the original court and any court to which it was transferred
 
-  Some of the information you need can be found in:
+  Some of the information you need can be found in the forms below. You can also find some of this information on [MassCourts.org](https://masscourts.org):up-right-from-square:(opens in new tab).
 
   * The notice to quit you got from your landlord
   * The summons and complaint
   * The final document from the court that says that a judgment entered against you or the landlord
 
-  You can also find some of this information on [MassCourts.org](https://masscourts.org):up-right-from-square:(opens in new tab).
-
-  <b>NOTE:</b> When you are finished, you will need to eFile this petition with the court.
+  <b>NOTE:</b> When you are finished, you will need to file this petition with the Court, either by eFile using a valid email address or in person with the Clerk's office.
 
   Most people take about 10 minutes to complete this interview.
 ---
@@ -303,7 +302,7 @@ decoration: circle-info
 question: |
   Your client will need to sign this form
 subquestion: |
-  The petition you are about to make must be signed by your client under the pains and penalties of perjury.
+  The petition you are about to make must be signed by your client under the penalties of perjury.
 
   Make sure the tenant is here with you to sign this form.
 continue button label: I understand
@@ -313,21 +312,19 @@ id: Eviction Reason
 question: |
   Why did your landlord ask the court to evict you?
 subquestion: |
-  To answer this question, look at the paperwork that you got from your landlord or on Masscourts.org.
-
-  You can pick more than one reason.
+  To answer this question, look at the paperwork that you got from your landlord.
 
   ${ collapse_template(eviction_reason_template) }
 
   The landlord told the court in the summons and complaint that:
 fields:
-  - "Nonpayment of rent: I allegedly owed money for rent ": eviction_reason_nonpayment
+  - "Nonpayment of rent: I owed money for rent ": eviction_reason_nonpayment
     datatype: yesnowide
-  - "Fault: I allegedly broke the lease other than owing rent. For example: a noise complaint or damage to the apartment, or repeatedly paying the rent late.": eviction_reason_fault
+  - "Fault: I broke the lease other than owing rent. For example: a noise complaint or damage to the apartment, or repeatedly paying the rent late.": eviction_reason_fault
     datatype: yesnowide
   - "No fault: They did not want to rent to me any longer, but not because of something I did": eviction_reason_nofault
     datatype: yesnowide
-  - "139 § 19: I allegedly broke the law and they filed an emergency eviction under G.L. c. 139, § 19. For example, they claim I had drugs, had an illegal weapon, acted violently, or violated another criminal law.": eviction_reason_139
+  - "139 § 19: I broke the law and they filed an emergency eviction under G.L. c. 139, § 19. For example, they claim I had drugs, had an illegal weapon, acted violently, or violated another criminal law.": eviction_reason_139
     datatype: yesnowide
 ---
 template: eviction_reason_template
@@ -341,7 +338,7 @@ content: |
   * "No fault" or "without the fault of the tenant"
   * "139 § 19" or "nuisance" 
 
-  It may list one reason, or more than one reason. Check the box for as many reasons as you see.
+  It may list one reason, or more than one reason.
 
   Even if you were evicted for a "fault" reason, your landlord may have also listed a "nonpayment" reason.
   Make sure to also check the box for "fault" if the landlord said in the court paperwork that you broke another part of the lease.
@@ -349,18 +346,16 @@ content: |
 id: Off Ramp
 decoration: hand
 question: |
-  You may not be able to seal your eviction record yet
+  You may not be able to seal your eviction record
 subquestion: |
-  Based on your answers, you do not meet the legal requirements for your eviction record to be sealed under Massachusetts law.
+  Based on your answers, you may not be eligible to complete the petition form using this guided interview.
 
-  You can file the petition anyway, but no boxes that qualify you for sealing are checked. The court may reject your petition.
+  You can find more information about petition eligibility and other ways to file the petition [here](https://www.mass.gov/).
 
-  If you have any questions, you can contact a lawyer or legal services organization for help.
+  Please contact your Clerk's Office if you have additional questions.
+
 sets: continue_inapplicable
 buttons:
-  - Keep going anyway:
-      code: |
-        continue_inapplicable = True
   - Restart: restart
   - Exit: exit
 ---
@@ -395,7 +390,7 @@ fields:
     datatype: yesno
     uncheck others: True
   - note: |
-      **You may want to file a motion to deem the judgment satisfied.**
+      You may want to file a motion to deem the judgment satisfied.
 
       If you have paid all the money you owed, but the court has not deemed the judgment 
       satisfied, you may want to file a motion to deem the judgment satisfied.
@@ -432,9 +427,9 @@ id: Fault Eviction
 question: |
   Do you have any other recent eviction cases?
 subquestion: |
-  The judge needs to know about evictions in the last **7 years**.
+  Has a landlord filed a new eviction case against you at any time in the **LAST 7 YEARS?**
 fields:
-  - Has a landlord filed a new eviction case against you at any time since ${ today().minus(years=7) }?: prior_eviction_action
+  - Another eviction case was filed against me since **${ today().minus(years=7) }**.: prior_eviction_action
     datatype: yesnoradio
 ---
 id: Fault Action Section 139
@@ -444,9 +439,9 @@ subquestion: |
   In the last 7 years (since ${ today().minus(years=7) }), has a landlord asked a judge to evict you 
   for one of these reasons?
 fields:
-  - "Any fault reason: breaking the lease for a reason other than nonpayment of rent.": prior_fault_action_139
+  - "Any fault reason: broke the lease other than owing rent.": prior_fault_action_139
     datatype: yesnoradio
-  - "139, §19: an emergency eviction for criminal activity": prior_139_action
+  - "139, §19: broke the law and the landlord filed an emergency eviction": prior_139_action
     datatype: yesnoradio
 ---
 id: Prior Criminal Offenses
@@ -475,8 +470,7 @@ subquestion: |
   You need to give a copy of the petition to your former landlord, or their attorney if
   they have one.
 
-  This is called "service of process". Before you can file, you need to tell the
-  court how you will serve the other side.
+  Before you can file, you need to tell the court how you will serve the other side.
 
   I intend to serve notice on ${ other_parties } by:
 fields:
@@ -541,7 +535,7 @@ sets:
   - users[0].tenancy_address.address
 id: tenancy_address
 question: |
-  Where did you live when the landlord filed the eviction?
+  What was the address of the property where the eviction occured?
 fields:
   - code: |
       users[0].tenancy_address.address_fields(default_state='MA')
@@ -662,13 +656,19 @@ id: name of landlord
 question: |
   What was the name of your landlord?
 subquestion: |
-  Answer this question about the **first** landlord you had. If
-  more than one name is listed as the landlord on the eviction paperwork,
-  you can give those names next.
+  If more than one name is listed as the landlord on the eviction paperwork, you can give those names on the next page.
 fields:
   - Landlord's full name: other_parties[i].name.first
     under text: |
       Match the exact name listed on your court paperwork.
+  - note: |
+      ${ collapse_template(landlord_name_template) }
+---
+template: landlord_name_template
+subject: |
+  Where do I find my landlord's name on my Court paperwork?
+content: | 
+  Your landlord would be listed as the Plaintiff on your Court paperwork.
 ---
 id: any other opposing parties
 question: |
@@ -915,9 +915,11 @@ confirm: True
 id: download petition_to_seal_eviction
 event: petition_to_seal_eviction_download
 question: |
-  All done
+  Your petition information has been filled out.
 subquestion: |
   Thank you ${users}. Your form is ready to download and deliver.
+
+  **Do not close this page or all your progress will be lost.**
   
   View, download and send your form below. Click the "Edit answers" button to fix any mistakes.
 
