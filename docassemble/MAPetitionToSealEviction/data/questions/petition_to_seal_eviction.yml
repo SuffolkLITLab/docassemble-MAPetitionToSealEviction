@@ -427,7 +427,7 @@ id: Fault Eviction
 question: |
   Do you have any other recent eviction cases?
 subquestion: |
-  Has a landlord filed a new eviction case against you at any time in the **LAST 7 YEARS?**
+  Has a landlord filed a new eviction case against you at any time in the **last 7 years?**
 fields:
   - Another eviction case was filed against me since **${ today().minus(years=7) }**.: prior_eviction_action
     datatype: yesnoradio
