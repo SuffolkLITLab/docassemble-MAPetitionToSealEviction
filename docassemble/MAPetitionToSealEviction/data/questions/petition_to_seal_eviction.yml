@@ -915,7 +915,7 @@ confirm: True
 id: download petition_to_seal_eviction
 event: petition_to_seal_eviction_download
 question: |
-  Your petition information has been filled out.
+  Your petition information has been filled out
 subquestion: |
   Thank you ${users}. Your form is ready to download and deliver.
 
