@@ -666,9 +666,9 @@ fields:
 ---
 template: landlord_name_template
 subject: |
-  Where do I find my landlord's name on my Court paperwork?
+  Where do I find my landlord's name on my court paperwork?
 content: | 
-  Your landlord would be listed as the Plaintiff on your Court paperwork.
+  Your landlord would be listed as the Plaintiff on your court paperwork.
 ---
 id: any other opposing parties
 question: |
