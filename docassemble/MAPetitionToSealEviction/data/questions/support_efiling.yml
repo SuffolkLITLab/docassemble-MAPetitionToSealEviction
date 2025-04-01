@@ -1,4 +1,14 @@
 ---
+#########################################################
+# Staging docket numbers for testing:
+
+# Worcester DC: 2462SU000001 (already sealed so will reflect "anonymous" as party names)
+# Eastern HC (Boston): 23H84SP000009
+
+# Case category: Summary Process
+# Filing type: "Petition to Seal Eviction Record" (numeric code might not match between staging/prod)
+
+---
 include:
   - docassemble.EFSPIntegration:efiling_integration.yml
   - docassemble.EFSPIntegration:case_search.yml
@@ -15,69 +25,9 @@ objects:
 code: |
   target_case = case_search
 ---
-#########################################################
-# Staging docket number:
-# City = Boston
-# Court = Housing - Eastern (Boston)
-# Docket number: 22H84CV000003
-
-
-################### Case codes ##########################
-# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts?with_names=true
-
-
-################### COURTS ###################
-# Housing - Central (Worcester)
-# http://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/535
-
-# Housing - Eastern (Boston)
-# http://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/537
-
-# District Court - Concord
-# http://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/383
-
-# District Court - Ipswich
-# http://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/384
-
-# BMC - East Boston
-# http://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/408
-
-# BMC - Brighton
-# http://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/418
-
-
-# ################### CATEGORIES ###################
-# Small Claims code is the same for all of these (5990)
-# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/535/categories
-# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/537/categories SAME
-# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/383/categories
-# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/384/categories
-# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/408/categories
-# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/418/categories
-
-
-# ################### CASE TYPES ###################
-# Case type codes are all the same (5991-5994 )
-# "Small Claim $2001 - $5000", "Small Claim over $5000", "Small Claim $501 - $2000", "Small Claims $500 or less"
-# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/535/case_types?category_id=5990
-# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/537/case_types?category_id=5990
-
-# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/383/case_types?category_id=5990
-# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/384/case_types?category_id=5990
-
-# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/408/case_types?category_id=5990
-# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/418/case_types?category_id=5990
-
-
-# ################### FILING TYPES ###################
-# 6143 is missing in all of these (Statement of Small Claims entered through e-file process)
-# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/535/filing_types
-# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/537/filing_types
-# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/383/filing_types
-# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/384/filing_types
-# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/408/filing_types
-# https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/418/filing_types
-
+code: |
+  # We use a global waiver account since this filing never uses a filing fee
+  tyler_payment_id = get_config('efile proxy', {}).get('global waivers', {}).get('massachusetts', '')
 ---
 code: |
   jurisdiction_id = 'massachusetts'
@@ -141,7 +91,6 @@ subquestion: |
 fields:
   - Do you want to e-file?: user_wants_efile
     datatype: yesnoradio
-
 ---
 comment: |
   TODO: this might need to be modified to prevent loading the old address on the user? Presumably they moved by now
@@ -194,8 +143,8 @@ code: |
       docket_number = case_search.found_case.docket_number
 ---
 code: |
-  petition_to_seal_eviction_attachment.filing_description = "Petition to Seal Eviction Record"
-  petition_to_seal_eviction_attachment.reference_number = docket_number
+  # petition_to_seal_eviction_attachment.filing_description = "Petition to Seal Eviction Record"
+  # petition_to_seal_eviction_attachment.reference_number = docket_number
 
   al_court_bundle.filing_description = "Petition to Seal Eviction Record"
   al_court_bundle.reference_number = docket_number
@@ -206,10 +155,10 @@ code: |
 generic object: ALDocument
 id: extra e-filing questions
 question: |
-  Additional e-filing information
+  Send a copy of this filing to someone else?
 fields:
   - Add a courtesy email: x.has_courtesy_copies
-    datatype: yesno
+    datatype: yesnoradio
   - Courtesy emails (one per line): x.courtesy_copies_raw
     datatype: area
     show if: x.has_courtesy_copies
@@ -217,10 +166,21 @@ fields:
 generic object: ALDocumentBundle
 id: extra e-filing questions
 question: |
-  Additional e-filing information
+  Send a copy of this filing to someone else?
 fields:
   - Add a courtesy email: x.has_courtesy_copies
-    datatype: yesno
+    datatype: yesnoradio
   - Courtesy emails (one per line): x.courtesy_copies_raw
     datatype: area
     show if: x.has_courtesy_copies
+
+# ---
+# code: |
+#   al_court_bundle.existing_parties_payment_dict = DADict(elements={party: True for party in all_case_parties})
+---
+code: |
+  al_court_bundle.filing_action = "efile"
+---
+generic object: ALDdocument
+code: |
+  x.filing_parties = ['users[0]']
