@@ -439,9 +439,9 @@ subquestion: |
   In the last 7 years (since ${ today().minus(years=7) }), has a landlord asked a judge to evict you 
   for one of these reasons?
 fields:
-  - "Any fault reason: broke the lease other than owing rent.": prior_fault_action_139
+  - "Any fault reason: I broke the lease for a reason other than nonpayment of rent.": prior_fault_action_139
     datatype: yesnoradio
-  - "139, §19: broke the law and the landlord filed an emergency eviction": prior_139_action
+  - "139, §19: I broke the law and the landlord filed an emergency eviction": prior_139_action
     datatype: yesnoradio
 ---
 id: Prior Criminal Offenses
@@ -535,7 +535,9 @@ sets:
   - users[0].tenancy_address.address
 id: tenancy_address
 question: |
-  What was the address of the property where the eviction occured?
+  What is the address of the property for the eviction you want to seal?
+subquestion: |
+  Write the address of the property you were renting when the landlord filed the eviction.
 fields:
   - code: |
       users[0].tenancy_address.address_fields(default_state='MA')
@@ -919,7 +921,9 @@ question: |
 subquestion: |
   Thank you ${users}. Your form is ready to download and deliver.
 
-  **Do not close this page or all your progress will be lost.**
+  Make sure you are able to print or eFile the form once you have reviewed. 
+
+  If you are not ready to file, make an account to save your completed form.
   
   View, download and send your form below. Click the "Edit answers" button to fix any mistakes.
 
