@@ -13,6 +13,25 @@ include:
   - docassemble.EFSPIntegration:efiling_integration.yml
   - docassemble.EFSPIntegration:case_search.yml
 ---
+################ Trigger the e-filing variables in order #################
+code: |
+  nav.set_section('review_efile_info')
+  if can_check_efile:
+    users[0].is_form_filler
+    efile_case_category
+    efile_case_type
+    cross_references.gather()
+    show_any_disclaimers
+    # petition_to_seal_eviction_attachment.completed # Trigger the e-filing specific variables. I don't really like this being hidden like it is now though!
+    al_court_bundle.filing_parties
+    for item in al_court_bundle.enabled_documents():
+      item.filing_parties
+    al_court_bundle.completed
+    review_fees
+    ready_to_efile
+
+  interview_order_efiling = True
+---
 code: |
   form_uses_efiling = True
 ---
