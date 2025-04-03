@@ -4,6 +4,7 @@ include:
   - docassemble.MassAccess:massaccess.yml
   - docassemble.MATCTheme:matc_theme.yml
   - docassemble.ALToolbox:collapse_template.yml
+  - support_efiling.yml
   - docassemble.MANoticeOfAppearanceForm:notice_of_appearance_form.yml
 ---
 metadata:
@@ -42,6 +43,7 @@ metadata:
   authors:
     - Taline
     - Rami
+    - Quinten Steenhuis
   original_form: []
   original_form_published_on: 2025-02-06
   allowed_courts: 
@@ -113,6 +115,8 @@ id: interview_order_petition_to_seal_eviction
 code: |
   # Set the allowed courts for this interview
   allowed_courts = ['District Court', 'Boston Municipal Court', 'Housing Court', 'Superior Court']
+  user_role = "defendant"
+  user_ask_role = "defendant"
   
   nav.set_section("intro")
   al_intro_screen  
@@ -120,9 +124,18 @@ code: |
   al_person_answering
   if al_person_answering == "attorney":
     attorney_message
-  
-  user_role = "defendant"
-  user_ask_role = "defendant"
+
+  if can_check_efile:
+    tyler_login
+    if case_search.case_was_found:
+      previous_case_id = case_search.found_case.tracking_id
+      add_existing_users
+    invalidate_address_information_once # Don't assume tenant is at the same address as in original case
+
+  user_started_case
+  if can_check_efile:
+    lead_contact = users[0]
+
   nav.set_section("status")
   case_dismissed
   if not case_dismissed:
@@ -193,7 +206,7 @@ code: |
   users[0].phone_number
 
   nav.set_section("court_info")
-  users[0].tenancy_address.address
+  # users[0].tenancy_address.address
   trial_court.department
   trial_court.division
   docket_number
@@ -227,9 +240,13 @@ comment: |
   Delete mandatory: True to include in another interview
 mandatory: True
 code: |
+  tyler_payment_id
   al_intro_screen
   petition_to_seal_eviction_intro
   interview_order_petition_to_seal_eviction
+
+  interview_order_efiling
+
   signature_date
   # Store anonymous data for analytics / statistics
   store_variables_snapshot(
@@ -533,6 +550,7 @@ fields:
 ---
 sets:
   - users[0].tenancy_address.address
+  - users[0].tenancy_address.city
 id: tenancy_address
 question: |
   What is the address of the property for the eviction you want to seal?
@@ -936,12 +954,26 @@ subquestion: |
   % endif
 
   ${ action_button_html(url_action('review_petition_to_seal_eviction'), label='Edit answers', color='info') }
+
+
+  <!-- E-File button -->
+  % if not (defined('efile') and efile):
+  <h2 class="h4">E-File your form</h2>
   
+  Click the "E-File" button below to e-file your form.
   
+  ${ action_button_html(url_ask([{'recompute': ['efile']}]), label='E-File', id_tag='efile-button', icon='file-export', size='md')}
+
+  % endif
+
+  
+  <h2 class="h4">Download for your records</h2>
   ${ al_user_bundle.download_list_html() }
   
 
   ${ al_user_bundle.send_button_html(show_editable_checkbox=True) }
+
+  
 
 progress: 100
 ---
