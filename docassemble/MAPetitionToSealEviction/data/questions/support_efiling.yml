@@ -12,6 +12,7 @@
 include:
   - docassemble.EFSPIntegration:efiling_integration.yml
   - docassemble.EFSPIntegration:case_search.yml
+  - docassemble.EFSPIntegration:unauthenticated_actions.yml  
 ---
 ################ Trigger the e-filing variables in order #################
 code: |
@@ -147,13 +148,18 @@ code: |
   add_existing_users = True
 ---
 code: |
+  # We might load the user's old address from the e-filed case. But they probably don't live there anymore
+  # So we'll clear out the address information from the user object
   for user in users.complete_elements():
     if hasattr(user, 'address') and hasattr(user.address, 'address'):
-      invalidate(user.attr_name("address.address"))
-      invalidate(user.attr_name("address.unit"))
-      invalidate(user.attr_name("address.city"))
-      invalidate(user.attr_name("address.state"))
-      invalidate(user.attr_name("address.zip"))
+      undefine(
+        user.attr_name("address.address"),
+        user.attr_name("address.unit"),
+        user.attr_name("address.city"),
+        user.attr_name("address.state"),
+        user.attr_name("address.zip"),        
+      )
+
   invalidate_address_information_once = True
 ---
 code: |
@@ -203,3 +209,157 @@ code: |
 generic object: ALDdocument
 code: |
   x.filing_parties = ['users[0]']
+---
+code: |
+  # We have 2 disclaimers that the court is letting us skip because they are irrelevant to this particular filing
+  # In theory, we should check for new ones they didn't tell us about yet!
+  redundant_disclaimer_keywords = [
+    "redacting",
+    "still must perfect personal service on a defendant"
+  ]
+  disclaimers_tmp = []
+  for dis in sorted(proxy_conn.get_disclaimers(court_id).data, key=lambda yy: yy.get("listorder", yy.get("code"))):
+    for keyword in redundant_disclaimer_keywords:
+      if keyword in dis.get('requirementText').lower():
+        break
+    else:
+      disclaimers_tmp.append(dis)
+  
+  disclaimers = disclaimers_tmp
+---
+code: |
+  if fees_resp.is_ok():
+    pass # There are never fees in this filing
+  else:
+    bad_fees
+  review_fees = True
+---
+id: eFile Login
+question: |
+  Connect to your eFile MA account
+subquestion: |
+  You need to use an eFile MA account to e-file this document. If you don't have an account yet, we can help you make one.
+
+  ${ collapse_template(what_is_efile_ma_template) }
+fields:
+  - I want to: user_login_or_make_new
+    datatype: radio
+    choices:
+      - Make a new account: new_account
+      - Login to my existing account: existing_account
+  - Email address: my_username
+    show if:
+      variable: user_login_or_make_new
+      is: existing_account
+  - Password: my_password
+    datatype: ALVisiblePassword
+    js show if: |
+      val("user_login_or_make_new") == "existing_account" && !val("user_forgot_password")
+  - I forgot my password: user_forgot_password
+    datatype: yesno
+    show if:
+      variable: user_login_or_make_new
+      is: existing_account
+---
+template: what_is_efile_ma_template
+subject: |
+  What is eFile MA?
+content: |
+  eFile MA is the Massachusetts Trial Court's official system for electronically
+  filing court documents. It is also called File and Serve.
+
+  This website can help you securely connect to eFileMA using your existing eFileMA
+  username and password, or to make a new account.
+
+  You can manage your account from the eFileMA website after we help you make it
+  here.
+---
+code: |
+  # Firm registration exists, but we don't really need to handle it!
+  reg_type = 'INDIVIDUAL'
+---
+id: registration info
+question: |
+  Create an efileMA account
+fields:
+  - Email address: person_to_reg.email
+    datatype: email
+    default: ${ user_info().email if user_logged_in() else ''}
+  - Phone number: person_to_reg.phone_number
+    datatype: al_international_phone
+  - Password: new_password
+    datatype: ALVisiblePassword
+    under text: |
+      ${ password_rules.get("validationmessage") }
+    validate: proxy_conn.is_valid_password
+  - note: |
+      ---
+  - First: person_to_reg.name.first
+  - Middle: person_to_reg.name.middle
+    required: False
+  - Last: person_to_reg.name.last
+  - Suffix: person_to_reg.name.suffix
+    required: False
+    code: name_suffix()
+  - note: |
+      ---
+  - Address: person_to_reg.address.address
+    address autocomplete: True
+  - Unit: person_to_reg.address.unit
+    required: False
+  - City: person_to_reg.address.city
+  - State: person_to_reg.address.state
+    code: states_list()
+  - Zip: person_to_reg.address.zip
+
+---
+code: |
+  if user_login_or_make_new == 'new_account':
+    person_to_reg.email
+    tyler_register_resp = proxy_conn.register_user(person_to_reg, registration_type=reg_type)
+    if not tyler_register_resp.is_ok():
+      log(f'Failed to register: {tyler_register_resp}')
+    register_status
+
+  elif showifdef('user_forgot_password'):
+    tyler_reset_password_resp = proxy_conn.reset_user_password(my_username)
+    reset_password_screen      
+  
+  if not showifdef('user_forgot_password'):
+    # try logging in with new credentials or if it's a regular login
+    tyler_login_resp = proxy_conn.authenticate_user(tyler_email=my_username, tyler_password=my_password)
+    del my_password
+    if not tyler_login_resp.is_ok():
+      log(f'Failed to login: {tyler_login_resp}')
+      login_failed_screen
+    else:
+      log(word("You are now connected to your e-filing account"), "primary")
+  tyler_login = True
+---
+if: can_connect_to_proxy
+id: unauth-register-done
+question: |
+  % if register_resp.is_ok():
+  Successfully registered
+  % else:
+  Something went wrong when we tried to register your account
+  % endif
+subquestion: |
+  % if register_resp.is_ok():
+  You will get an email from efile${ state_name_to_code(jurisdiction_id) } asking you to activate your account.
+
+  Click "next" when you have clicked the link to activate your account.
+
+  % else:
+  ${ debug_display(register_resp) }
+  % endif
+
+continue button field: register_status  
+---
+generic object: ALDocument
+code: |
+  x.filing_parties = ['users[0]']
+---
+generic object: ALDocumentBundle
+code: |
+  x.filing_parties = ['users[0]']    
