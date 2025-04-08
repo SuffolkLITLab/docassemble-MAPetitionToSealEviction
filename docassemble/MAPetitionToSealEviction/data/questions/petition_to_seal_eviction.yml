@@ -149,9 +149,9 @@ code: |
       if eviction_reason_fault:
         prior_eviction_action
         if prior_eviction_action:
-          continue_inapplicable
+          continue_inapplicable_new_eviction
         if judgment_date > today().minus(years=7).minus(days=10):
-          continue_inapplicable
+          continue_inapplicable_app_period
         fe_appl_period_exp
       elif eviction_reason_nonpayment:
         non_payment
@@ -162,12 +162,12 @@ code: |
           if non_payment_hardship:
             non_payment_action
             if non_payment_action:
-              continue_inapplicable
+              continue_inapplicable_new_nonpayment
             if not non_payment_action:
               nav.set_section("date")
               judgment_date
               if judgment_date > today().minus(years=4).minus(days=10):
-                continue_inapplicable
+                continue_inapplicable_app_period
           if not non_payment_hardship:
             continue_inapplicable
       elif eviction_reason_139:
@@ -182,7 +182,7 @@ code: |
           continue_inapplicable
         nav.set_section("date")
         if judgment_date > today().minus(years=7).minus(days=10):
-          continue_inapplicable
+          continue_inapplicable_app_period
         ejp_appl_period_exp
       elif eviction_reason_nofault:
           nav.set_section("date")
@@ -268,7 +268,7 @@ question: |
   Petition to seal an eviction
 subquestion: |
   If you are a tenant whose landlord filed an eviction case against you, 
-  you can use this interview to ask a judge to seal the court information.
+  you can use this interview to ask a judge or clerk to seal the court information.
 
   Not all tenants qualify to seal their eviction records. This interview should not be used by commercial tenants seeking to seal an eviction:
 
@@ -372,6 +372,60 @@ subquestion: |
   Please contact your Clerk's Office if you have additional questions.
 
 sets: continue_inapplicable
+buttons:
+  - Restart: restart
+  - Exit: exit
+---
+id: Off Ramp Appeal Period
+decoration: hand
+question: |
+  You may not be able to seal your eviction record
+subquestion: |
+ Based on the judgment date you provided, your appeal period has not yet expired.
+
+ **Your appeal period must have expired before you may seal your eviction record.**
+
+  You can find more information about petition eligibility and other ways to file the petition [here](https://www.mass.gov/).
+
+  Please contact your Clerk's Office if you have additional questions.
+
+sets: continue_inapplicable_app_period
+buttons:
+  - Restart: restart
+  - Exit: exit
+---
+id: Off Ramp New Eviction
+decoration: hand
+question: |
+  You may not be able to seal your eviction record
+subquestion: |
+ Based on your answers, you may not be eligible to complete the petition form using this guided interview.
+
+ **If a new eviction case has been filed against you at any time in the past 7 years, you may not qualify to have your eviction record sealed.**
+
+  You can find more information about petition eligibility and other ways to file the petition [here](https://www.mass.gov/).
+
+  Please contact your Clerk's Office if you have additional questions.
+
+sets: continue_inapplicable_new_eviction
+buttons:
+  - Restart: restart
+  - Exit: exit
+---
+id: Off Ramp New Nonpayment Action
+decoration: hand
+question: |
+  You may not be able to seal your eviction record
+subquestion: |
+ Based on your answers, you may not be eligible to complete the petition form using this guided interview.
+
+ **If any other evictions have been brought against you in Massachusetts for not paying your rent in the last 4 years, you may not qualify to have your eviction record sealed.**
+
+  You can find more information about petition eligibility and other ways to file the petition [here](https://www.mass.gov/).
+
+  Please contact your Clerk's Office if you have additional questions.
+
+sets: continue_inapplicable_new_nonpayment
 buttons:
   - Restart: restart
   - Exit: exit
@@ -651,8 +705,6 @@ question: |
 subquestion: |
   Look at your court paperwork. Match the name listed there.
 
-  Most eviction cases are filed in the Housing Court.
-
   The first choices below are courts that match the address you said you lived in
   at the time of your eviction case. If you do not see your court, 
   select "A court not listed here" and select the court name below.
@@ -735,7 +787,24 @@ fields:
   - Email address: users[0].email    
     datatype: email
     required: False
-
+---
+id: affirmation and oath of no perjury
+question: |
+  Signing Under Oath
+subquestion: |
+  Your form must be signed under oath.
+  That means everything you say must be true as far as you know.
+  You may be punished by a judge if you intentionally
+  say something that is not true.
+fields:
+  - no label: users[i].states_above_true
+    datatype: checkboxes
+    minlength: 1
+    choices:
+      - I affirm that the answers I have given are true, under the penalties of perjury: states_true
+    validation messages:
+      minlength: |
+        You cannot keep going unless you did your best to tell the truth.
 ---
 ######### logic ###############
 ---
