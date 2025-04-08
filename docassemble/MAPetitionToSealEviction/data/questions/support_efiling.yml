@@ -1,0 +1,365 @@
+---
+#########################################################
+# Staging docket numbers for testing:
+
+# Worcester DC: 2462SU000001 (already sealed so will reflect "anonymous" as party names)
+# Eastern HC (Boston): 23H84SP000009
+
+# Case category: Summary Process
+# Filing type: "Petition to Seal Eviction Record" (numeric code might not match between staging/prod)
+
+---
+include:
+  - docassemble.EFSPIntegration:efiling_integration.yml
+  - docassemble.EFSPIntegration:case_search.yml
+  - docassemble.EFSPIntegration:unauthenticated_actions.yml  
+---
+################ Trigger the e-filing variables in order #################
+code: |
+  nav.set_section('review_efile_info')
+  if can_check_efile:
+    users[0].is_form_filler
+    efile_case_category
+    efile_case_type
+    cross_references.gather()
+    show_any_disclaimers
+    # petition_to_seal_eviction_attachment.completed # Trigger the e-filing specific variables. I don't really like this being hidden like it is now though!
+    al_court_bundle.filing_parties
+    for item in al_court_bundle.enabled_documents():
+      item.filing_parties
+    al_court_bundle.completed
+    review_fees
+    ready_to_efile
+
+  interview_order_efiling = True
+---
+code: |
+  form_uses_efiling = True
+---
+code: |
+  is_initial_filing = False
+---
+objects:
+  - case_search: EFCaseSearch.using(court_id=trial_court.tyler_code)
+---
+code: |
+  target_case = case_search
+---
+code: |
+  # We use a global waiver account since this filing never uses a filing fee
+  tyler_payment_id = get_config('efile proxy', {}).get('global waivers', {}).get('massachusetts', '')
+---
+code: |
+  jurisdiction_id = 'massachusetts'
+---
+code: |
+  proxy_conn = ProxyConnection(credentials_code_block='tyler_login', default_jurisdiction=jurisdiction_id)
+---
+code: |
+  # Can be filed in District Court, BMC, and Housing Court.
+  # I think we don't need this, since filing type isn't limited to either case category
+  # efile_case_category_filters = ['Summary Process', 'Civil']
+  # # This value will be selected at a lower priority, only if there's an ambiguous match.
+  # efile_case_category_default = '8530' # 8730 on staging
+  # efile_case_category_exclude = None
+
+  # # Case type is not needed in this interview: there are multiple allowed case types within the broader summary process
+  # # Not sure this is right way to specify this yet. TODO: investigate
+  # efile_case_type_filters = None # ['SP', 'Temporary Restraining Order', 'Civil']
+
+  # efile_case_type_default = ''
+  # efile_case_type_exclude = None
+---
+code: |
+  if can_check_efile and case_search.case_was_found:
+    efile_case_category = case_search.found_case.category
+    efile_case_type = case_search.found_case.case_type
+---
+code: |
+  # https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/537/filing_types/101805
+
+  al_court_bundle.filing_type_filters = ['Petition to Seal Eviction Record', 'Seal Eviction']
+  al_court_bundle.filing_type_default = '101805'
+  
+  petition_to_seal_eviction_attachment.filing_type_filters = ['Petition to Seal Eviction Record', 'Seal Eviction']
+  petition_to_seal_eviction_attachment.filing_type_default = '101805'
+---
+code: |
+  users[i].party_type_filters = ['Defendant/Appellant', 'Defendant/Petitioner']
+  users[i].party_type_default = '1729'
+  users[i].party_type_exclude = None
+---
+code: |
+  other_parties[i].party_type_filters = ['Plaintiff/Appellee', 'Plaintiff/Respondent']
+  other_parties[i].party_type_default = '1736'
+  other_parties[i].party_type_exclude = None
+---
+id: user-wants-efile
+question: |
+  Do you want to e-file this document directly with the court?
+subquestion: |
+  You are able to electronically-file (e-file) this document with the court your eviction was filed in!
+  
+  This means you don't have to print out the document. The court
+  will communicate with you through your email or phone.
+
+  You will have to use your eFileMA account to e-file this document. 
+  If you don't wish to use your account or don't wish to make an account,
+  you can choose not to efile.
+  
+  If you don't have a eFileMA account, you can make one in the next screens.
+fields:
+  - Do you want to e-file?: user_wants_efile
+    datatype: yesnoradio
+---
+comment: |
+  TODO: this might need to be modified to prevent loading the old address on the user? Presumably they moved by now
+
+  It's not easy to understand where the address comes from yet, though.
+need:
+  - users
+  - to_add_participants
+  - is_user_party
+  - is_other_party
+  - other_parties
+only sets: add_existing_users
+code: |
+  weird_roles = []
+  other_parties.clear()
+  for partip in to_add_participants:
+    partip.is_new = False
+    if is_user_party(partip):
+      users.append(partip.copy_deep(f'users[{len(users.elements)}]'))
+      if hasattr(users[-1].address, 'address'):
+        users[-1].address.geocode()
+    elif is_other_party(partip):
+      other_parties.append(partip.copy_deep(f'other_parties[{len(other_parties.elements)}]'))
+      if hasattr(other_parties[-1].address, 'address'):
+        other_parties[-1].address.geocode()
+    else:
+      weird_roles.append(partip)
+      log(f'partip: {partip} has weird role: {partip.party_type}')
+  # If there are any roles that can't be placed, be we also couldn't find an opposing party,
+  # the weird roles are more than likely the opposing party
+  if weird_roles:
+    if len(other_parties.elements) == 0:
+      for weird_party in weird_roles:
+        other_parties.append(weird_party.copy_deep(f'other_parties[{len(other_parties.elements)}]'))
+  add_existing_users = True
+---
+code: |
+  # We might load the user's old address from the e-filed case. But they probably don't live there anymore
+  # So we'll clear out the address information from the user object
+  for user in users.complete_elements():
+    if hasattr(user, 'address') and hasattr(user.address, 'address'):
+      undefine(
+        user.attr_name("address.address"),
+        user.attr_name("address.unit"),
+        user.attr_name("address.city"),
+        user.attr_name("address.state"),
+        user.attr_name("address.zip"),        
+      )
+
+  invalidate_address_information_once = True
+---
+code: |
+  if case_search.found_case:
+    if hasattr(case_search.found_case, 'docket_number') and case_search.found_case.docket_number:
+      docket_number = case_search.found_case.docket_number
+---
+code: |
+  # petition_to_seal_eviction_attachment.filing_description = "Petition to Seal Eviction Record"
+  # petition_to_seal_eviction_attachment.reference_number = docket_number
+
+  al_court_bundle.filing_description = "Petition to Seal Eviction Record"
+  al_court_bundle.reference_number = docket_number
+---
+code: |
+  needs_all_info = False
+---
+generic object: ALDocument
+id: extra e-filing questions
+question: |
+  Send a copy of this filing to someone else?
+fields:
+  - Add a courtesy email: x.has_courtesy_copies
+    datatype: yesnoradio
+  - Courtesy emails (one per line): x.courtesy_copies_raw
+    datatype: area
+    show if: x.has_courtesy_copies
+---
+generic object: ALDocumentBundle
+id: extra e-filing questions
+question: |
+  Send a copy of this filing to someone else?
+fields:
+  - Add a courtesy email: x.has_courtesy_copies
+    datatype: yesnoradio
+  - Courtesy emails (one per line): x.courtesy_copies_raw
+    datatype: area
+    show if: x.has_courtesy_copies
+
+# ---
+# code: |
+#   al_court_bundle.existing_parties_payment_dict = DADict(elements={party: True for party in all_case_parties})
+---
+code: |
+  al_court_bundle.filing_action = "efile"
+---
+generic object: ALDdocument
+code: |
+  x.filing_parties = ['users[0]']
+---
+code: |
+  # We have 2 disclaimers that the court is letting us skip because they are irrelevant to this particular filing
+  # In theory, we should check for new ones they didn't tell us about yet!
+  redundant_disclaimer_keywords = [
+    "redacting",
+    "still must perfect personal service on a defendant"
+  ]
+  disclaimers_tmp = []
+  for dis in sorted(proxy_conn.get_disclaimers(court_id).data, key=lambda yy: yy.get("listorder", yy.get("code"))):
+    for keyword in redundant_disclaimer_keywords:
+      if keyword in dis.get('requirementText').lower():
+        break
+    else:
+      disclaimers_tmp.append(dis)
+  
+  disclaimers = disclaimers_tmp
+---
+code: |
+  if fees_resp.is_ok():
+    pass # There are never fees in this filing
+  else:
+    bad_fees
+  review_fees = True
+---
+id: eFile Login
+question: |
+  Connect to your eFile MA account
+subquestion: |
+  You need to use an eFile MA account to e-file this document. If you don't have an account yet, we can help you make one.
+
+  ${ collapse_template(what_is_efile_ma_template) }
+fields:
+  - I want to: user_login_or_make_new
+    datatype: radio
+    choices:
+      - Make a new account: new_account
+      - Login to my existing account: existing_account
+  - Email address: my_username
+    show if:
+      variable: user_login_or_make_new
+      is: existing_account
+  - Password: my_password
+    datatype: ALVisiblePassword
+    js show if: |
+      val("user_login_or_make_new") == "existing_account" && !val("user_forgot_password")
+  - I forgot my password: user_forgot_password
+    datatype: yesno
+    show if:
+      variable: user_login_or_make_new
+      is: existing_account
+---
+template: what_is_efile_ma_template
+subject: |
+  What is eFile MA?
+content: |
+  eFile MA is the Massachusetts Trial Court's official system for electronically
+  filing court documents. It is also called File and Serve.
+
+  This website can help you securely connect to eFileMA using your existing eFileMA
+  username and password, or to make a new account.
+
+  You can manage your account from the eFileMA website after we help you make it
+  here.
+---
+code: |
+  # Firm registration exists, but we don't really need to handle it!
+  reg_type = 'INDIVIDUAL'
+---
+id: registration info
+question: |
+  Create an efileMA account
+fields:
+  - Email address: person_to_reg.email
+    datatype: email
+    default: ${ user_info().email if user_logged_in() else ''}
+  - Phone number: person_to_reg.phone_number
+    datatype: al_international_phone
+  - Password: new_password
+    datatype: ALVisiblePassword
+    under text: |
+      ${ password_rules.get("validationmessage") }
+    validate: proxy_conn.is_valid_password
+  - note: |
+      ---
+  - First: person_to_reg.name.first
+  - Middle: person_to_reg.name.middle
+    required: False
+  - Last: person_to_reg.name.last
+  - Suffix: person_to_reg.name.suffix
+    required: False
+    code: name_suffix()
+  - note: |
+      ---
+  - Address: person_to_reg.address.address
+    address autocomplete: True
+  - Unit: person_to_reg.address.unit
+    required: False
+  - City: person_to_reg.address.city
+  - State: person_to_reg.address.state
+    code: states_list()
+  - Zip: person_to_reg.address.zip
+
+---
+code: |
+  if user_login_or_make_new == 'new_account':
+    person_to_reg.email
+    tyler_register_resp = proxy_conn.register_user(person_to_reg, registration_type=reg_type)
+    if not tyler_register_resp.is_ok():
+      log(f'Failed to register: {tyler_register_resp}')
+    register_status
+
+  elif showifdef('user_forgot_password'):
+    tyler_reset_password_resp = proxy_conn.reset_user_password(my_username)
+    reset_password_screen      
+  
+  if not showifdef('user_forgot_password'):
+    # try logging in with new credentials or if it's a regular login
+    tyler_login_resp = proxy_conn.authenticate_user(tyler_email=my_username, tyler_password=my_password)
+    del my_password
+    if not tyler_login_resp.is_ok():
+      log(f'Failed to login: {tyler_login_resp}')
+      login_failed_screen
+    else:
+      log(word("You are now connected to your e-filing account"), "primary")
+  tyler_login = True
+---
+if: can_connect_to_proxy
+id: unauth-register-done
+question: |
+  % if register_resp.is_ok():
+  Successfully registered
+  % else:
+  Something went wrong when we tried to register your account
+  % endif
+subquestion: |
+  % if register_resp.is_ok():
+  You will get an email from efile${ state_name_to_code(jurisdiction_id) } asking you to activate your account.
+
+  Click "next" when you have clicked the link to activate your account.
+
+  % else:
+  ${ debug_display(register_resp) }
+  % endif
+
+continue button field: register_status  
+---
+generic object: ALDocument
+code: |
+  x.filing_parties = ['users[0]']
+---
+generic object: ALDocumentBundle
+code: |
+  x.filing_parties = ['users[0]']    
