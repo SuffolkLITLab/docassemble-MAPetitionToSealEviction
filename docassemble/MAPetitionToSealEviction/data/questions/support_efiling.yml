@@ -18,19 +18,21 @@ include:
 code: |
   nav.set_section('review_efile_info')
   if can_check_efile:
-    users[0].is_form_filler
-    efile_case_category
-    efile_case_type
-    cross_references.gather()
-    show_any_disclaimers
-    # petition_to_seal_eviction_attachment.completed # Trigger the e-filing specific variables. I don't really like this being hidden like it is now though!
-    al_court_bundle.filing_parties
-    for item in al_court_bundle.enabled_documents():
-      item.filing_parties
-    al_court_bundle.completed
-    review_fees
-    ready_to_efile
-
+    if petition_is_efileable:
+      users[0].is_form_filler
+      efile_case_category
+      efile_case_type
+      cross_references.gather()
+      show_any_disclaimers
+      # petition_to_seal_eviction_attachment.completed # Trigger the e-filing specific variables. I don't really like this being hidden like it is now though!
+      al_court_bundle.filing_parties
+      for item in al_court_bundle.enabled_documents():
+        item.filing_parties    
+      al_court_bundle.completed
+      review_fees
+      ready_to_efile
+    else:
+      warn_sorry_not_efileable
   interview_order_efiling = True
 ---
 code: |
@@ -39,7 +41,13 @@ code: |
 code: |
   # TODO: add any restrictions here
   # e.g., currently we don't handle 139 section 19 cases
-  petition_is_efileable = True
+  if can_check_efile and case_search.case_was_found:
+    # Check the case type for a valid one
+    if predicted_eviction_reason in ("eviction_reason_nofault", "eviction_reason_fault", "eviction_reason_nonpayment"):
+      petition_is_efileable = True
+    else:
+      petition_is_efileable = False
+      # Currently, there is no Petition to Seal Eviction code for any other case types
 ---
 code: |
   is_initial_filing = False
@@ -58,6 +66,7 @@ code: |
   jurisdiction_id = 'massachusetts'
 ---
 code: |
+  # TODO: rename?
   proxy_conn = ProxyConnection(credentials_code_block='tyler_login', default_jurisdiction=jurisdiction_id)
 ---
 code: |
@@ -367,4 +376,78 @@ code: |
 ---
 generic object: ALDocumentBundle
 code: |
-  x.filing_parties = ['users[0]']    
+  x.filing_parties = ['users[0]']
+---
+id: display case
+generic object: EFCaseSearch
+continue button field: x.display_case
+question: |
+  We found your case
+subquestion: |
+  % if x.cms_connection_issue:
+  The court's case management system is currently offline. The case information might be out of date.
+  % endif
+  
+  % if x.found_case:
+  #### ${ x.found_case.title} ${ '(' + x.found_case.date + ')' if x.found_case.date.year > 1000 else '' }
+  * ${ str(x.docket_lookup_choice) }: ${ x.found_case.docket_number }
+  * Court ID: ${ x.found_case.court_id }
+  * Case Category: ${ x.found_case.case_category_name }
+  * Case Type: ${ x.found_case.case_type_name }  
+  % endif
+
+  ${ collapse_template(x.not_actually_case) }
+---
+generic object: EFCaseSearch
+code: |
+  # Note the proxy connection needs to be called proxy_conn for this to work
+  x.found_case.case_type_name = proxy_conn.get_case_type(court_id, x.found_case.case_type).data.get('name', x.found_case.case_type)
+  x.found_case.case_category_name = x.case_category_map.get(x.found_case.category, {}).get('name', x.found_case.category)
+---
+generic object: EFCaseSearch
+code: |
+  # found case instance name might be weird if it's a name search
+  x.found_cases[i].case_type_name = proxy_conn.get_case_type(court_id, x.found_cases[i].case_type).data.get('name', x.found_cases[i].case_type)
+  x.found_cases[i].case_category_name = x.case_category_map.get(x.found_cases[i].category, {}).get('name', x.found_cases[i].category)
+---
+generic object: EFCaseSearch
+template: x.not_actually_case
+subject: |
+  What if this is not my case?
+content: |
+  If we found the wrong case, you can press the "${ all_variables(special="titles").get("back button label", "back") }" button to go back and find a different case
+---
+code: |
+  if can_check_efile and case_search.found_case:
+    if 'no cause' in case_search.found_case.case_type_name.lower():
+      predicted_eviction_reason = "eviction_reason_nofault"
+    elif 'cause' in case_search.found_case.case_type_name.lower():
+      predicted_eviction_reason = "eviction_reason_fault"
+    elif 'non-payment' in case_search.found_case.case_type_name.lower():
+      predicted_eviction_reason = "eviction_reason_nonpayment"
+    elif 'foreclosure' in case_search.found_case.case_type_name.lower():
+      predicted_eviction_reason = "eviction_reason_foreclosure"
+    elif "civil" in case_search.found_case.case_type_name.lower() or "restraining order" in case_search.found_case.case_type_name.lower():
+      predicted_eviction_reason = "eviction_reason_139"
+    else:
+      predicted_eviction_reason = None
+  else:
+    predicted_eviction_reason = None
+---
+id: warn_sorry_not_efileable
+continue button field: warn_sorry_not_efileable
+decoration: info-circle
+question: |
+  You cannot e-file this document
+subquestion: |
+  This document cannot currently be e-filed. 
+  
+  Only cases that are coded as "Summary Process" can be e-filed right now.
+
+  % if predicted_eviction_reason == "eviction_reason_139":
+  This case looks like it is a 139 § 19 case. You can still file this document in-person at the court.
+  % else:
+  It does not look like this is an eviction case. You can still bring this document in-person
+  to the court and talk to a clerk about your sealing options.
+  % endif
+  
