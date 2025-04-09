@@ -37,6 +37,11 @@ code: |
   form_uses_efiling = True
 ---
 code: |
+  # TODO: add any restrictions here
+  # e.g., currently we don't handle 139 section 19 cases
+  petition_is_efileable = True
+---
+code: |
   is_initial_filing = False
 ---
 objects:
@@ -163,7 +168,7 @@ code: |
   invalidate_address_information_once = True
 ---
 code: |
-  if case_search.found_case:
+  if can_check_efile and petition_is_efileable and case_search.found_case:
     if hasattr(case_search.found_case, 'docket_number') and case_search.found_case.docket_number:
       docket_number = case_search.found_case.docket_number
 ---

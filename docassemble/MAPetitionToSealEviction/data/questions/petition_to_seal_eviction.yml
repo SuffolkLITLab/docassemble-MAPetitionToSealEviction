@@ -1029,7 +1029,7 @@ subquestion: |
 
 
   <!-- E-File button -->
-  % if not (defined('efile') and efile):
+  % if can_check_efile and petition_is_efileable and not (defined('efile') and efile):
   <h2 class="h4">E-File your form</h2>
   
   Click the "E-File" button below to e-file your form.
