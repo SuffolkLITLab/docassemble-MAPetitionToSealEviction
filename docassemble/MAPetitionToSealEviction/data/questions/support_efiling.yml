@@ -42,8 +42,10 @@ code: |
   # TODO: add any restrictions here
   # e.g., currently we don't handle 139 section 19 cases
   if can_check_efile and case_search.case_was_found:
+    if trial_court.department == "Superior Court":
+      petition_is_efileable = False
     # Check the case type for a valid one
-    if predicted_eviction_reason in ("eviction_reason_nofault", "eviction_reason_fault", "eviction_reason_nonpayment"):
+    elif predicted_eviction_reason in ("eviction_reason_nofault", "eviction_reason_fault", "eviction_reason_nonpayment"):
       petition_is_efileable = True
     else:
       petition_is_efileable = False
@@ -442,6 +444,10 @@ question: |
 subquestion: |
   This document cannot currently be e-filed. 
   
+  % if trial_court.department == "Superior Court":
+  This document cannot be e-filed in the Superior Court. You can still file this document in-person at the court.
+
+  % else:
   Only cases that are coded as "Summary Process" can be e-filed right now.
 
   % if predicted_eviction_reason == "eviction_reason_139":
@@ -449,5 +455,6 @@ subquestion: |
   % else:
   It does not look like this is an eviction case. You can still bring this document in-person
   to the court and talk to a clerk about your sealing options.
+  % endif
   % endif
   

@@ -48,6 +48,7 @@ metadata:
   original_form_published_on: 2025-02-06
   allowed_courts: 
     - "District Court"
+    - "Boston Municipal Court"
     - "Housing Court"
     - "Superior Court"
   typical_role: "defendant"
