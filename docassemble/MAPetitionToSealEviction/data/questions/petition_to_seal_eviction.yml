@@ -770,8 +770,11 @@ question: |
   What is ${ users[0] }'s address now?
   % endif
 fields:
+  - I have no address: users[0].address.has_no_address
+    datatype: yesno
+    disable others: True
   - code: |
-      users[0].address_fields(allow_no_address=True)
+      users[0].address_fields(default_state='MA')
 ---
 id: your contact information
 question: |
