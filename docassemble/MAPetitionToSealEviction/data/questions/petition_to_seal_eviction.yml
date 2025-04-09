@@ -333,16 +333,41 @@ subquestion: |
 
   ${ collapse_template(eviction_reason_template) }
 
-  The landlord told the court in the summons and complaint that:
+  % if can_check_efile and case_search.found_case and predicted_eviction_reason:
+  <div class="border rounded p-3 alert-info text-dark" style="position: relative; overflow: visible; word-wrap: break-word;">
+    <p><i class="fa-solid fa-circle-info"></i>
+    We used the information we found in your court records to automatically
+    choose an answer for this question.
+    </p>
+    <p>
+    If the checked answer is not right, you can un-check our answer
+    and check the right answer. You might need to explain to the clerk or the judge
+    that there is a mistake in your court file at the hearing.  
+    </p>
+  </div>
+  % endif
 fields:
-  - "Nonpayment of rent: I owed money for rent ": eviction_reason_nonpayment
-    datatype: yesnowide
-  - "Fault: I broke the lease other than owing rent. For example: a noise complaint or damage to the apartment, or repeatedly paying the rent late.": eviction_reason_fault
-    datatype: yesnowide
-  - "No fault: They did not want to rent to me any longer, but not because of something I did": eviction_reason_nofault
-    datatype: yesnowide
-  - "139 § 19: I broke the law and they filed an emergency eviction under G.L. c. 139, § 19. For example, they claim I had drugs, had an illegal weapon, acted violently, or violated another criminal law.": eviction_reason_139
-    datatype: yesnowide
+  - The landlord told the court in the summons and complaint that: eviction_reason
+    label above field: True
+    datatype: radio
+    choices:
+      - "Non-payment of rent: I owed money for rent": eviction_reason_nonpayment
+      - "Fault: I broke the lease other than owing rent. For example: a noise complaint or damage to the apartment, or repeatedly paying the rent late.": eviction_reason_fault
+      - "No fault: They did not want to rent to me any longer, but not because of something I did": eviction_reason_nofault
+      - "139 § 19: I broke the law and they filed an emergency eviction under G.L. c. 139, § 19. For example, they claim I had drugs, had an illegal weapon, acted violently, or violated another criminal law.": eviction_reason_139
+    default: ${ showifdef("predicted_eviction_reason") }
+validation code: |
+  # TODO: we can remove this validation code if we update template to new format
+  eviction_reason_nonpayment = eviction_reason_fault = eviction_reason_nofault = eviction_reason_139 = False
+
+  if eviction_reason == "eviction_reason_nonpayment":
+    eviction_reason_nonpayment = True
+  elif eviction_reason == "eviction_reason_fault":
+    eviction_reason_fault = True
+  elif eviction_reason == "eviction_reason_nofault":
+    eviction_reason_nofault = True
+  elif eviction_reason == "eviction_reason_139":
+    eviction_reason_139 = True
 ---
 template: eviction_reason_template
 subject: |
@@ -351,14 +376,12 @@ content: |
   Look at the paperwork that you got from your landlord and from the court. Look for the key words:
 
   * "Nonpayment of rent"
-  * "Breach of lease"
-  * "No fault" or "without the fault of the tenant"
-  * "139 § 19" or "nuisance" 
-
-  It may list one reason, or more than one reason.
+  * "Cause" or "Breach of lease"
+  * "No cause", "No fault" or "without the fault of the tenant"
+  * "139 § 19" or "nuisance"
 
   Even if you were evicted for a "fault" reason, your landlord may have also listed a "nonpayment" reason.
-  Make sure to also check the box for "fault" if the landlord said in the court paperwork that you broke another part of the lease.
+  Make sure to check the box for "fault" if the landlord said in the court paperwork that you broke another part of the lease.
 ---
 id: Off Ramp
 decoration: hand
