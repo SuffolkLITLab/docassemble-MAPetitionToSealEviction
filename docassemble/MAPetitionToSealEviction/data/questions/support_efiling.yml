@@ -16,7 +16,6 @@ include:
 ---
 ################ Trigger the e-filing variables in order #################
 code: |
-  nav.set_section('review_efile_info')
   if can_check_efile:
     if petition_is_efileable:
       users[0].is_form_filler
@@ -518,3 +517,8 @@ subquestion: |
   ${ collapse_template(debug_details) }
 
 continue button field: show_efile_resp
+---
+generic object: EFCaseSearch
+template: x.docket_lookup_choice
+content: |
+  Docket number

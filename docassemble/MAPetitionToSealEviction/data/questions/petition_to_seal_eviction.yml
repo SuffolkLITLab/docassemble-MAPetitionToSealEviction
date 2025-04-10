@@ -95,19 +95,33 @@ code: |
   if attorneys.number() >= 1:
     attorneys.there_is_another = False
 ---
+# Placeholder section, we use al_nav_sections below for the actual navigation
 sections:
   - intro: Introduction
-  - status: Eviction case details
-  - reason: Reason for your eviction
-  - date: Date of judgment
-  - user_info: About you
-  - court_info: Court information
-  - landlord_info: Landlord information
-  - attorney_info: Attorney information
-  - notice: Serving the other side   
-  - review: Review your form
-  - signature: Signature
-  - submit: Submit
+---
+code: |
+  enable_al_nav_sections = True
+---
+reconsider: True
+variable name: al_nav_sections
+data:
+  - section_intro: Introduction
+  - section_court_info: Court information
+  - section_efile_login: eFile login
+    hidden: ${ showifdef("can_check_efile") == False }
+  - section_can_i_seal: Can you seal your eviction record?
+  - section_date: Date of judgment
+    hidden: ${ showifdef("case_dismissed") }
+  - section_user_info: Your information
+  - section_landlord_info: Landlord information
+  - section_attorney_info: Attorney information
+    hidden: ${ showifdef("al_person_answering") == "user" }
+  - section_notice: Serving the other side
+  - section_review: Review your form
+  - section_signature: Signature
+  - section_efile: eFile
+    hidden: ${ showifdef("can_check_efile") == False }
+  - section_download: Download
 ---
 #################### Interview order #####################
 comment: |
@@ -119,30 +133,36 @@ code: |
   user_role = "defendant"
   user_ask_role = "defendant"
   
-  nav.set_section("intro")
+  nav.set_section("section_intro")
   al_intro_screen  
   petition_to_seal_eviction_intro
   al_person_answering
   if al_person_answering == "attorney":
     attorney_message
 
+  nav.set_section("section_court_info")
+  trial_court.department
+  trial_court.division
+
+  nav.set_section("section_efile_login")
   if can_check_efile:
     tyler_login
     if case_search.case_was_found:
       previous_case_id = case_search.found_case.tracking_id
       add_existing_users
     invalidate_address_information_once # Don't assume tenant is at the same address as in original case
+  
+  docket_number # If already looked up on Tyler, this just makes sure it is defined
 
   user_started_case
   if can_check_efile:
     lead_contact = users[0]
 
-  nav.set_section("status")
+  nav.set_section("section_can_i_seal")
   case_dismissed
   if not case_dismissed:
     judgment_outcome
     if judgment_outcome == "landlord":
-      nav.set_section("reason")
       eviction_reason_nonpayment
       eviction_reason_fault
       eviction_reason_nofault
@@ -165,7 +185,6 @@ code: |
             if non_payment_action:
               continue_inapplicable_new_nonpayment
             if not non_payment_action:
-              nav.set_section("date")
               judgment_date
               if judgment_date > today().minus(years=4).minus(days=10):
                 continue_inapplicable_app_period
@@ -181,16 +200,13 @@ code: |
         prior_139_offense
         if prior_139_offense:
           continue_inapplicable
-        nav.set_section("date")
         if judgment_date > today().minus(years=7).minus(days=10):
           continue_inapplicable_app_period
         ejp_appl_period_exp
       elif eviction_reason_nofault:
-          nav.set_section("date")
           judgment_date
-      nav.set_section("date")
       judgment_date
-      nav.set_section("notice")
+      nav.set_section("section_notice")
     else: # Judgment for tenant
       if eviction_reason_139:
         no_judgmt_appl_exp
@@ -198,36 +214,28 @@ code: |
   if not showifdef("continue_inapplicable"): # User clicked past the exit screen
     user_probably_qualifies
   
-  nav.set_section("user_info")
+  nav.set_section("section_user_info")
   users.gather()
   set_parts(subtitle=str(users))
   users[0].email
   users[0].address.has_no_address # Allow for homeless users
   set_progress(50)
   users[0].phone_number
-
-  nav.set_section("court_info")
-  # users[0].tenancy_address.address
-  trial_court.department
-  trial_court.division
-  docket_number
   
   set_progress(75)
-  nav.set_section("landlord_info")
+  nav.set_section("section_landlord_info")
   other_parties.gather()
   
-  nav.set_section("attorney_info")
+  nav.set_section("section_attorney_info")
   if al_person_answering == "attorney":
     attorneys.gather()
     attorneys[0].bbo_number
 
   set_progress(90)
-  nav.set_section("notice")
+  nav.set_section("section_notice")
   notice_date
   notice_recipient
   notice_type
-
-  signature_date
 
   # Trigger definitions for notice of appearance
   petitioners
@@ -246,24 +254,32 @@ code: |
   petition_to_seal_eviction_intro
   interview_order_petition_to_seal_eviction
 
-  
-
   signature_date
   # Store anonymous data for analytics / statistics
   store_variables_snapshot(
       persistent=True,
       data={
           "zip": showifdef("users[0].address.zip"),
+          "trial_court": showifdef("trial_court"),
+          "al_person_answering": showifdef("al_person_answering"),
+          "efiled": showifdef("can_check_efile"),
           "reached_interview_end": True,
       },
   )
   set_progress(99)
   
+  nav.set_section("section_review")
   petition_to_seal_eviction_preview_question
+  users[0].states_above_true
+
+  nav.set_section("section_signature")
   basic_questions_signature_flow
   if can_check_efile and petition_is_efileable and case_search.found_case:    
-    interview_order_efiling    
+    nav.set_section("section_efile")
+    interview_order_efiling
     efile_once
+  
+  nav.set_section("section_download")
   petition_to_seal_eviction_download
   
 ---
@@ -1142,5 +1158,3 @@ attachment:
   skip undefined: True
   docx template file: petition_to_seal_eviction.docx
   tagged pdf: True
-
-
