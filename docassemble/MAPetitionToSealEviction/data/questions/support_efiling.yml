@@ -166,6 +166,11 @@ code: |
     if len(other_parties.elements) == 0:
       for weird_party in weird_roles:
         other_parties.append(weird_party.copy_deep(f'other_parties[{len(other_parties.elements)}]'))
+  
+  # We finished gathering both lists, no need to add more people
+  users.there_is_another = False
+  other_parties.there_is_another = False
+  
   add_existing_users = True
 ---
 code: |

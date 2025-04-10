@@ -189,17 +189,18 @@ code: |
               if judgment_date > today().minus(years=4).minus(days=10):
                 continue_inapplicable_app_period
           if not non_payment_hardship:
-            continue_inapplicable
+            continue_inapplicable_no_hardship
       elif eviction_reason_139:
         prior_fault_action_139
         if prior_fault_action_139:
-          continue_inapplicable
+          continue_inapplicable_139_newfault
         prior_139_action
         if prior_139_action:
-          continue_inapplicable
+          continue_inapplicable_139_new139
         prior_139_offense
         if prior_139_offense:
-          continue_inapplicable
+          continue_inapplicable_139_newoffense
+        nav.set_section("date")
         if judgment_date > today().minus(years=7).minus(days=10):
           continue_inapplicable_app_period
         ejp_appl_period_exp
@@ -469,6 +470,78 @@ subquestion: |
   Please contact your Clerk's Office if you have additional questions.
 
 sets: continue_inapplicable_new_nonpayment
+buttons:
+  - Restart: restart
+  - Exit: exit
+---
+id: Off Ramp No Hardship
+decoration: hand
+question: |
+  You may not be able to seal your eviction record
+subquestion: |
+ Based on your answers, you may not be eligible to complete the petition form using this guided interview.
+
+ **If you failed to pay your rent for any reason other than economic hardship, you may not qualify to have your eviction record sealed.**
+
+  You can find more information about petition eligibility and other ways to file the petition [here](https://www.mass.gov/).
+
+  Please contact your Clerk's Office if you have additional questions.
+
+sets: continue_inapplicable_no_hardship
+buttons:
+  - Restart: restart
+  - Exit: exit
+---
+id: Off Ramp 139 New Fault Action
+decoration: hand
+question: |
+  You may not be able to seal your eviction record
+subquestion: |
+ Based on your answers, you may not be eligible to complete the petition form using this guided interview.
+
+ **If your eviction was a civil action under G.L. c. 139, §19, you may not qualify to have your eviction record sealed if you have had another fault eviction in the past 7 years.**
+
+  You can find more information about petition eligibility and other ways to file the petition [here](https://www.mass.gov/).
+
+  Please contact your Clerk's Office if you have additional questions.
+
+sets: continue_inapplicable_139_newfault
+buttons:
+  - Restart: restart
+  - Exit: exit
+---
+id: Off Ramp 139 New 139 Action
+decoration: hand
+question: |
+  You may not be able to seal your eviction record
+subquestion: |
+ Based on your answers, you may not be eligible to complete the petition form using this guided interview.
+
+ **If your eviction was a civil action under G.L. c. 139, §19, you may not qualify to have your eviction record sealed if you have had another eviction under G.L. c. 139, §19 in the past 7 years.**
+
+  You can find more information about petition eligibility and other ways to file the petition [here](https://www.mass.gov/).
+
+  Please contact your Clerk's Office if you have additional questions.
+
+sets: continue_inapplicable_139_new139
+buttons:
+  - Restart: restart
+  - Exit: exit
+---
+id: Off Ramp 139 New 139 Offense
+decoration: hand
+question: |
+  You may not be able to seal your eviction record
+subquestion: |
+ Based on your answers, you may not be eligible to complete the petition form using this guided interview.
+
+ **If your eviction was a civil action under G.L. c. 139, §19, you may not qualify to have your eviction record sealed if you have had a conviction for any of the crimes listed in G.L. c. 139, § 19 in the past 7 years.**
+
+  You can find more information about petition eligibility and other ways to file the petition [here](https://www.mass.gov/).
+
+  Please contact your Clerk's Office if you have additional questions.
+
+sets: continue_inapplicable_139_newoffense
 buttons:
   - Restart: restart
   - Exit: exit
@@ -832,6 +905,27 @@ fields:
     disable others: True
   - code: |
       users[0].address_fields(default_state='MA')
+---
+sets:
+  - users[i].name.first
+  - users[i].name.last
+  - users[i].name.middle
+  - users[i].name.suffix    
+id: other users names
+question: |
+  % if i == 0 and al_person_answering == "user":
+  What is your name?
+  % else:
+  % if al_form_type in ['starts_case','existing_case','appeal']:
+  Who is the ${ ordinal(i) } tenant on your side of the case?
+  % else:
+  What is the name of the ${ ordinal_number(i) } tenant who is adding their name to
+  this form with you?
+  % endif
+  % endif
+fields:
+  - code: |
+      users[i].name_fields()
 ---
 id: your contact information
 question: |
