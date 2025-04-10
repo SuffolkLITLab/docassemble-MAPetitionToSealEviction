@@ -37,6 +37,12 @@ code: |
       warn_sorry_not_efileable
   interview_order_efiling = True
 ---
+id: efile
+code: |
+  # Q: I put this in its own block to prevent possible idempotency issues. Not sure if necessary
+  efile
+  efile_once = True
+---
 code: |
   form_uses_efiling = True
 ---
@@ -491,4 +497,24 @@ subquestion: |
   to the court and talk to a clerk about your sealing options.
   % endif
   % endif
+---
+id: submitted form
+question: |
+  % if efile_resp.response_code == 200:
+  Your forms are on their way to ${ trial_court }
+  % else:
+  Something went wrong delivering your form
+  % endif
+subquestion: |
+  % if efile_resp.response_code == 200:
+  You should receive a confirmation email within 10-15 minutes, and
+  you should receive an update from the ${ trial_court } clerk on your filing 
+  within 48 hours.
   
+  We recommend you continue below to download the form for your own records.
+  Click **Next** to get a copy of your forms and instructions.
+  % endif
+
+  ${ collapse_template(debug_details) }
+
+continue button field: show_efile_resp

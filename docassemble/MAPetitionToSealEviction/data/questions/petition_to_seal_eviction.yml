@@ -246,7 +246,7 @@ code: |
   petition_to_seal_eviction_intro
   interview_order_petition_to_seal_eviction
 
-  interview_order_efiling
+  
 
   signature_date
   # Store anonymous data for analytics / statistics
@@ -258,10 +258,14 @@ code: |
       },
   )
   set_progress(99)
+  
   petition_to_seal_eviction_preview_question
-  users[0].states_above_true
   basic_questions_signature_flow
+  if can_check_efile and petition_is_efileable and case_search.found_case:    
+    interview_order_efiling    
+    efile_once
   petition_to_seal_eviction_download
+  
 ---
 id: Petition_to_Seal_Eviction
 continue button field: petition_to_seal_eviction_intro
@@ -1047,13 +1051,17 @@ event: petition_to_seal_eviction_download
 question: |
   Your petition information has been filled out
 subquestion: |
-  Thank you ${users}. Your form is ready to download and deliver.
+  % if can_check_efile and petition_is_efileable and showifdef('efile'):
+  Thank you ${users}. Your form has been delivered. You can download a copy
+  of your form below. You will get updates about your case by email.
+  % else:
+  Thank you ${users}. Your form is ready to download and deliver to the court.
 
-  Make sure you are able to print or eFile the form once you have reviewed. 
+  Make sure you are able to print or eFile the form once you have reviewed.
 
   If you are not ready to file, make an account to save your completed form.
   
-  View, download and send your form below. Click the "Edit answers" button to fix any mistakes.
+  View and download your form below. Click the "Edit answers" button to fix any mistakes.
 
   % if defined("continue_inapplicable"):
   <div class="alert alert-warning" role="alert">
@@ -1076,16 +1084,16 @@ subquestion: |
 
   % endif
 
+  % endif # can_check_efile and petition_is_efileable and showifdef('efile')
   
   <h2 class="h4">Download for your records</h2>
   ${ al_user_bundle.download_list_html() }
   
-
   ${ al_user_bundle.send_button_html(show_editable_checkbox=True) }
 
-  
 
 progress: 100
+prevent going back: True
 ---
 # ALDocument objects specify the metadata for each template
 objects:
