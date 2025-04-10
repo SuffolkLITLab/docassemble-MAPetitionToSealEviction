@@ -85,6 +85,7 @@ objects:
   - other_parties: ALPeopleList.using(there_are_any=True)
   - users: ALPeopleList.using(there_are_any=True)
   - users[i].tenancy_address: ALAddress
+  - service_address: ALAddress
 ---
 code: |
   if al_person_answering == "attorney":
@@ -669,6 +670,13 @@ fields:
       - Email: email
       - Mail: mail
       - In Person: in person
+  - Email address: service_email_address
+    datatype: email
+    show if: 
+      variable: notice_type
+      is: email
+  - code: |
+      service_address.address_fields(show_if={"variable": "notice_type", "is": "mail"} )
   - "Date I will deliver notice": notice_date
     datatype: date
     default: ${ today().format("yyyy-MM-dd") }
