@@ -85,6 +85,7 @@ objects:
   - other_parties: ALPeopleList.using(there_are_any=True)
   - users: ALPeopleList.using(there_are_any=True)
   - users[i].tenancy_address: ALAddress
+  - service_address: ALAddress
 ---
 code: |
   if al_person_answering == "attorney":
@@ -235,6 +236,10 @@ code: |
   notice_date
   notice_recipient
   notice_type
+  if notice_type == 'mail':
+    service_address
+  if notice_type == 'email':
+    service_email_address
 
   # Trigger definitions for notice of appearance
   petitioners
@@ -650,6 +655,9 @@ fields:
     datatype: yesnoradio
 ---
 id: Notice
+sets: |
+  - service_address.address
+  - service_address.city
 question: |
   Serving the other side
 subquestion: |
@@ -671,6 +679,14 @@ fields:
       - Email: email
       - Mail: mail
       - In Person: in person
+  - Email address: service_email_address
+    datatype: email
+    show if: 
+      variable: notice_type
+      is: email
+  - code: |
+    if notice_type == 'mail':
+      service_address.address_fields()
   - "Date I will deliver notice": notice_date
     datatype: date
     default: ${ today().format("yyyy-MM-dd") }
