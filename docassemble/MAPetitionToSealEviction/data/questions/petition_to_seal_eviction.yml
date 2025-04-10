@@ -890,6 +890,27 @@ fields:
   - code: |
       users[0].address_fields(default_state='MA')
 ---
+sets:
+  - users[i].name.first
+  - users[i].name.last
+  - users[i].name.middle
+  - users[i].name.suffix    
+id: other users names
+question: |
+  % if i == 0 and al_person_answering == "user":
+  What is your name?
+  % else:
+  % if al_form_type in ['starts_case','existing_case','appeal']:
+  Who is the ${ ordinal(i) } tenant on your side of the case?
+  % else:
+  What is the name of the ${ ordinal_number(i) } tenant who is adding their name to
+  this form with you?
+  % endif
+  % endif
+fields:
+  - code: |
+      users[i].name_fields()
+---
 id: your contact information
 question: |
   What is your contact information?
