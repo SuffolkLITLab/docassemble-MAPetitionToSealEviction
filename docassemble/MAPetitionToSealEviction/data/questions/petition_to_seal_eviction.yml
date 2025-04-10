@@ -171,7 +171,7 @@ code: |
         prior_eviction_action
         if prior_eviction_action:
           continue_inapplicable_new_eviction
-        if appeal_period_expired_fault == False or judgment_date > today().minus(years=7).minus(days=10):
+        if appeal_period_expired_fault == False or (appeal_period_expired_fault is None and judgment_date > today().minus(years=7).minus(days=10)):
           continue_inapplicable_app_period
         fe_appl_period_exp
       elif eviction_reason_nonpayment:
@@ -185,7 +185,7 @@ code: |
             if non_payment_action:
               continue_inapplicable_new_nonpayment
             if not non_payment_action:
-              if appeal_period_expired_nonpayment == False or judgment_date > today().minus(years=4).minus(days=10):
+              if not nonpayment_appl_expired:
                 continue_inapplicable_app_period
           if not non_payment_hardship:
             continue_inapplicable_no_hardship
@@ -200,16 +200,16 @@ code: |
         if prior_139_offense:
           continue_inapplicable_139_newoffense
         nav.set_section("date")
-        if judgment_date > today().minus(years=7).minus(days=10):
-          continue_inapplicable_app_period
-        ejp_appl_period_exp
+        if not ejp_appl_period_exp:
+          continue_inapplicable_app_period        
       elif eviction_reason_nofault:
-          judgment_date
-      judgment_date
+          if not nofault_judgment_period_exp:            
+            continue_inapplicable_app_period
     else: # Judgment for tenant
-      if eviction_reason_139:
-        no_judgmt_appl_exp
-
+      if case_outcome == "139_no_resolution":
+        if not no_judgmt_appl_exp:
+          continue_inapplicable_app_period
+        
   if not showifdef("continue_inapplicable"): # User clicked past the exit screen
     user_probably_qualifies
   
@@ -730,7 +730,7 @@ fields:
   - "Has it been at least 4 years since the appeal period expired?": appeal_period_expired_139
     datatype: yesnomaybe
 ---
-id: 139 appeal period expired judgment for tenant
+id: 139 appeal period expired judgment for tenant or no fault eviction
 question: |
   Has the appeal period expired for your case?
 subquestion: |
@@ -739,7 +739,7 @@ subquestion: |
   If you are not sure, we can help you calculate it from the date your case
   reached an agreement or the date the judge made a decision.
 fields:
-  - "Has the appeal period expired?": appeal_period_expired_139_dismissal
+  - "Has the appeal period expired?": appeal_period_expired_dismissal_or_nofault
     datatype: yesnomaybe
 ---
 id: Date of Judgment
@@ -771,6 +771,9 @@ fields:
   - code: |
       users[0].tenancy_address.address_fields(default_state='MA')
 ---
+only sets:
+  - case_outcome
+  - judgment_outcome
 id: Eviction Action Dismissed
 question: |
   How did your eviction case end?
@@ -783,6 +786,7 @@ fields:
       - "**Dismissed** by the judge or in a written agreement": dismissed
       - "**Settled**, with judgment for my landlord or for me": settled
       - Decided by a judge: decided
+      - This was a 139 § 19 case and judgment did not enter for either party: 139_no_resolution
       - I do not know: unknown
   - note: |
       ${ collapse_template(judgment_entered_template) }
@@ -796,6 +800,10 @@ fields:
       - I do not know: unknown
     js show if: |
       val("case_outcome") == "decided" || val("case_outcome") == "settled" || val("case_outcome") == "unknown"
+validation code: |
+  if case_outcome == "139_no_resolution":
+    judgment_outcome = "nobody"
+    eviction_reason_139 = True
 ---
 template: case_outcome_template
 subject: |
@@ -1004,13 +1012,69 @@ fields:
 ######### logic ###############
 ---
 code: |
-  no_judgmt_appl_exp = eviction_reason_139 and judgment_outcome == "tenant" and (appeal_period_expired_139_dismissal or judgment_date.plus(days=10) < today())
+  nonpayment_appl_expired = (
+    eviction_reason_nonpayment
+    and judgment_outcome == "landlord"
+    and not prior_eviction_action
+    and not prior_139_action
+    and not (
+        appeal_period_expired_nonpayment == False
+        or (
+            appeal_period_expired_nonpayment is None
+            and judgment_date > today().minus(years=4).minus(days=10)
+        )
+    )
+  )
 ---
 code: |
-  ejp_appl_period_exp = eviction_reason_139 and judgment_outcome == "landlord" and not prior_139_action and not prior_139_offense and (appeal_period_expired_139 or judgment_date.plus(years=7).plus(days=10) < today())
+  nofault_judgment_period_exp = eviction_reason_nofault and not (
+    appeal_period_expired_dismissal_or_nofault == False
+    or (
+        appeal_period_expired_dismissal_or_nofault is None
+        and judgment_date > today().minus(days=10)
+    )
+  )
 ---
 code: |
-  fe_appl_period_exp = eviction_reason_fault and judgment_outcome == "landlord" and not prior_eviction_action and (appeal_period_expired_fault or judgment_date.plus(years=7).plus(days=10) < today())
+  no_judgmt_appl_exp = (
+    case_outcome == "139_no_resolution"
+    and not (
+      appeal_period_expired_dismissal_or_nofault == False
+      or (
+        appeal_period_expired_dismissal_or_nofault is None
+        and judgment_date > today().minus(days=10)
+      )
+    )
+  )
+---
+code: |
+  ejp_appl_period_exp = (
+    eviction_reason_139
+    and judgment_outcome == "landlord"
+    and not prior_139_action
+    and not prior_139_offense
+    and not (
+        appeal_period_expired_139 == False
+        or (
+            appeal_period_expired_139 is None
+            and judgment_date > today().minus(years=7).minus(days=10)
+        )
+    )
+  )
+---
+code: |
+  fe_appl_period_exp = (
+    eviction_reason_fault
+    and judgment_outcome == "landlord"
+    and not prior_eviction_action
+    and not (
+        appeal_period_expired_fault == False
+        or (
+            appeal_period_expired_fault is None
+            and judgment_date.plus(years=7).plus(days=10) < today()
+        )
+    )
+  )
 ---
 id: petition to seal eviction review screen
 event: review_petition_to_seal_eviction
