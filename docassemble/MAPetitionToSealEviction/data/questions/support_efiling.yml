@@ -88,9 +88,6 @@ code: |
 
   al_court_bundle.filing_type_filters = ['Petition to Seal Eviction Record', 'Seal Eviction']
   al_court_bundle.filing_type_default = '101805'
-# ---
-# code: |
-#   notice_of_appearance_form_attachment.filing_component = 'attachment'
 ---
 code: |
   users[i].party_type_filters = ['Defendant/Appellant', 'Defendant/Petitioner']

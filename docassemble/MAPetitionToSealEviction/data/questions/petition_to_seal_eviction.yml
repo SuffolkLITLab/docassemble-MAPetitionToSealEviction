@@ -721,6 +721,17 @@ code: |
 code: |
   addresses_to_search = [users[0].tenancy_address]
 ---
+id: choose a court (no courts matching provided address were found)
+question: |
+  What court was your case decided in?
+subquestion: |
+  Look at your court paperwork. Match the name listed there.
+fields:
+  - no label: trial_court
+    datatype: object
+    object labeler: court_short_label
+    choices: all_courts.filter_courts(allowed_courts)   
+---
 if: |
   len(all_matches) and all_courts.filter_courts(allowed_courts) 
 id: choose a court (courts matching provided address were found)
