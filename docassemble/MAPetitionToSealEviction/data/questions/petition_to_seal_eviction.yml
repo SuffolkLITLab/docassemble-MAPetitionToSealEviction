@@ -1091,6 +1091,7 @@ subquestion: |
   
   ${ al_user_bundle.send_button_html(show_editable_checkbox=True) }
 
+  ${ action_button_html(url_of("new_session"), label="Start a new petition", icon="square-plus", size="md", color="secondary") }
 
 progress: 100
 prevent going back: True
