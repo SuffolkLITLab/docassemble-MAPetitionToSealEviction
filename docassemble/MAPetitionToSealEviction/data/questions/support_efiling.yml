@@ -197,6 +197,9 @@ generic object: ALDocument
 id: extra e-filing questions
 question: |
   Send a copy of this filing to someone else?
+subquestion: |
+  If you answer "yes", a copy of all notices will be delivered to the email below when the
+  document is electronically filed.
 fields:
   - Add a courtesy email: x.has_courtesy_copies
     datatype: yesnoradio
