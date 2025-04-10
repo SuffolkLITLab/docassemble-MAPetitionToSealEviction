@@ -108,10 +108,8 @@ data:
   - section_intro: Introduction
   - section_court_info: Court information
   - section_efile_login: eFile login
-    hidden: ${ showifdef("can_check_efile") == False }
+    hidden: ${ (showifdef("user_wants_efile") == False) or showifdef("can_check_efile") == False }
   - section_can_i_seal: Can you seal your eviction record?
-  - section_date: Date of judgment
-    hidden: ${ showifdef("case_dismissed") }
   - section_user_info: Your information
   - section_landlord_info: Landlord information
   - section_attorney_info: Attorney information
@@ -152,6 +150,8 @@ code: |
       add_existing_users
     invalidate_address_information_once # Don't assume tenant is at the same address as in original case
   
+  if not can_check_efile:
+    nav.set_section("section_court_info")
   docket_number # If already looked up on Tyler, this just makes sure it is defined
 
   user_started_case
@@ -206,7 +206,6 @@ code: |
       elif eviction_reason_nofault:
           judgment_date
       judgment_date
-      nav.set_section("section_notice")
     else: # Judgment for tenant
       if eviction_reason_139:
         no_judgmt_appl_exp
