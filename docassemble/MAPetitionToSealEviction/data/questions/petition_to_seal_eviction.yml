@@ -568,8 +568,8 @@ fields:
   - no label: non_payment_cured 
     input type: radio
     choices: 
-      - My landlord filed a notice of satisfaction of judgment with the court
-      - A judge deemed all amounts due in rent were paid
+      - My landlord filed a notice of satisfaction of judgment with the court: landlord_filed_satisfaction
+      - A judge deemed all amounts due in rent were paid: judge_deemed_satisfied
       - My payment has not been deemed satisfied by the court: False
   - note: |
       You may want to file a motion to deem the judgment satisfied.
