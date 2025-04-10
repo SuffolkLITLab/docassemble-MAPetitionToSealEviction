@@ -749,7 +749,7 @@ fields:
     choices: all_matches
     none of the above: |
       A court not listed here
-    disable others: True
+    # disable others: True
     object labeler: court_short_description
     show if: 
       code: |
@@ -758,6 +758,9 @@ fields:
     datatype: object
     object labeler: court_short_label
     choices: all_courts.filter_courts(allowed_courts)
+    show if:
+      variable: trial_court
+      is: null
 ---
 id: name of landlord
 question: |
