@@ -95,19 +95,31 @@ code: |
   if attorneys.number() >= 1:
     attorneys.there_is_another = False
 ---
+# Placeholder section, we use al_nav_sections below for the actual navigation
 sections:
   - intro: Introduction
-  - status: Eviction case details
-  - reason: Reason for your eviction
-  - date: Date of judgment
-  - user_info: About you
-  - court_info: Court information
-  - landlord_info: Landlord information
-  - attorney_info: Attorney information
-  - notice: Serving the other side   
-  - review: Review your form
-  - signature: Signature
-  - submit: Submit
+---
+code: |
+  enable_al_nav_sections = True
+---
+reconsider: True
+variable name: al_nav_sections
+data:
+  - section_intro: Introduction
+  - section_court_info: Court information
+  - section_efile_login: eFile login
+    hidden: ${ (showifdef("user_wants_efile") == False) or showifdef("can_check_efile") == False }
+  - section_can_i_seal: Can you seal your eviction record?
+  - section_user_info: Your information
+  - section_landlord_info: Landlord information
+  - section_attorney_info: Attorney information
+    hidden: ${ showifdef("al_person_answering") == "user" }
+  - section_notice: Serving the other side
+  - section_review: Review your form
+  - section_signature: Signature
+  - section_efile: eFile
+    hidden: ${ showifdef("can_check_efile") == False }
+  - section_download: Download
 ---
 #################### Interview order #####################
 comment: |
@@ -119,30 +131,38 @@ code: |
   user_role = "defendant"
   user_ask_role = "defendant"
   
-  nav.set_section("intro")
+  nav.set_section("section_intro")
   al_intro_screen  
   petition_to_seal_eviction_intro
   al_person_answering
   if al_person_answering == "attorney":
     attorney_message
 
+  nav.set_section("section_court_info")
+  trial_court.department
+  trial_court.division
+
+  nav.set_section("section_efile_login")
   if can_check_efile:
     tyler_login
     if case_search.case_was_found:
       previous_case_id = case_search.found_case.tracking_id
       add_existing_users
     invalidate_address_information_once # Don't assume tenant is at the same address as in original case
+  
+  if not can_check_efile:
+    nav.set_section("section_court_info")
+  docket_number # If already looked up on Tyler, this just makes sure it is defined
 
   user_started_case
   if can_check_efile:
     lead_contact = users[0]
 
-  nav.set_section("status")
+  nav.set_section("section_can_i_seal")
   case_dismissed
   if not case_dismissed:
     judgment_outcome
     if judgment_outcome == "landlord":
-      nav.set_section("reason")
       eviction_reason_nonpayment
       eviction_reason_fault
       eviction_reason_nofault
@@ -151,7 +171,7 @@ code: |
         prior_eviction_action
         if prior_eviction_action:
           continue_inapplicable_new_eviction
-        if judgment_date > today().minus(years=7).minus(days=10):
+        if appeal_period_expired_fault == False or (appeal_period_expired_fault is None and judgment_date > today().minus(years=7).minus(days=10)):
           continue_inapplicable_app_period
         fe_appl_period_exp
       elif eviction_reason_nonpayment:
@@ -165,9 +185,7 @@ code: |
             if non_payment_action:
               continue_inapplicable_new_nonpayment
             if not non_payment_action:
-              nav.set_section("date")
-              judgment_date
-              if judgment_date > today().minus(years=4).minus(days=10):
+              if not nonpayment_appl_expired:
                 continue_inapplicable_app_period
           if not non_payment_hardship:
             continue_inapplicable_no_hardship
@@ -182,52 +200,41 @@ code: |
         if prior_139_offense:
           continue_inapplicable_139_newoffense
         nav.set_section("date")
-        if judgment_date > today().minus(years=7).minus(days=10):
-          continue_inapplicable_app_period
-        ejp_appl_period_exp
+        if not ejp_appl_period_exp:
+          continue_inapplicable_app_period        
       elif eviction_reason_nofault:
-          nav.set_section("date")
-          judgment_date
-      nav.set_section("date")
-      judgment_date
-      nav.set_section("notice")
+          if not nofault_judgment_period_exp:            
+            continue_inapplicable_app_period
     else: # Judgment for tenant
-      if eviction_reason_139:
-        no_judgmt_appl_exp
-
+      if case_outcome == "139_no_resolution":
+        if not no_judgmt_appl_exp:
+          continue_inapplicable_app_period
+        
   if not showifdef("continue_inapplicable"): # User clicked past the exit screen
     user_probably_qualifies
   
-  nav.set_section("user_info")
+  nav.set_section("section_user_info")
   users.gather()
   set_parts(subtitle=str(users))
   users[0].email
   users[0].address.has_no_address # Allow for homeless users
   set_progress(50)
   users[0].phone_number
-
-  nav.set_section("court_info")
-  # users[0].tenancy_address.address
-  trial_court.department
-  trial_court.division
-  docket_number
   
   set_progress(75)
-  nav.set_section("landlord_info")
+  nav.set_section("section_landlord_info")
   other_parties.gather()
   
-  nav.set_section("attorney_info")
+  nav.set_section("section_attorney_info")
   if al_person_answering == "attorney":
     attorneys.gather()
     attorneys[0].bbo_number
 
   set_progress(90)
-  nav.set_section("notice")
+  nav.set_section("section_notice")
   notice_date
   notice_recipient
   notice_type
-
-  signature_date
 
   # Trigger definitions for notice of appearance
   petitioners
@@ -246,24 +253,32 @@ code: |
   petition_to_seal_eviction_intro
   interview_order_petition_to_seal_eviction
 
-  
-
   signature_date
   # Store anonymous data for analytics / statistics
   store_variables_snapshot(
       persistent=True,
       data={
           "zip": showifdef("users[0].address.zip"),
+          "trial_court": showifdef("trial_court"),
+          "al_person_answering": showifdef("al_person_answering"),
+          "efiled": showifdef("can_check_efile"),
           "reached_interview_end": True,
       },
   )
   set_progress(99)
   
+  nav.set_section("section_review")
   petition_to_seal_eviction_preview_question
+  users[0].states_above_true
+
+  nav.set_section("section_signature")
   basic_questions_signature_flow
   if can_check_efile and petition_is_efileable and case_search.found_case:    
-    interview_order_efiling    
+    nav.set_section("section_efile")
+    interview_order_efiling
     efile_once
+  
+  nav.set_section("section_download")
   petition_to_seal_eviction_download
   
 ---
@@ -683,6 +698,48 @@ fields:
   - code: |
       attorneys[0].address_fields()
 ---
+id: appeal period expired for a nonpayment of rent case
+question: |
+  Has it been at least 4 years since the appeal period expired?
+subquestion: |
+  If you are not sure, we can help you calculate it from the date your case
+  reached an agreement or the date the judge made a decision.
+fields:
+  - "Has it been at least 4 years since the appeal period expired?": appeal_period_expired_nonpayment
+    datatype: yesnomaybe
+---
+id: appeal period expired for fault case
+question: |
+  Has it been at least 7 years since the appeal period expired?
+subquestion: |
+  If you are not sure, we can help you calculate it from the date your case
+  reached an agreement or the date the judge made a decision.
+fields:
+  - "Has it been at least 7 years since the appeal period expired?": appeal_period_expired_fault
+    datatype: yesnomaybe
+---
+id: appeal period expired for 139 19 case
+question: |
+  Has it been at least 4 years since the appeal period expired?
+subquestion: |
+  If you are not sure, we can help you calculate it from the date your case
+  reached an agreement or the date the judge made a decision.
+fields:
+  - "Has it been at least 4 years since the appeal period expired?": appeal_period_expired_139
+    datatype: yesnomaybe
+---
+id: 139 appeal period expired judgment for tenant or no fault eviction
+question: |
+  Has the appeal period expired for your case?
+subquestion: |
+  Your appeal period is usually **10 days** from the date of the decision or agreement.
+
+  If you are not sure, we can help you calculate it from the date your case
+  reached an agreement or the date the judge made a decision.
+fields:
+  - "Has the appeal period expired?": appeal_period_expired_dismissal_or_nofault
+    datatype: yesnomaybe
+---
 id: Date of Judgment
 question: |
   When was the court decision final?
@@ -712,6 +769,9 @@ fields:
   - code: |
       users[0].tenancy_address.address_fields(default_state='MA')
 ---
+only sets:
+  - case_outcome
+  - judgment_outcome
 id: Eviction Action Dismissed
 question: |
   How did your eviction case end?
@@ -724,6 +784,7 @@ fields:
       - "**Dismissed** by the judge or in a written agreement": dismissed
       - "**Settled**, with judgment for my landlord or for me": settled
       - Decided by a judge: decided
+      - This was a 139 § 19 case and judgment did not enter for either party: 139_no_resolution
       - I do not know: unknown
   - note: |
       ${ collapse_template(judgment_entered_template) }
@@ -737,6 +798,10 @@ fields:
       - I do not know: unknown
     js show if: |
       val("case_outcome") == "decided" || val("case_outcome") == "settled" || val("case_outcome") == "unknown"
+validation code: |
+  if case_outcome == "139_no_resolution":
+    judgment_outcome = "nobody"
+    eviction_reason_139 = True
 ---
 template: case_outcome_template
 subject: |
@@ -945,13 +1010,69 @@ fields:
 ######### logic ###############
 ---
 code: |
-  no_judgmt_appl_exp = eviction_reason_139 and judgment_outcome == "tenant" and judgment_date.plus(days=10) < today()
+  nonpayment_appl_expired = (
+    eviction_reason_nonpayment
+    and judgment_outcome == "landlord"
+    and not prior_eviction_action
+    and not prior_139_action
+    and not (
+        appeal_period_expired_nonpayment == False
+        or (
+            appeal_period_expired_nonpayment is None
+            and judgment_date > today().minus(years=4).minus(days=10)
+        )
+    )
+  )
 ---
 code: |
-  ejp_appl_period_exp = eviction_reason_139 and judgment_outcome == "landlord" and not prior_139_action and not prior_139_offense and judgment_date.plus(years=7).plus(days=10) < today()
+  nofault_judgment_period_exp = eviction_reason_nofault and not (
+    appeal_period_expired_dismissal_or_nofault == False
+    or (
+        appeal_period_expired_dismissal_or_nofault is None
+        and judgment_date > today().minus(days=10)
+    )
+  )
 ---
 code: |
-  fe_appl_period_exp = eviction_reason_fault and judgment_outcome == "landlord" and not prior_eviction_action and judgment_date.plus(years=7).plus(days=10) < today()
+  no_judgmt_appl_exp = (
+    case_outcome == "139_no_resolution"
+    and not (
+      appeal_period_expired_dismissal_or_nofault == False
+      or (
+        appeal_period_expired_dismissal_or_nofault is None
+        and judgment_date > today().minus(days=10)
+      )
+    )
+  )
+---
+code: |
+  ejp_appl_period_exp = (
+    eviction_reason_139
+    and judgment_outcome == "landlord"
+    and not prior_139_action
+    and not prior_139_offense
+    and not (
+        appeal_period_expired_139 == False
+        or (
+            appeal_period_expired_139 is None
+            and judgment_date > today().minus(years=7).minus(days=10)
+        )
+    )
+  )
+---
+code: |
+  fe_appl_period_exp = (
+    eviction_reason_fault
+    and judgment_outcome == "landlord"
+    and not prior_eviction_action
+    and not (
+        appeal_period_expired_fault == False
+        or (
+            appeal_period_expired_fault is None
+            and judgment_date.plus(years=7).plus(days=10) < today()
+        )
+    )
+  )
 ---
 id: petition to seal eviction review screen
 event: review_petition_to_seal_eviction
@@ -1225,5 +1346,3 @@ attachment:
   skip undefined: True
   docx template file: petition_to_seal_eviction.docx
   tagged pdf: True
-
-
