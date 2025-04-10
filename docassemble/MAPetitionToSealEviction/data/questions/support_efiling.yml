@@ -255,9 +255,9 @@ code: |
 ---
 id: eFile Login
 question: |
-  Connect to your eFile MA account
+  Connect to your eFileMA account
 subquestion: |
-  You need to use an eFile MA account to e-file this document. If you don't have an account yet, we can help you make one.
+  You need to use an eFileMA account to e-file this document. If you don't have an account yet, we can help you make one.
 
   ${ collapse_template(what_is_efile_ma_template) }
 fields:
@@ -282,9 +282,9 @@ fields:
 ---
 template: what_is_efile_ma_template
 subject: |
-  What is eFile MA?
+  What is eFileMA?
 content: |
-  eFile MA is the Massachusetts Trial Court's official system for electronically
+  eFileMA is the Massachusetts Trial Court's official system for electronically
   filing court documents. It is also called File and Serve.
 
   This website can help you securely connect to eFileMA using your existing eFileMA
