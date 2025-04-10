@@ -558,24 +558,20 @@ subquestion: |
   The next questions will complete the petition for you to file with the court.
 continue button field: user_probably_qualifies
 ---
-id: Non Payment Paid
+id: satisfaction of judgment
 question: |
   Satisfaction of judgment
 subquestion: |
-  Even if you paid all of the rent due, you cannot seal the eviction
-  until the payment was officially recorded by the court.
-
-  This is called "satisfaction of judgment."
+  Even if you paid all of the rent due, you cannot seal the eviction until the payment was officially recorded by the court. This is called "satisfaction of judgment."
 
   Did any of the following happen?
 fields:
-  - "My landlord filed a notice of satisfaction of judgment with the court": plan_filed_notice
-    datatype: yesno
-  - "A judge deemed all amounts due in rent were paid": court_deemed_paid
-    datatype: yesno
-  - "My payment has not been deemed satisfied by the court": non_payment_cured
-    datatype: yesno
-    uncheck others: True
+  - no label: non_payment_cured 
+    input type: radio
+    choices: 
+      - My landlord filed a notice of satisfaction of judgment with the court: landlord_filed_satisfaction
+      - A judge deemed all amounts due in rent were paid: judge_deemed_satisfied
+      - My payment has not been deemed satisfied by the court: False
   - note: |
       You may want to file a motion to deem the judgment satisfied.
 
@@ -587,7 +583,9 @@ fields:
 
       Most tenants should **stop** the interview now and come back after the judgment
       is officially satisfied in the court's records.
-    show if: non_payment_cured
+    show if:
+      variable: non_payment_cured
+      is: False
 ---
 id: Non Payment Not Paid
 question: |
@@ -1117,14 +1115,6 @@ review:
     button: |
       **Date of Signature**:
       ${ signature_date }
-  - Edit: non_payment_cured
-    button: |
-      **All Amounts Paid**:
-      ${ word(yesno(non_payment_cured)) }
-  - Edit: plan_filed_notice
-    button: |
-      **Landlord Filed Notice of Satisfaction**:
-      ${ word(yesno(plan_filed_notice)) }
   - Edit: trial_court
     button: |
       **Trial court**
@@ -1157,12 +1147,12 @@ review:
       ${ word(yesno(plaintiff_notice)) }
   - Edit: non_payment
     button: |
-      **Non-Payment Judgment Not Paid**:
+      **Eviction for non-payment**:
       ${ word(yesno(non_payment)) }
-  - Edit: court_deemed_paid
+  - Edit: non_payment_cured
     button: |
-      **Judge Deemed Payment Satisfied**:
-      ${ word(yesno(court_deemed_paid)) }
+      **Non-payment cured**:
+      ${ word(yesno(non_payment_cured != "False")) }
   - Edit: ejp_appl_period_exp
     button: |
       **Appeal Period Expired in 139 Case**:
