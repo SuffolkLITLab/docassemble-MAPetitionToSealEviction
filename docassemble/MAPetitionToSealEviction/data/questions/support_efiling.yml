@@ -27,7 +27,9 @@ code: |
       # petition_to_seal_eviction_attachment.completed # Trigger the e-filing specific variables. I don't really like this being hidden like it is now though!
       al_court_bundle.filing_parties
       for item in al_court_bundle.enabled_documents():
-        item.filing_parties    
+        item.filing_component
+        item.filing_type
+        item.filing_parties
       al_court_bundle.completed
       review_fees
       ready_to_efile
@@ -72,33 +74,23 @@ code: |
   proxy_conn = ProxyConnection(credentials_code_block='tyler_login', default_jurisdiction=jurisdiction_id)
 ---
 code: |
-  # Can be filed in District Court, BMC, and Housing Court.
-  # I think we don't need this, since filing type isn't limited to either case category
-  # efile_case_category_filters = ['Summary Process', 'Civil']
-  # # This value will be selected at a lower priority, only if there's an ambiguous match.
-  # efile_case_category_default = '8530' # 8730 on staging
-  # efile_case_category_exclude = None
-
-  # # Case type is not needed in this interview: there are multiple allowed case types within the broader summary process
-  # # Not sure this is right way to specify this yet. TODO: investigate
-  # efile_case_type_filters = None # ['SP', 'Temporary Restraining Order', 'Civil']
-
-  # efile_case_type_default = ''
-  # efile_case_type_exclude = None
----
-code: |
   if can_check_efile and case_search.case_was_found:
     efile_case_category = case_search.found_case.category
     efile_case_type = case_search.found_case.case_type
 ---
 code: |
   # https://efile-test.suffolklitlab.org/jurisdictions/massachusetts/codes/courts/537/filing_types/101805
+  petition_to_seal_eviction_attachment.filing_type_filters = ['Petition to Seal Eviction Record', 'Seal Eviction']
+  petition_to_seal_eviction_attachment.filing_type_default = '101805'
+
+  notice_of_appearance_form_attachment.filing_type_filters = ['Attorney Appearance']
+  notice_of_appearance_form_attachment.filing_type_default = '9124'
 
   al_court_bundle.filing_type_filters = ['Petition to Seal Eviction Record', 'Seal Eviction']
   al_court_bundle.filing_type_default = '101805'
-  
-  petition_to_seal_eviction_attachment.filing_type_filters = ['Petition to Seal Eviction Record', 'Seal Eviction']
-  petition_to_seal_eviction_attachment.filing_type_default = '101805'
+# ---
+# code: |
+#   notice_of_appearance_form_attachment.filing_component = 'attachment'
 ---
 code: |
   users[i].party_type_filters = ['Defendant/Appellant', 'Defendant/Petitioner']
@@ -114,19 +106,30 @@ id: user-wants-efile
 question: |
   Do you want to e-file this document directly with the court?
 subquestion: |
-  You are able to electronically-file (e-file) this document with the court your eviction was filed in!
-  
-  This means you don't have to print out the document. The court
-  will communicate with you through your email or phone.
+  E-filing is completely free and is the fastest way to file this document.
 
-  You will have to use your eFileMA account to e-file this document. 
-  If you don't wish to use your account or don't wish to make an account,
-  you can choose not to efile.
-  
-  If you don't have a eFileMA account, you can make one in the next screens.
+  You need a free account with eFileMA to e-file this document. We can help you make the account on
+  the next screens if you do not already have one.
+
+  ${ collapse_template(to_make_an_account_you_need_template) }
+
+  ${ collapse_template(what_is_efile_ma_template) }
+
+  If you do not want to e-file this document, you can print it at the end of this interview and deliver it to the court
+  in-person or by mail.
 fields:
   - Do you want to e-file?: user_wants_efile
     datatype: yesnoradio
+---
+template: to_make_an_account_you_need_template
+subject: |
+  What do I need to make an account?
+content: |
+  To make an account, you will need:
+  
+  * an email address you can access,
+  * a phone number, and
+  * an address where you can get mail.  
 ---
 comment: |
   TODO: this might need to be modified to prevent loading the old address on the user? Presumably they moved by now
@@ -270,10 +273,14 @@ fields:
     show if:
       variable: user_login_or_make_new
       is: existing_account
+    default: |
+      ${ showifdef("person_to_reg.email") or (user_info().email if user_logged_in() else '') }
   - Password: my_password
     datatype: ALVisiblePassword
     js show if: |
       val("user_login_or_make_new") == "existing_account" && !val("user_forgot_password")
+    default: |
+      ${ showifdef("new_password") }
   - I forgot my password: user_forgot_password
     datatype: yesno
     show if:
