@@ -44,7 +44,7 @@ def find_package_data(where='.', package='', exclude=standard_exclude, exclude_d
     return out
 
 setup(name='docassemble.MAPetitionToSealEviction',
-      version='1.1.0',
+      version='1.2.0',
       description=('Petition to Seal Eviction'),
       long_description='# docassemble.PetitionToSealEviction\r\n\r\nPetition to Seal Eviction\r\n\r\n## Author\r\n\r\nTaline\r\n\r\n',
       long_description_content_type='text/markdown',
