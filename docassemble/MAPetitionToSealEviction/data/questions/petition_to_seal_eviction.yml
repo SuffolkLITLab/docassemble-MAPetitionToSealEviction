@@ -146,7 +146,7 @@ code: |
   nav.set_section("section_efile_login")
   if can_check_efile:
     tyler_login
-    if case_search.case_was_found:
+    if case_search.found_case:
       previous_case_id = case_search.found_case.tracking_id
       add_existing_users
     invalidate_address_information_once # Don't assume tenant is at the same address as in original case
@@ -274,7 +274,7 @@ code: |
 
   nav.set_section("section_signature")
   basic_questions_signature_flow
-  if can_check_efile and petition_is_efileable and case_search.found_case:    
+  if can_check_efile:    
     nav.set_section("section_efile")
     interview_order_efiling
     efile_once
