@@ -3,10 +3,13 @@
 # Staging docket numbers for testing:
 
 # Worcester DC: 2462SU000001 (already sealed so will reflect "anonymous" as party names)
+# Worcester DC: 2462SU000003
 # Eastern HC (Boston): 23H84SP000009
 
 # Case category: Summary Process
 # Filing type: "Petition to Seal Eviction Record" (numeric code might not match between staging/prod)
+
+# Test multiple case / party name lookups: in Eastern Housing Court, use party name John Brown (not fileable)
 
 ---
 include:
@@ -48,7 +51,7 @@ code: |
 code: |
   # TODO: add any restrictions here
   # e.g., currently we don't handle 139 section 19 cases
-  if can_check_efile and case_search.case_was_found:
+  if can_check_efile and showifdef("case_search.found_case"):
     if trial_court.department == "Superior Court":
       petition_is_efileable = False
     # Check the case type for a valid one
@@ -79,7 +82,7 @@ code: |
   proxy_conn = ProxyConnection(credentials_code_block='tyler_login', default_jurisdiction=jurisdiction_id)
 ---
 code: |
-  if can_check_efile and case_search.case_was_found:
+  if can_check_efile and showifdef("case_search.found_case"):
     efile_case_category = case_search.found_case.category
     efile_case_type = case_search.found_case.case_type
 ---
@@ -88,7 +91,7 @@ code: |
   petition_to_seal_eviction_attachment.filing_type_filters = ['Petition to Seal Eviction Record', 'Seal Eviction']
   petition_to_seal_eviction_attachment.filing_type_default = '101805'
 
-  notice_of_appearance_form_attachment.filing_type_filters = ['Attorney Appearance']
+  notice_of_appearance_form_attachment.filing_type_filters = ['Attorney Appearance', 'Appearance Filed'] # Different filing codes in District vs Housing Court
   notice_of_appearance_form_attachment.filing_type_default = '9124'
 
   al_court_bundle.filing_type_filters = ['Petition to Seal Eviction Record', 'Seal Eviction']
@@ -189,7 +192,7 @@ code: |
   invalidate_address_information_once = True
 ---
 code: |
-  if can_check_efile and petition_is_efileable and case_search.found_case:
+  if can_check_efile and case_search.found_case:
     if hasattr(case_search.found_case, 'docket_number') and case_search.found_case.docket_number:
       docket_number = case_search.found_case.docket_number
 ---
@@ -221,6 +224,9 @@ generic object: ALDocumentBundle
 id: extra e-filing questions
 question: |
   Send a copy of this filing to someone else?
+subquestion: |
+  If you answer "yes", a copy of all notices will be delivered to the email below when the
+  document is electronically filed.
 fields:
   - Add a courtesy email: x.has_courtesy_copies
     datatype: yesnoradio
@@ -244,6 +250,7 @@ code: |
   # In theory, we should check for new ones they didn't tell us about yet!
   redundant_disclaimer_keywords = [
     "redacting",
+    "must redact",
     "still must perfect personal service on a defendant"
   ]
   disclaimers_tmp = []
@@ -498,7 +505,7 @@ subquestion: |
   Only cases that are coded as "Summary Process" can be e-filed right now.
 
   % if predicted_eviction_reason == "eviction_reason_139":
-  This case looks like it is a 139 § 19 case. You can still file this document in-person at the court.
+  This case looks like it is a civil or 139 § 19 case. You can still file this document in-person at the court.
   % else:
   It does not look like this is an eviction case. You can still bring this document in-person
   to the court and talk to a clerk about your sealing options.
@@ -530,3 +537,22 @@ generic object: EFCaseSearch
 template: x.docket_lookup_choice
 content: |
   Docket number
+---
+only sets:
+  - x.found_case
+generic object: EFCaseSearch
+if: |
+  x.do_what_choice == 'party_search'
+code: |
+  x.somebody.name.first
+  if not x.case_search_task_status.ready():
+    x.case_search_waiting_screen
+  else:
+    x.cms_connection_issue
+    x.found_cases
+    if x.found_cases.gathered and x.found_cases:
+      x.found_case = x.case_choice
+      x.found_case.instanceName = x.attr_name("found_case") # Rewrite the instanceName
+    else:
+      x.warn_no_results
+      x.found_case = None
