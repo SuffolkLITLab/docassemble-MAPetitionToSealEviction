@@ -729,12 +729,12 @@ fields:
 ---
 id: appeal period expired for 139 19 case
 question: |
-  Has it been at least 4 years since the appeal period expired?
+  Has it been at least 7 years since the appeal period expired?
 subquestion: |
   If you are not sure, we can help you calculate it from the date your case
   reached an agreement or the date the judge made a decision.
 fields:
-  - "Has it been at least 4 years since the appeal period expired?": appeal_period_expired_139
+  - "Has it been at least 7 years since the appeal period expired?": appeal_period_expired_139
     datatype: yesnomaybe
 ---
 id: 139 appeal period expired judgment for tenant or no fault eviction
@@ -1022,8 +1022,7 @@ code: |
   nonpayment_appl_expired = (
     eviction_reason_nonpayment
     and judgment_outcome == "landlord"
-    and not prior_eviction_action
-    and not prior_139_action
+    and not non_payment_action
     and not (
         appeal_period_expired_nonpayment == False
         or (
