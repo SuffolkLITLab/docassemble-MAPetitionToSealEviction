@@ -200,7 +200,6 @@ code: |
         prior_139_offense
         if prior_139_offense:
           continue_inapplicable_139_newoffense
-        nav.set_section("date")
         if not ejp_appl_period_exp:
           continue_inapplicable_app_period        
       elif eviction_reason_nofault:
@@ -233,9 +232,10 @@ code: |
 
   set_progress(90)
   nav.set_section("section_notice")
-  notice_date
-  notice_recipient
-  notice_type
+  if notice_required:
+    notice_date
+    notice_recipient
+    notice_type
 
   # Trigger definitions for notice of appearance
   petitioners
@@ -1080,6 +1080,12 @@ code: |
             and judgment_date.plus(years=7).plus(days=10) < today()
         )
     )
+  )
+---
+code: |
+  notice_required = not (
+    case_dismissed or
+    judgment_outcome == "tenant"
   )
 ---
 id: petition to seal eviction review screen
