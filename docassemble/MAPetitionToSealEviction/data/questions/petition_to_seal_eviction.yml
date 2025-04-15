@@ -790,9 +790,9 @@ fields:
   - My case was: case_outcome
     datatype: radio
     choices:
-      - "**Dismissed** by the judge or in a written agreement": dismissed
+      - "**Dismissed** by the court or in a written agreement": dismissed
       - "**Settled**, with judgment for my landlord or for me": settled
-      - Decided by a judge: decided
+      - Decided by the court: decided
       - This was a 139 § 19 case and judgment did not enter for either party: 139_no_resolution
       - I do not know: unknown
   - note: |
