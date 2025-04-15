@@ -604,18 +604,18 @@ id: Non Payment Action
 question: |
   Other evictions for nonpayment of rent
 subquestion: |
-  In the last 4 years, since **${ today().minus(years=4) }**, have any other evictions been brought against you in Massachusetts for not paying your rent?
+  In the last 4 years, since **${ today().minus(years=4) }**, has any other eviction or lessor action been brought against you in Massachusetts for not paying your rent?
 fields:
-  - A landlord has started a new case for me about nonpayment of rent since ${ today().minus(years=4) }: non_payment_action
+  - A landlord has started a new case for me about nonpayment of rent or a lessor action was filed against me since ${ today().minus(years=4) }: non_payment_action
     datatype: yesnoradio
 ---
 id: Fault Eviction
 question: |
   Do you have any other recent eviction cases?
 subquestion: |
-  Has a landlord filed a new eviction case against you at any time in the **last 7 years?**
+  Has someone filed a new eviction case or lessor action against you at any time in the **last 7 years?**
 fields:
-  - Another eviction case was filed against me since **${ today().minus(years=7) }**.: prior_eviction_action
+  - Another eviction case or lessor action was filed against me since **${ today().minus(years=7) }**.: prior_eviction_action
     datatype: yesnoradio
 ---
 id: Fault Action Section 139
@@ -1313,6 +1313,10 @@ subquestion: |
 
 progress: 100
 prevent going back: True
+---
+auto terms:
+  lessor action: |
+    Any civil action brought against the owner, manager or lessor of residential premises by the tenant or occupant of such premises relating to or arising out of such property, rental, tenancy or occupancy for breach of warranty, breach of any material provision of the rental agreement or violation of any other law.
 ---
 # ALDocument objects specify the metadata for each template
 objects:
