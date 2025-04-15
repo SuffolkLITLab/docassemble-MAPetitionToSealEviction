@@ -563,7 +563,8 @@ id: satisfaction of judgment
 question: |
   Satisfaction of judgment
 subquestion: |
-  Even if you paid all of the rent due, you cannot seal the eviction until the payment was officially recorded by the court. This is called "satisfaction of judgment."
+  Even if you paid all of the rent due, you cannot seal the eviction until the payment was officially recorded by the court. 
+  This is called "satisfaction of judgment."
 
   Did any of the following happen?
 fields:
@@ -574,16 +575,15 @@ fields:
       - A judge deemed all amounts due in rent were paid: judge_deemed_satisfied
       - My payment has not been deemed satisfied by the court: False
   - note: |
-      You may want to file a motion to deem the judgment satisfied.
+      :triangle-exclamation:
 
-      If you have paid all the money you owed, but the court has not deemed the judgment 
-      satisfied, you may want to file a motion to deem the judgment satisfied.
+      If you have paid all the money you owed you can ask your landlord to file a Notice of Satisfaction of Judgment with the court. 
 
-      If you are able to, you may also want to ask your landlord to file a notice of 
-      satisfaction of judgment with the court.
-
-      Most tenants should **stop** the interview now and come back after the judgment
-      is officially satisfied in the court's records.
+      If you cannot reach your landlord or they do not file the Notice of Satisfaction, you will need to file a 
+      Petition for Judgment or Agreement to be Deemed Satisfied.
+      
+      Once the Notice of Satisfaction of Judgment has been filed, or Petition for Judgment or Agreement to be Deemed
+      Satisfied has been allowed by the court, come back and complete the interview and Petition to Seal your Eviction Record.
     show if:
       variable: non_payment_cured
       is: False
@@ -754,14 +754,6 @@ question: |
   When was the court decision final?
 subquestion: |
   The date that the court decision was final is called the **judgment date**.
-
-  The judgment date could be:
-
-  * The date the judge made a decision, or
-  * A date that you and the landlord agreed judgment would enter in writing. 
-  
-  It might **not** be the same as the date you signed any agreement. Look at the paperwork you
-  have to be sure.
 fields:
   - "Judgment entered on:": judgment_date
     datatype: ThreePartsDate
