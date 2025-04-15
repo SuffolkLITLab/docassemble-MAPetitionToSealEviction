@@ -563,7 +563,8 @@ id: satisfaction of judgment
 question: |
   Satisfaction of judgment
 subquestion: |
-  Even if you paid all of the rent due, you cannot seal the eviction until the payment was officially recorded by the court. This is called "satisfaction of judgment."
+  Even if you paid all of the rent due, you cannot seal the eviction until the payment was officially recorded by the court. 
+  This is called "satisfaction of judgment."
 
   Did any of the following happen?
 fields:
@@ -574,16 +575,15 @@ fields:
       - A judge deemed all amounts due in rent were paid: judge_deemed_satisfied
       - My payment has not been deemed satisfied by the court: False
   - note: |
-      You may want to file a motion to deem the judgment satisfied.
+      :triangle-exclamation:
 
-      If you have paid all the money you owed, but the court has not deemed the judgment 
-      satisfied, you may want to file a motion to deem the judgment satisfied.
+      If you have paid all the money you owed you can ask your landlord to file a Notice of Satisfaction of Judgment with the court. 
 
-      If you are able to, you may also want to ask your landlord to file a notice of 
-      satisfaction of judgment with the court.
-
-      Most tenants should **stop** the interview now and come back after the judgment
-      is officially satisfied in the court's records.
+      If you cannot reach your landlord or they do not file the Notice of Satisfaction, you will need to file a 
+      Petition for Judgment or Agreement to be Deemed Satisfied.
+      
+      Once the Notice of Satisfaction of Judgment has been filed, or Petition for Judgment or Agreement to be Deemed
+      Satisfied has been allowed by the court, come back and complete the interview and Petition to Seal your Eviction Record.
     show if:
       variable: non_payment_cured
       is: False
@@ -604,18 +604,18 @@ id: Non Payment Action
 question: |
   Other evictions for nonpayment of rent
 subquestion: |
-  In the last 4 years, since **${ today().minus(years=4) }**, have any other evictions been brought against you in Massachusetts for not paying your rent?
+  In the last 4 years, since **${ today().minus(years=4) }**, has any other eviction or lessor action been brought against you in Massachusetts for not paying your rent?
 fields:
-  - A landlord has started a new case for me about nonpayment of rent since ${ today().minus(years=4) }: non_payment_action
+  - A landlord has started a new case for me about nonpayment of rent or a lessor action was filed against me since ${ today().minus(years=4) }: non_payment_action
     datatype: yesnoradio
 ---
 id: Fault Eviction
 question: |
   Do you have any other recent eviction cases?
 subquestion: |
-  Has a landlord filed a new eviction case against you at any time in the **last 7 years?**
+  Has someone filed a new eviction case or lessor action against you at any time in the **last 7 years?**
 fields:
-  - Another eviction case was filed against me since **${ today().minus(years=7) }**.: prior_eviction_action
+  - Another eviction case or lessor action was filed against me since **${ today().minus(years=7) }**.: prior_eviction_action
     datatype: yesnoradio
 ---
 id: Fault Action Section 139
@@ -678,7 +678,7 @@ fields:
       is: email
   - code: |
       service_address.address_fields(show_if={"variable": "notice_type", "is": "mail"} )
-  - "Date I will deliver notice": notice_date
+  - "Service date": notice_date
     datatype: date
     default: ${ today().format("yyyy-MM-dd") }
 ---
@@ -754,14 +754,6 @@ question: |
   When was the court decision final?
 subquestion: |
   The date that the court decision was final is called the **judgment date**.
-
-  The judgment date could be:
-
-  * The date the judge made a decision, or
-  * A date that you and the landlord agreed judgment would enter in writing. 
-  
-  It might **not** be the same as the date you signed any agreement. Look at the paperwork you
-  have to be sure.
 fields:
   - "Judgment entered on:": judgment_date
     datatype: ThreePartsDate
@@ -790,9 +782,9 @@ fields:
   - My case was: case_outcome
     datatype: radio
     choices:
-      - "**Dismissed** by the judge or in a written agreement": dismissed
+      - "**Dismissed** by the court or in a written agreement": dismissed
       - "**Settled**, with judgment for my landlord or for me": settled
-      - Decided by a judge: decided
+      - Decided by the court: decided
       - This was a 139 § 19 case and judgment did not enter for either party: 139_no_resolution
       - I do not know: unknown
   - note: |
@@ -821,11 +813,30 @@ content: |
   If you signed an agreement, it might have been an agreement to dismiss the case,
   or an agreement that said one party had a judgment against them.
 
-  * If your agreement is a "stipulation of dismissal", you usually should check the box for "dismissed."
-  * If your agreement is called an "agreement for judgment," you usually should check the box for "settled."
+  Look for key words in the agreement or decision title.
 
-  Your document may use either title, or a different title. Look closely at the document to see what it says.
+  A **stipulation of dismissal** is a written agreement by the parties asking the court to dismiss the case. 
+  The parties may include some other terms in the agreement, but the main purpose of the agreement is to request the 
+  case be dismissed. If your agreement was a stipulation of dismissal, then check the box that says, 
+  “The eviction case was dismissed by the court or in a written agreement.”
 
+  An **agreement for judgment** is a written agreement by the parties asking the court to enter judgment in favor
+  of either the landlord or the tenant. The agreement for judgment may include other terms but the main purpose
+  is to request that the court enter a judgment.
+  
+  * If your agreement was an agreement for judgment in your favor,
+  then check the box that says, “The eviction case ended with a court ruling in my favor.”
+  * If the agreement for judgment was if favor of your landlord, then check the box that says, 
+  “The eviction case ended with the court ruling against me.”
+
+  A **default judgment** enters when the tenant fails to appear in court and the landlord appears. 
+  If a default judgment was entered against you, check the box that says, 
+  “The eviction case ended with the court ruling against me”
+  
+  A **dismissal judgment** enters when the landlord fails to appear in court and the tenant appears. 
+  If a dismissal judgment was entered against your landlord, check the box that says, 
+  “The eviction case was dismissed by the court or in a written agreement.”
+  
   You may also find the information on [MassCourts.org](https://masscourts.org):up-right-from-square: (opens in new tab).
 ---
 template: judgment_entered_template
@@ -1313,6 +1324,12 @@ subquestion: |
 
 progress: 100
 prevent going back: True
+---
+auto terms:
+  lessor action: |
+    Any civil action brought against the owner, manager or lessor of residential premises by the tenant or occupant of such premises relating to or arising out of such property, rental, tenancy or occupancy for breach of warranty, breach of any material provision of the rental agreement or violation of any other law.
+  service date: |
+    The date you will give a copy of the petition to the other side. This is called "service of process."
 ---
 # ALDocument objects specify the metadata for each template
 objects:
