@@ -17,30 +17,44 @@ include:
   - docassemble.EFSPIntegration:case_search.yml
   - docassemble.EFSPIntegration:unauthenticated_actions.yml  
 ---
+need:
+  - notice_of_appearance_form_attachment.enabled
 ################ Trigger the e-filing variables in order #################
 code: |
+  
   if can_check_efile:
     if petition_is_efileable:
+      show_any_disclaimers
+      al_court_bundle.has_courtesy_copies
       if not efile_calculation_task.ready():
-        efile_calculation_task_waiting_screen
+        efile_calculation_task_waiting_screen      
     else:
       warn_sorry_not_efileable
+    interstitial_screen
+
+  if petition_is_efileable:
+    tyler_payment_id
+
+    efile_user_reviewed
+
+    if not efile_submission_task.ready():
+      efile_submission_waiting_screen
+    show_efile_resp
+    if efile_resp.is_ok() and proxy_conn.default_jurisdiction != 'louisiana' and submitted_court_reserve_resp.is_ok():
+      show_court_reserve_resp
+
   interview_order_efiling = True
 ---
-id: efile
-code: |
-  # Q: I put this in its own block to prevent possible idempotency issues. Not sure if necessary
-  if not efile_submission_task.ready():
-    efile_submission_task_waiting_screen
-  efile_once = True
+continue button field: interstitial_screen
+question: |
+  We are ready to e-file your forms
 ---
 code: |
   efile_calculation_task = background_action("efile_calculation_background_task")
 ---
 event: efile_calculation_background_task
 code: |
-  # All the time-consuming stuff that doesn't require user interaction
-  show_any_disclaimers
+  # All the time-consuming stuff that doesn't require user interaction  
   users[0].is_form_filler
   efile_case_category
   efile_case_type
@@ -52,15 +66,50 @@ code: |
     item.filing_type
     item.filing_parties
   al_court_bundle.completed
+
+  # Make the cached PDFs
+  download_response = al_court_bundle.get_cacheable_documents(key="final", pdf=True, docx=False, include_full_pdf=True)
+
   if not fees_resp.is_ok():
     log("Something went wrong with the fees calculation")
+  # check_resp = proxy_conn.check_filing(court_id, al_court_bundle)
+  
   ready_to_efile
+
+  background_response_action(
+      "efile_calculation_task_save_variables",
+      al_court_bundle=al_court_bundle,
+      is_form_filler=users[0].is_form_filler,
+      efile_case_category=efile_case_category,
+      efile_case_type=efile_case_type,
+      cross_references=cross_references,
+      fees_resp=fees_resp,
+      check_resp=check_resp,
+      download_response=download_response,
+      ready_to_efile=ready_to_efile,
+  )
+---
+id: save efile variables calculated in background action
+event: efile_calculation_task_save_variables
+code: |
+  al_court_bundle = action_argument("al_court_bundle")
+  al_court_bundle._downloadable_files = action_argument("download_response")
+
+  users[0].is_form_filler = action_argument("is_form_filler")
+  efile_case_category = action_argument("efile_case_category")
+  efile_case_type = action_argument("efile_case_type")
+  cross_references = action_argument("cross_references")
+  fees_resp = action_argument("fees_resp")
+  check_resp = action_argument("check_resp")
+  ready_to_efile = action_argument("ready_to_efile")
+
+
   background_response()
 ---
 id: efile calculation task waiting screen
 event: efile_calculation_task_waiting_screen
 question: |
-  Preparing to e-file
+  Verifying information for e-filing
 subquestion: |
   <div class="container animation-container">
     <div class="icons-wrapper">
@@ -138,6 +187,22 @@ css: |
     }
   </style>
 reload: 5
+---
+code: |
+  efile_submission_task = background_action("efile_submission_background_task")
+---
+event: efile_submission_background_task
+code: |
+  # Send the actual documents to the court
+  efile_resp
+  efile = efile_resp.is_ok()
+  background_response_action("efile_submission_task_save_variables", efile_resp=efile_resp, efile=efile)
+---
+event: efile_submission_task_save_variables
+code: |
+  efile_resp=action_argument("efile_resp")
+  efile=action_argument("efile")
+  background_response()
 ---
 id: efile submission waiting screen
 event: efile_submission_waiting_screen
@@ -241,14 +306,6 @@ css: |
   </style>
 
 reload: 5
----
-code: |
-  efile_submission_task = background_action("efile_submission_background_task")
----
-event: efile_submission_background_task
-code: |
-  efile
-  background_response()
 ---
 code: |
   form_uses_efiling = True
@@ -765,6 +822,8 @@ code: |
       x.warn_no_results
       x.found_case = None
 ---
+only sets: 
+  - login_failed_screen
 id: Login failed
 continue button field: login_failed_screen
 question: |
@@ -787,7 +846,6 @@ subquestion: |
   <div class="d-flex justify-content-center align-items-center h-100">
     <div class="alert alert-warning text-center" role="alert">
       Status ${ tyler_login_resp.response_code }
-      <p>${ tyler_login_resp.data }</p>
     </div>
   </div>
 
@@ -797,3 +855,67 @@ subquestion: |
 validation code: |
   can_check_efile = False
 back button label: Back
+---
+id: ready to efile
+question: |
+  Final review before e-filing
+subquestion: |
+  
+  % if ready_to_efile:
+  Below is your Petition to Seal Eviction
+  that we will deliver to the ${trial_court} clerk.
+
+  We will deliver it securely. Please allow up to 15 minutes for the filing to
+  arrive. We will email you a confirmation that it was delivered and additional
+  information about what's next.
+  
+  Click **Back** if you need to make any changes.
+  Click **Send to court** to deliver it.
+  
+  Here is what the ${trial_court} clerk will get:
+  % else:
+
+  We ran into some technical problems and there was a problem delivering this to the ${ trial_court}.
+  You can download the form below to print and submit.
+
+  % endif
+
+  ${ al_court_bundle._downloadable_files[2] }
+
+  % if ready_to_efile:
+  Your forms are not e-filed until you press **Send to court** below.
+  % endif
+continue button field: efile_user_reviewed
+continue button label: ":file-export: Send to court"
+---
+generic object: ALDocumentBundle
+code: |
+  if x.enabled:
+    x.filing_type
+    x.filing_component_options
+    x.document_type_options
+    if len(x.enabled_documents()) > 1 and len(x.filing_component_options) == 1 and not x.filing_component_map[x.filing_component_options[0][0]]['allowmultiple']:
+      x.filing_component
+      x.document_type
+      x.tyler_merge_attachments = True
+    else:
+      for subdoc in x.enabled_documents():
+        subdoc.filing_type = x.filing_type
+        subdoc.filing_component_options = x.filing_component_options
+        subdoc.filing_component_map = x.filing_component_map
+        subdoc.filing_component
+        subdoc.document_type_options = x.document_type_options
+        subdoc.document_type_map = x.document_type_map
+        subdoc.document_type
+    x.filing_description
+    if filing_comment_datafield.get("isvisible"):
+      x.filing_comment
+    x.reference_number
+    x.motion_type
+    x.filing_parties
+    x.filing_action
+    x.has_courtesy_copies
+    x.added_necessary_opt_services
+    x.optional_services.gather()
+    # x.as_pdf('preview', refresh=False)
+  x.completed = True
