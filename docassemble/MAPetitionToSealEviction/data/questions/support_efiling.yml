@@ -914,3 +914,27 @@ code: |
     x.optional_services.gather()
     # x.as_pdf('preview', refresh=False)
   x.completed = True
+---
+only sets:
+  - case_search.warn_no_results
+if: not case_search.can_file_non_indexed_case
+id: no cases found, fail
+continue button field: case_search.warn_no_results
+question: |
+  No cases found
+subquestion: |
+  % if case_search.cms_connection_issue:
+  This may be because the court's case management system is currently offline.
+  % endif
+
+  % if case_search.search_went_wrong():
+  Something went wrong with the e-filing system when searching for cases.
+  % endif
+
+  You can:
+
+  * Click **Back** to try searching for a different case, or
+  * Click **Next** to continue with the rest of the interview without e-filing
+back button label: Back
+validation code: |
+  can_check_efile = False
