@@ -17,15 +17,21 @@ include:
   - docassemble.EFSPIntegration:case_search.yml
   - docassemble.EFSPIntegration:unauthenticated_actions.yml  
 ---
+need:
+  - notice_of_appearance_form_attachment.enabled
 ################ Trigger the e-filing variables in order #################
 code: |
+  
   if can_check_efile:
     if petition_is_efileable:
+      show_any_disclaimers
+      al_court_bundle.has_courtesy_copies
+
+      # Start slightly time-consuming e-filing prep
       users[0].is_form_filler
       efile_case_category
       efile_case_type
       cross_references.gather()
-      show_any_disclaimers
       # petition_to_seal_eviction_attachment.completed # Trigger the e-filing specific variables. I don't really like this being hidden like it is now though!
       al_court_bundle.filing_parties
       for item in al_court_bundle.enabled_documents():
@@ -33,10 +39,25 @@ code: |
         item.filing_type
         item.filing_parties
       al_court_bundle.completed
+
       review_fees
       ready_to_efile
+
+      # launch the background task to check e-file readiness
+      # This makes the fee_resp and check_resp variables
+      if not efile_calculation_task.ready():
+        efile_calculation_task_waiting_screen      
     else:
       warn_sorry_not_efileable
+
+  if petition_is_efileable:
+    tyler_payment_id
+
+    efile_user_reviewed
+
+  if petition_is_efileable:
+    efile_once
+
   interview_order_efiling = True
 ---
 id: efile
@@ -44,6 +65,242 @@ code: |
   # Q: I put this in its own block to prevent possible idempotency issues. Not sure if necessary
   efile
   efile_once = True
+---
+continue button field: interstitial_screen
+question: |
+  We are ready to e-file your forms
+---
+code: |
+  efile_calculation_task = background_action("efile_calculation_background_task")
+---
+event: efile_calculation_background_task
+code: |
+  # All the time-consuming stuff that doesn't require user interaction  
+
+  # # Make the cached PDFs
+  # download_response = al_court_bundle.get_cacheable_documents(key="final", pdf=True, docx=False, include_full_pdf=True)
+
+  if not fees_resp.is_ok():
+    log("Something went wrong with the fees calculation")
+  
+  check_resp = proxy_conn.check_filing(court_id, al_court_bundle)
+  
+  ready_to_efile
+
+  background_response_action(
+      "efile_calculation_task_save_variables",
+      fees_resp=fees_resp,
+      check_resp=check_resp,
+  )
+---
+id: save efile variables calculated in background action
+event: efile_calculation_task_save_variables
+code: |
+  fees_resp = action_argument("fees_resp")
+  check_resp = action_argument("check_resp")
+
+  background_response()
+---
+id: efile calculation task waiting screen
+event: efile_calculation_task_waiting_screen
+question: |
+  Verifying information for e-filing
+subquestion: |
+  <div class="container animation-container">
+    <div class="icons-wrapper">
+      <!-- File icon that slides across -->
+      <i class="fas fa-file file-icon"></i>
+      <!-- Spinning cog icon representing processing -->
+      <i class="fas fa-cog spinner-icon"></i>
+    </div>
+  </div>
+css: |
+  <style>
+    .animation-container {
+      margin: 50px auto;
+      text-align: center;
+      max-width: 600px;
+      position: relative;
+    }
+    .icons-wrapper {
+      position: relative;
+      height: 150px;
+    }
+    /* File icon animation: slides from left to right and resets */
+    .file-icon {
+      font-size: 3rem;
+      color: #007bff;
+      position: absolute;
+      top: 30%;
+      /* The animation lasts 4s and loops infinitely */
+      animation: slideFile 4s linear infinite;
+    }
+    /* Spinning cog icon for processing (infinite spin) */
+    .spinner-icon {
+      font-size: 3rem;
+      color: #6c757d;
+      position: absolute;
+      right: 0;
+      top: 30%;
+      animation: spin 2s linear infinite;
+    }
+    /* Keyframes for the sliding file icon */
+    @keyframes slideFile {
+      0% {
+        left: -50px;
+        opacity: 0;
+        transform: translateY(-50%) scale(0.8);
+      }
+      15% {
+        opacity: 1;
+        transform: translateY(-50%) scale(1);
+      }
+      45% {
+        left: 50%;
+        opacity: 1;
+        transform: translateX(-50%) translateY(-50%) scale(1);
+      }
+      70% {
+        left: 110%;
+        opacity: 0;
+        transform: translateY(-50%) scale(0.8);
+      }
+      100% {
+        left: -50px;
+        opacity: 0;
+        transform: translateY(-50%) scale(0.8);
+      }
+    }
+    /* Keyframes for spinning (used by the cog icon) */
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+reload: 5
+---
+# code: |
+#   efile_submission_task = background_action("efile_submission_background_task")
+# ---
+# event: efile_submission_background_task
+# code: |
+#   # Send the actual documents to the court
+#   efile_resp
+#   efile = efile_resp.is_ok()
+#   background_response_action("efile_submission_task_save_variables", efile_resp=efile_resp, efile=efile)
+# ---
+# event: efile_submission_task_save_variables
+# code: |
+#   efile_resp=action_argument("efile_resp")
+#   efile=action_argument("efile")
+#   background_response()
+# ---
+# id: efile submission waiting screen
+# event: efile_submission_waiting_screen
+# question: |
+#   Sending your forms to the court
+# subquestion: |
+#   <div class="container text-center">
+#     <div class="animation-container">
+#       <!-- File icon that moves -->
+#       <i class="fas fa-file-alt file-icon"></i>
+#       <!-- Bouncing arrow in the center -->
+#       <i class="fas fa-arrow-right arrow"></i>
+#       <!-- Cloud icon where the file goes -->
+#       <i class="fas fa-cloud cloud-icon"></i>
+#     </div>
+#   </div>
+
+# css: |
+#   <style>
+#     /* Page background */
+#     body {
+#       background-color: #f8f9fa;
+#     }
+
+#     /* Animation container */
+#     .animation-container {
+#       position: relative;
+#       height: 200px;
+#       margin-top: 50px;
+#     }
+
+#     /* Style for the file icon */
+#     .file-icon {
+#       font-size: 4rem;
+#       position: absolute;
+#       left: 0;
+#       top: 50%;
+#       transform: translateY(-50%);
+#       /* Animation that moves the file icon */
+#       animation: moveFile 3s infinite;
+#     }
+
+#     /* Style for the cloud icon */
+#     .cloud-icon {
+#       font-size: 4rem;
+#       position: absolute;
+#       right: 0;
+#       top: 50%;
+#       transform: translateY(-50%);
+#       color: #6c757d;
+#     }
+
+#     /* Animation keyframes for the file moving across */
+#     @keyframes moveFile {
+#       0% {
+#         left: 0;
+#         opacity: 0;
+#         transform: translateY(-50%) scale(0.5);
+#       }
+#       10% {
+#         opacity: 1;
+#         transform: translateY(-50%) scale(1);
+#       }
+#       50% {
+#         left: 45%;
+#         opacity: 1;
+#         transform: translateY(-50%) scale(1);
+#       }
+#       70% {
+#         left: 70%;
+#         opacity: 0.5;
+#         transform: translateY(-50%) scale(0.8);
+#       }
+#       100% {
+#         left: 100%;
+#         opacity: 0;
+#         transform: translateY(-50%) scale(0.5);
+#       }
+#     }
+
+#     /* Style for the bouncing arrow */
+#     .arrow {
+#       position: absolute;
+#       top: 50%;
+#       left: 50%;
+#       transform: translate(-50%, -50%);
+#       font-size: 2rem;
+#       opacity: 0.5;
+#       animation: bounce 1.5s infinite;
+#     }
+
+#     /* Bouncing keyframes for the arrow */
+#     @keyframes bounce {
+#       0%, 100% {
+#         transform: translate(-50%, -50%) translateY(0);
+#       }
+#       50% {
+#         transform: translate(-50%, -50%) translateY(-10px);
+#       }
+#     }
+#   </style>
+
+# reload: 5
 ---
 code: |
   form_uses_efiling = True
@@ -264,6 +521,9 @@ code: |
   disclaimers = disclaimers_tmp
 ---
 code: |
+  # Keeping this in because I think it helps catch
+  # e-filing issues, although calculating fees
+  # isn't always exactly the same as trying to file (different behavior)
   if fees_resp.is_ok():
     pass # There are never fees in this filing
   else:
@@ -556,3 +816,101 @@ code: |
     else:
       x.warn_no_results
       x.found_case = None
+---
+only sets: 
+  - login_failed_screen
+id: Login failed
+continue button field: login_failed_screen
+question: |
+  eFile${ state_name_to_code(jurisdiction_id) } Login failed
+subquestion: |
+  % if int(tyler_login_resp.response_code) == 403:
+  Your login information was not correct. Go back and try again.
+
+  You can reset your password if you think your password is wrong.
+  
+  ${ action_button_html(interview_url(i=logged_out_interview, reset=1, jurisdiction_id=jurisdiction_id), label="Reset your password", new_window=True)}
+
+  You can also register for an account if you do not have one yet.
+
+  ${ action_button_html(interview_url(i=logged_out_interview, reset=1, jurisdiction_id=jurisdiction_id), label="Register for a new account", new_window=True)}
+
+  % else:
+  Something went wrong when logging you in (maybe the e-filing server is offline?). We will not be able to e-file your form.
+
+  <div class="d-flex justify-content-center align-items-center h-100">
+    <div class="alert alert-warning text-center" role="alert">
+      Status ${ tyler_login_resp.response_code }
+    </div>
+  </div>
+
+  % endif
+
+  Click **Next** to continue with the rest of the interview, or **Back** to try again.
+validation code: |
+  can_check_efile = False
+back button label: Back
+---
+id: ready to efile
+question: |
+  Final review before e-filing
+subquestion: |
+  
+  % if ready_to_efile:
+  Below is your Petition to Seal Eviction
+  that we will deliver to the ${trial_court} clerk.
+
+  We will deliver it securely. Please allow up to 15 minutes for the filing to
+  arrive. We will email you a confirmation that it was delivered and additional
+  information about what's next.
+  
+  Click **Back** if you need to make any changes.
+  Click **Send to court** to deliver it.
+  
+  Here is what the ${trial_court} clerk will get:
+  % else:
+
+  We ran into some technical problems and there was a problem delivering this to the ${ trial_court}.
+  You can download the form below to print and submit.
+
+  % endif
+
+  ${ al_court_bundle.as_pdf(key="final") }
+
+  % if ready_to_efile:
+  Your forms are not e-filed until you press **Send to court** below.
+  % endif
+continue button field: efile_user_reviewed
+continue button label: ":file-export: Send to court"
+---
+generic object: ALDocumentBundle
+code: |
+  if x.enabled:
+    x.filing_type
+    x.filing_component_options
+    x.document_type_options
+    if len(x.enabled_documents()) > 1 and len(x.filing_component_options) == 1 and not x.filing_component_map[x.filing_component_options[0][0]]['allowmultiple']:
+      x.filing_component
+      x.document_type
+      x.tyler_merge_attachments = True
+    else:
+      for subdoc in x.enabled_documents():
+        subdoc.filing_type = x.filing_type
+        subdoc.filing_component_options = x.filing_component_options
+        subdoc.filing_component_map = x.filing_component_map
+        subdoc.filing_component
+        subdoc.document_type_options = x.document_type_options
+        subdoc.document_type_map = x.document_type_map
+        subdoc.document_type
+    x.filing_description
+    if filing_comment_datafield.get("isvisible"):
+      x.filing_comment
+    x.reference_number
+    x.motion_type
+    x.filing_parties
+    x.filing_action
+    x.has_courtesy_copies
+    x.added_necessary_opt_services
+    x.optional_services.gather()
+    # x.as_pdf('preview', refresh=False)
+  x.completed = True

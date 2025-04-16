@@ -277,8 +277,6 @@ code: |
   if can_check_efile:    
     nav.set_section("section_efile")
     interview_order_efiling
-    if petition_is_efileable:
-      efile_once
   
   nav.set_section("section_download")
   petition_to_seal_eviction_download
