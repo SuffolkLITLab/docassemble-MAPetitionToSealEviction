@@ -26,24 +26,45 @@ code: |
     if petition_is_efileable:
       show_any_disclaimers
       al_court_bundle.has_courtesy_copies
+
+      # Start slightly time-consuming e-filing prep
+      users[0].is_form_filler
+      efile_case_category
+      efile_case_type
+      cross_references.gather()
+      # petition_to_seal_eviction_attachment.completed # Trigger the e-filing specific variables. I don't really like this being hidden like it is now though!
+      al_court_bundle.filing_parties
+      for item in al_court_bundle.enabled_documents():
+        item.filing_component
+        item.filing_type
+        item.filing_parties
+      al_court_bundle.completed
+
+      review_fees
+      ready_to_efile
+
+      # launch the background task to check e-file readiness
+      # This makes the fee_resp and check_resp variables
       if not efile_calculation_task.ready():
         efile_calculation_task_waiting_screen      
     else:
       warn_sorry_not_efileable
-    interstitial_screen
 
   if petition_is_efileable:
     tyler_payment_id
 
     efile_user_reviewed
 
-    if not efile_submission_task.ready():
-      efile_submission_waiting_screen
-    show_efile_resp
-    if efile_resp.is_ok() and proxy_conn.default_jurisdiction != 'louisiana' and submitted_court_reserve_resp.is_ok():
-      show_court_reserve_resp
+  if petition_is_efileable:
+    efile_once
 
   interview_order_efiling = True
+---
+id: efile
+code: |
+  # Q: I put this in its own block to prevent possible idempotency issues. Not sure if necessary
+  efile
+  efile_once = True
 ---
 continue button field: interstitial_screen
 question: |
@@ -55,54 +76,28 @@ code: |
 event: efile_calculation_background_task
 code: |
   # All the time-consuming stuff that doesn't require user interaction  
-  users[0].is_form_filler
-  efile_case_category
-  efile_case_type
-  cross_references.gather()
-  # petition_to_seal_eviction_attachment.completed # Trigger the e-filing specific variables. I don't really like this being hidden like it is now though!
-  al_court_bundle.filing_parties
-  for item in al_court_bundle.enabled_documents():
-    item.filing_component
-    item.filing_type
-    item.filing_parties
-  al_court_bundle.completed
 
-  # Make the cached PDFs
-  download_response = al_court_bundle.get_cacheable_documents(key="final", pdf=True, docx=False, include_full_pdf=True)
+  # # Make the cached PDFs
+  # download_response = al_court_bundle.get_cacheable_documents(key="final", pdf=True, docx=False, include_full_pdf=True)
 
   if not fees_resp.is_ok():
     log("Something went wrong with the fees calculation")
-  # check_resp = proxy_conn.check_filing(court_id, al_court_bundle)
+  
+  check_resp = proxy_conn.check_filing(court_id, al_court_bundle)
   
   ready_to_efile
 
   background_response_action(
       "efile_calculation_task_save_variables",
-      al_court_bundle=al_court_bundle,
-      is_form_filler=users[0].is_form_filler,
-      efile_case_category=efile_case_category,
-      efile_case_type=efile_case_type,
-      cross_references=cross_references,
       fees_resp=fees_resp,
       check_resp=check_resp,
-      download_response=download_response,
-      ready_to_efile=ready_to_efile,
   )
 ---
 id: save efile variables calculated in background action
 event: efile_calculation_task_save_variables
 code: |
-  al_court_bundle = action_argument("al_court_bundle")
-  al_court_bundle._downloadable_files = action_argument("download_response")
-
-  users[0].is_form_filler = action_argument("is_form_filler")
-  efile_case_category = action_argument("efile_case_category")
-  efile_case_type = action_argument("efile_case_type")
-  cross_references = action_argument("cross_references")
   fees_resp = action_argument("fees_resp")
   check_resp = action_argument("check_resp")
-  ready_to_efile = action_argument("ready_to_efile")
-
 
   background_response()
 ---
@@ -188,124 +183,124 @@ css: |
   </style>
 reload: 5
 ---
-code: |
-  efile_submission_task = background_action("efile_submission_background_task")
----
-event: efile_submission_background_task
-code: |
-  # Send the actual documents to the court
-  efile_resp
-  efile = efile_resp.is_ok()
-  background_response_action("efile_submission_task_save_variables", efile_resp=efile_resp, efile=efile)
----
-event: efile_submission_task_save_variables
-code: |
-  efile_resp=action_argument("efile_resp")
-  efile=action_argument("efile")
-  background_response()
----
-id: efile submission waiting screen
-event: efile_submission_waiting_screen
-question: |
-  Sending your forms to the court
-subquestion: |
-  <div class="container text-center">
-    <div class="animation-container">
-      <!-- File icon that moves -->
-      <i class="fas fa-file-alt file-icon"></i>
-      <!-- Bouncing arrow in the center -->
-      <i class="fas fa-arrow-right arrow"></i>
-      <!-- Cloud icon where the file goes -->
-      <i class="fas fa-cloud cloud-icon"></i>
-    </div>
-  </div>
+# code: |
+#   efile_submission_task = background_action("efile_submission_background_task")
+# ---
+# event: efile_submission_background_task
+# code: |
+#   # Send the actual documents to the court
+#   efile_resp
+#   efile = efile_resp.is_ok()
+#   background_response_action("efile_submission_task_save_variables", efile_resp=efile_resp, efile=efile)
+# ---
+# event: efile_submission_task_save_variables
+# code: |
+#   efile_resp=action_argument("efile_resp")
+#   efile=action_argument("efile")
+#   background_response()
+# ---
+# id: efile submission waiting screen
+# event: efile_submission_waiting_screen
+# question: |
+#   Sending your forms to the court
+# subquestion: |
+#   <div class="container text-center">
+#     <div class="animation-container">
+#       <!-- File icon that moves -->
+#       <i class="fas fa-file-alt file-icon"></i>
+#       <!-- Bouncing arrow in the center -->
+#       <i class="fas fa-arrow-right arrow"></i>
+#       <!-- Cloud icon where the file goes -->
+#       <i class="fas fa-cloud cloud-icon"></i>
+#     </div>
+#   </div>
 
-css: |
-  <style>
-    /* Page background */
-    body {
-      background-color: #f8f9fa;
-    }
+# css: |
+#   <style>
+#     /* Page background */
+#     body {
+#       background-color: #f8f9fa;
+#     }
 
-    /* Animation container */
-    .animation-container {
-      position: relative;
-      height: 200px;
-      margin-top: 50px;
-    }
+#     /* Animation container */
+#     .animation-container {
+#       position: relative;
+#       height: 200px;
+#       margin-top: 50px;
+#     }
 
-    /* Style for the file icon */
-    .file-icon {
-      font-size: 4rem;
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      /* Animation that moves the file icon */
-      animation: moveFile 3s infinite;
-    }
+#     /* Style for the file icon */
+#     .file-icon {
+#       font-size: 4rem;
+#       position: absolute;
+#       left: 0;
+#       top: 50%;
+#       transform: translateY(-50%);
+#       /* Animation that moves the file icon */
+#       animation: moveFile 3s infinite;
+#     }
 
-    /* Style for the cloud icon */
-    .cloud-icon {
-      font-size: 4rem;
-      position: absolute;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #6c757d;
-    }
+#     /* Style for the cloud icon */
+#     .cloud-icon {
+#       font-size: 4rem;
+#       position: absolute;
+#       right: 0;
+#       top: 50%;
+#       transform: translateY(-50%);
+#       color: #6c757d;
+#     }
 
-    /* Animation keyframes for the file moving across */
-    @keyframes moveFile {
-      0% {
-        left: 0;
-        opacity: 0;
-        transform: translateY(-50%) scale(0.5);
-      }
-      10% {
-        opacity: 1;
-        transform: translateY(-50%) scale(1);
-      }
-      50% {
-        left: 45%;
-        opacity: 1;
-        transform: translateY(-50%) scale(1);
-      }
-      70% {
-        left: 70%;
-        opacity: 0.5;
-        transform: translateY(-50%) scale(0.8);
-      }
-      100% {
-        left: 100%;
-        opacity: 0;
-        transform: translateY(-50%) scale(0.5);
-      }
-    }
+#     /* Animation keyframes for the file moving across */
+#     @keyframes moveFile {
+#       0% {
+#         left: 0;
+#         opacity: 0;
+#         transform: translateY(-50%) scale(0.5);
+#       }
+#       10% {
+#         opacity: 1;
+#         transform: translateY(-50%) scale(1);
+#       }
+#       50% {
+#         left: 45%;
+#         opacity: 1;
+#         transform: translateY(-50%) scale(1);
+#       }
+#       70% {
+#         left: 70%;
+#         opacity: 0.5;
+#         transform: translateY(-50%) scale(0.8);
+#       }
+#       100% {
+#         left: 100%;
+#         opacity: 0;
+#         transform: translateY(-50%) scale(0.5);
+#       }
+#     }
 
-    /* Style for the bouncing arrow */
-    .arrow {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 2rem;
-      opacity: 0.5;
-      animation: bounce 1.5s infinite;
-    }
+#     /* Style for the bouncing arrow */
+#     .arrow {
+#       position: absolute;
+#       top: 50%;
+#       left: 50%;
+#       transform: translate(-50%, -50%);
+#       font-size: 2rem;
+#       opacity: 0.5;
+#       animation: bounce 1.5s infinite;
+#     }
 
-    /* Bouncing keyframes for the arrow */
-    @keyframes bounce {
-      0%, 100% {
-        transform: translate(-50%, -50%) translateY(0);
-      }
-      50% {
-        transform: translate(-50%, -50%) translateY(-10px);
-      }
-    }
-  </style>
+#     /* Bouncing keyframes for the arrow */
+#     @keyframes bounce {
+#       0%, 100% {
+#         transform: translate(-50%, -50%) translateY(0);
+#       }
+#       50% {
+#         transform: translate(-50%, -50%) translateY(-10px);
+#       }
+#     }
+#   </style>
 
-reload: 5
+# reload: 5
 ---
 code: |
   form_uses_efiling = True
@@ -880,7 +875,7 @@ subquestion: |
 
   % endif
 
-  ${ al_court_bundle._downloadable_files[2] }
+  ${ al_court_bundle.as_pdf(key="final") }
 
   % if ready_to_efile:
   Your forms are not e-filed until you press **Send to court** below.
