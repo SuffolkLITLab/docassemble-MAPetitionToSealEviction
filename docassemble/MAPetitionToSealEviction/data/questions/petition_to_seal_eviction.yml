@@ -778,30 +778,26 @@ question: |
 subquestion: |
   ${ collapse_template(case_outcome_template) }
 fields:
-  - My case was: case_outcome
+  - My eviction case was: case_outcome
     datatype: radio
     choices:
       - "**Dismissed** by the court or in a written agreement": dismissed
-      - "**Settled**, with judgment for my landlord or for me": settled
-      - Decided by the court: decided
+      - "Ended with a court ruling **in my favor**": decided_for_me # settled
+      - Ended with a court ruling **against me**: decided_against_me # decided
       - This was a 139 § 19 case and judgment did not enter for either party: 139_no_resolution
       - I do not know: unknown
-  - note: |
-      ${ collapse_template(judgment_entered_template) }
-    js show if: |
-      val("case_outcome") == "decided" || val("case_outcome") == "settled" || val("case_outcome") == "unknown"
-  - And the person who judgment entered for was: judgment_outcome
-    datatype: radio
-    choices:
-      - The landlord: landlord
-      - Me: tenant
-      - I do not know: unknown
-    js show if: |
-      val("case_outcome") == "decided" || val("case_outcome") == "settled" || val("case_outcome") == "unknown"
 validation code: |
   if case_outcome == "139_no_resolution":
     judgment_outcome = "nobody"
     eviction_reason_139 = True
+  elif case_outcome == "decided_for_me":
+    judgment_outcome = "tenant"
+  elif case_outcome == "decided_against_me":
+    judgment_outcome = "landlord"
+  elif case_outcome == "unknown":
+    judgment_outcome = "unknown"
+  else:
+    judgment_outcome = None
 ---
 template: case_outcome_template
 subject: |
@@ -817,38 +813,25 @@ content: |
   A **stipulation of dismissal** is a written agreement by the parties asking the court to dismiss the case. 
   The parties may include some other terms in the agreement, but the main purpose of the agreement is to request the 
   case be dismissed. If your agreement was a stipulation of dismissal, then check the box that says, 
-  “The eviction case was dismissed by the court or in a written agreement.”
+  "The eviction case was dismissed by the court or in a written agreement."
 
   An **agreement for judgment** is a written agreement by the parties asking the court to enter judgment in favor
   of either the landlord or the tenant. The agreement for judgment may include other terms but the main purpose
   is to request that the court enter a judgment.
   
   * If your agreement was an agreement for judgment in your favor,
-  then check the box that says, “The eviction case ended with a court ruling in my favor.”
-  * If the agreement for judgment was if favor of your landlord, then check the box that says, 
-  “The eviction case ended with the court ruling against me.”
+  then check the box that says, "The eviction case ended with a court ruling in my favor."
+  * If the agreement for judgment was in favor of your landlord, then check the box that says, 
+  "The eviction case ended with the court ruling against me."
 
   A **default judgment** enters when the tenant fails to appear in court and the landlord appears. 
   If a default judgment was entered against you, check the box that says, 
-  “The eviction case ended with the court ruling against me”
+  "The eviction case ended with the court ruling against me"
   
   A **dismissal judgment** enters when the landlord fails to appear in court and the tenant appears. 
   If a dismissal judgment was entered against your landlord, check the box that says, 
-  “The eviction case was dismissed by the court or in a written agreement.”
+  "The eviction case was dismissed by the court or in a written agreement."
   
-  You may also find the information on [MassCourts.org](https://masscourts.org):up-right-from-square: (opens in new tab).
----
-template: judgment_entered_template
-subject: |
-  How do I know who the judgment entered for?
-content: | 
-  If you lost the case at trial, judgment entered for your landlord. If you won, judgment entered for you.
-
-  If you signed an agreement, You need to look at the agreement you signed to see who the judgment entered for.
-  If you promised to do something in the future, like pay back rent or change your behavior, the 
-  judgment may have entered for your landlord even if you did what the landlord asked you to
-  do.
-
   You may also find the information on [MassCourts.org](https://masscourts.org):up-right-from-square: (opens in new tab).
 ---
 code: |
