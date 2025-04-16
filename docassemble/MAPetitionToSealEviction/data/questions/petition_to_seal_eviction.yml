@@ -72,7 +72,7 @@ code: |
   AL_DEFAULT_STATE = "MA"
 ---
 code: |
-  github_repo_name =  'docassemble-PetitionToSealEviction'
+  github_repo_name =  'docassemble-MAPetitionToSealEviction'
 ---
 code: |
   interview_short_title = "File a petition to seal an eviction"
