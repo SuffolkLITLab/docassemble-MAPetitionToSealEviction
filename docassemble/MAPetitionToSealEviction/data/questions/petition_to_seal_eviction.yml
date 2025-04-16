@@ -136,7 +136,7 @@ code: |
   al_intro_screen  
   petition_to_seal_eviction_intro
   al_person_answering
-  if al_person_answering == "attorney":
+  if al_person_answering in ["attorney", "attorney_ghostwriting"]:
     attorney_message
 
   nav.set_section("section_court_info")
@@ -322,6 +322,7 @@ fields:
     choices:
       - Tenant asking to seal my eviction case: user
       - Attorney for the tenant: attorney
+      - Attorney assisting in preparation of this pleading in accordance with Trial Court Rule XVI: attorney_ghostwriting 
   - Is this your **first** appearance on behalf of this tenant?: attorney_first_appearance
     datatype: yesnoradio
     show if:
