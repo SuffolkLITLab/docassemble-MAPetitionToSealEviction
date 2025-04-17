@@ -119,7 +119,7 @@ data:
   - section_review: Review your form
   - section_signature: Signature
   - section_efile: eFile
-    hidden: ${ showifdef("can_check_efile") == False }
+    hidden: ${ showifdef("can_check_efile") == False or showifdef("petition_is_efileable") == False }
   - section_download: Download
 ---
 #################### Interview order #####################
@@ -148,6 +148,8 @@ code: |
     tyler_login
     if case_search.found_case:
       previous_case_id = case_search.found_case.tracking_id
+      if not petition_is_efileable:
+        warn_sorry_not_efileable
       add_existing_users
     invalidate_address_information_once # Don't assume tenant is at the same address as in original case
   
@@ -255,17 +257,6 @@ code: |
   interview_order_petition_to_seal_eviction
 
   signature_date
-  # Store anonymous data for analytics / statistics
-  store_variables_snapshot(
-      persistent=True,
-      data={
-          "zip": showifdef("users[0].address.zip"),
-          "trial_court": showifdef("trial_court"),
-          "al_person_answering": showifdef("al_person_answering"),
-          "efiled": showifdef("can_check_efile"),
-          "reached_interview_end": True,
-      },
-  )
   set_progress(99)
   
   nav.set_section("section_review")
@@ -277,7 +268,28 @@ code: |
   if can_check_efile:    
     nav.set_section("section_efile")
     interview_order_efiling
-  
+
+  # Store anonymous data for analytics / statistics
+  store_variables_snapshot(
+      persistent=True,
+      data={
+          "zip": showifdef("users[0].address.zip"),
+          "tenancy_zip": showifdef("users[0].tenancy_address.zip"),
+          "trial_court": showifdef("trial_court.name"),
+          "trial_court_code": showifdef("trial_court.court_code"),
+          "al_person_answering": showifdef("al_person_answering"),
+          "user_wants_efile": showifdef("user_wants_efile"),
+          "petition_is_efileable": showifdef("petition_is_efileable"),
+          "efiled": showifdef("efile"),
+          "case_type": showifdef("case_search.found_case.case_type_name"),
+          "judgment_outcome": showifdef("judgment_outcome"),
+          "case_outcome": showifdef("case_outcome"),
+          "eviction_reason": showifdef("eviction_reason"),
+          "reached_interview_end": True,
+      },
+  )
+
+  set_progress(100)
   nav.set_section("section_download")
   petition_to_seal_eviction_download
   
@@ -354,7 +366,7 @@ subquestion: |
 
   ${ collapse_template(eviction_reason_template) }
 
-  % if can_check_efile and case_search.found_case and predicted_eviction_reason:
+  % if can_check_efile and case_search.found_case and predicted_eviction_reason and trial_court.department == "Housing Court":
   <div class="border rounded p-3 alert-info text-dark" style="position: relative; overflow: visible; word-wrap: break-word;">
     <p><i class="fa-solid fa-circle-info"></i>
     We used the information we found in your court records to automatically
@@ -376,7 +388,7 @@ fields:
       - "Fault: I broke the lease other than owing rent. For example: a noise complaint or damage to the apartment, or repeatedly paying the rent late.": eviction_reason_fault
       - "No fault: They did not want to rent to me any longer, but not because of something I did": eviction_reason_nofault
       - "139 § 19: I broke the law and they filed an emergency eviction under G.L. c. 139, § 19. For example, they claim I had drugs, had an illegal weapon, acted violently, or violated another criminal law.": eviction_reason_139
-    default: ${ showifdef("predicted_eviction_reason") }
+    default: ${ showifdef("predicted_eviction_reason") if trial_court.department == "Housing Court" else '' }
 validation code: |
   # TODO: we can remove this validation code if we update template to new format
   eviction_reason_nonpayment = eviction_reason_fault = eviction_reason_nofault = eviction_reason_139 = False
