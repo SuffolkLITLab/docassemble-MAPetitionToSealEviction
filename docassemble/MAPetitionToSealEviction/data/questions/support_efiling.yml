@@ -460,8 +460,7 @@ code: |
 ---
 code: |
   # Because we cannot do name lookup
-  # Don't set it, make it a default because otherwise fixing it is a pain
-  # case_search.docket_number_from_user = docket_number
+  case_search.docket_number_from_user = docket_number
 ---
 code: |
   # petition_to_seal_eviction_attachment.filing_description = "Petition to Seal Eviction Record"
@@ -811,7 +810,7 @@ content: |
 id: docket id
 generic object: EFCaseSearch
 question: |
-  Confirm your docket number
+  What is the docket number for your eviction case?
 subquestion: |
   We will search for your case using the docket number you enter below. Review and
   make sure that it is correct.
@@ -819,8 +818,17 @@ subquestion: |
   ${ collapse_template(find_my_docket_number_template) }
 fields:
   - ${ str(x.docket_lookup_choice) }: x.docket_number_from_user
-    default: |
-      ${ showifdef("docket_number") }
+    under text: |
+      Example: **30H84SP009123**. (This is not a real docket number. Use the number on your paperwork.)
+  - note: |
+      This might not be a valid docket number. Check the number on your paperwork,
+      and make sure you do not include any spaces or dashes. Letters in a docket
+      number are usually uppercase.
+    js show if: | # Use javascript to validate the docket number
+      val("docket_number") != "" &&  
+            !/^\d{2,4}(?:[A-Z]\d{2}|\d{2})[A-Z]{2}\d+$/.test(
+              val("docket_number")
+            );
 ---
 only sets:
   - x.found_case

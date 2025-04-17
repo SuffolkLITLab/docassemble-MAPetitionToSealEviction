@@ -903,26 +903,26 @@ fields:
       variable: trial_court
       is: null
 ---
-code: |
-  # Because we disabled name lookup
-  # Start with docket number lookup, since it is now mandatory
-  # This block is highest priority  
-  if all_courts.courts_from_docket_number(docket_number):
-    trial_court = all_courts.courts_from_docket_number(docket_number)[0]
-    # let the user know that we found a court
-    confirm_trial_court
----
-only sets:
-  - confirm_trial_court
-continue button field: confirm_trial_court
-id: confirm_trial_court
-question: |
-  We found a court that matches your docket number
-subquestion: |
-  The court that matches your docket number is ${ trial_court }.
+# code: |
+#   # Because we disabled name lookup
+#   # Start with docket number lookup, since it is now mandatory
+#   # This block is highest priority  
+#   if all_courts.courts_from_docket_number(docket_number):
+#     trial_court = all_courts.courts_from_docket_number(docket_number)[0]
+#     # let the user know that we found a court
+#     confirm_trial_court
+# ---
+# only sets:
+#   - confirm_trial_court
+# continue button field: confirm_trial_court
+# id: confirm_trial_court
+# question: |
+#   We found a court that matches your docket number
+# subquestion: |
+#   The court that matches your docket number is ${ trial_court }.
 
-  If this is not the right court, click the "Undo" button and try
-  a different docket number.
+#   If this is not the right court, click the "Undo" button and try
+#   a different docket number.
 ---
 id: name of landlord
 question: |
