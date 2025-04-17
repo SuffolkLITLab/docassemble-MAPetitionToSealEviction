@@ -871,7 +871,7 @@ fields:
   - no label: trial_court
     datatype: object
     object labeler: court_short_label
-    choices: all_courts.filter_courts(allowed_courts)   
+    choices: all_courts.filter_courts(allowed_courts)
 ---
 if: |
   len(all_matches) and all_courts.filter_courts(allowed_courts) 
@@ -902,6 +902,27 @@ fields:
     show if:
       variable: trial_court
       is: null
+---
+code: |
+  # Because we disabled name lookup
+  # Start with docket number lookup, since it is now mandatory
+  # This block is highest priority  
+  if all_courts.courts_from_docket_number(docket_number):
+    trial_court = all_courts.courts_from_docket_number(docket_number)[0]
+    # let the user know that we found a court
+    confirm_trial_court
+---
+only sets:
+  - confirm_trial_court
+continue button field: confirm_trial_court
+id: confirm_trial_court
+question: |
+  We found a court that matches your docket number
+subquestion: |
+  The court that matches your docket number is ${ trial_court }.
+
+  If this is not the right court, click the "Undo" button and try
+  a different docket number.
 ---
 id: name of landlord
 question: |
@@ -1008,6 +1029,44 @@ fields:
     validation messages:
       minlength: |
         You cannot keep going unless you did your best to tell the truth.
+---
+id: docket number
+question: |
+  What is the docket number for your eviction case?
+subquestion: |
+  ${ collapse_template(find_my_docket_number_template) }
+fields:
+  - Docket number: docket_number
+    under text: |
+      Example: **30H84SP009123**. (This is not a real docket number. Use the number on your paperwork.)
+  - note: |
+      This might not be a valid docket number. Check the number on your paperwork,
+      and make sure you do not include any spaces or dashes. Letters in a docket
+      number are usually uppercase.
+    js show if: | # Use javascript to validate the docket number
+      val("docket_number") != "" &&  
+            !/^\d{2,4}(?:[A-Z]\d{2}|\d{2})[A-Z]{2}\d+$/.test(
+              val("docket_number")
+            );
+---
+template: find_my_docket_number_template
+subject: |
+  How do I find my docket number?
+content: |
+  If you do not know your docket number, search by name on [MassCourts.org](https://masscourts.org):up-right-from-square: (opens in new tab).
+  You may also see the docket number written on paperwork that you got from the court or from your landlord.
+
+  A docket number almost always:
+
+  * Starts with a 2 or 4 digit year
+  * Is followed by a code for the court, like H84 for the Eastern Housing Court or 52 for Cambridge District Court
+  * Is followed by a code for the case type, like SP, SU, or CV
+  * Ends in a number that is unique to your case, usually with leading zeros to make it 6 digits
+
+  Example: **30H84SP009123**. (This is not a real docket number. Use the number on your paperwork.)
+
+  If you think you know the docket number but you cannot find your case, try making sure that the number follows the
+  rules above. For example, remove any punctuation.
 ---
 ######### logic ###############
 ---
@@ -1339,7 +1398,7 @@ objects:
           )
 ---
 code: |
-  notice_of_appearance_form_attachment.enabled = al_person_answering == "attorney" and attorney_first_appearance
+  notice_of_appearance_form_attachment.enabled = al_person_answering == "attorney" and attorney_first_appearance  
 ---
 # Each attachment defines a key in an ALDocument. We use `i` as the placeholder here so the same template is 
 # used for "preview" and "final" keys, and logic in the template checks the value of 
