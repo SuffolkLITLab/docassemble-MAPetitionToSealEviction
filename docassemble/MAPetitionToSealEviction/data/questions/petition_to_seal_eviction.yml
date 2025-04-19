@@ -160,7 +160,7 @@ code: |
     lead_contact = users[0]
 
   nav.set_section("section_can_i_seal")
-  case_dismissed
+  case_outcome
   if not case_dismissed:
     judgment_outcome
     if judgment_outcome == "landlord":
@@ -785,7 +785,6 @@ fields:
       - "Ended with a court ruling **in my favor**": decided_for_me # settled
       - Ended with a court ruling **against me**: decided_against_me # decided
       - This was a 139 § 19 case and judgment did not enter for either party: 139_no_resolution
-      - I do not know: unknown
 validation code: |
   if case_outcome == "139_no_resolution":
     judgment_outcome = "nobody"
