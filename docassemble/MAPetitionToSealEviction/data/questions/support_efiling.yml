@@ -448,10 +448,19 @@ code: |
 
   invalidate_address_information_once = True
 ---
+# Turning this code off. We do not allow name lookup anymore, so the party must know the docket number
+# code: |
+#   if can_check_efile and case_search.found_case:
+#     if hasattr(case_search.found_case, 'docket_number') and case_search.found_case.docket_number:
+#       docket_number = case_search.found_case.docket_number
+---
 code: |
-  if can_check_efile and case_search.found_case:
-    if hasattr(case_search.found_case, 'docket_number') and case_search.found_case.docket_number:
-      docket_number = case_search.found_case.docket_number
+  # Because we cannot do name lookup
+  case_search.do_what_choice = "docket_lookup"
+---
+code: |
+  # Because we cannot do name lookup
+  case_search.docket_number_from_user = docket_number
 ---
 code: |
   # petition_to_seal_eviction_attachment.filing_description = "Petition to Seal Eviction Record"
@@ -798,6 +807,29 @@ template: x.docket_lookup_choice
 content: |
   Docket number
 ---
+id: docket id
+generic object: EFCaseSearch
+question: |
+  What is the docket number for your eviction case?
+subquestion: |
+  We will search for your case using the docket number you enter below. Review and
+  make sure that it is correct.
+
+  ${ collapse_template(find_my_docket_number_template) }
+fields:
+  - ${ str(x.docket_lookup_choice) }: x.docket_number_from_user
+    under text: |
+      Example: **30H84SP009123**. (This is not a real docket number. Use the number on your paperwork.)
+  - note: |
+      This might not be a valid docket number. Check the number on your paperwork,
+      and make sure you do not include any spaces or dashes. Letters in a docket
+      number are usually uppercase.
+    js show if: | # Use javascript to validate the docket number
+      val("docket_number") != "" &&  
+            !/^\d{2,4}(?:[A-Z]\d{2}|\d{2})[A-Z]{2}\d+$/.test(
+              val("docket_number")
+            );
+---
 only sets:
   - x.found_case
 generic object: EFCaseSearch
@@ -933,8 +965,9 @@ subquestion: |
 
   You can:
 
-  * Click **Back** to try searching for a different case, or
+  * Click **Back** to try again with a different docket number
   * Click **Next** to continue with the rest of the interview without e-filing
 back button label: Back
 validation code: |
   can_check_efile = False
+# Seems like this should work, but it doesn't * [Try a different docket number](${ url_ask(['docket_number', {"recompute": ["case_search.docket_number_from_user", "case_search.found_case"] }, "case_search.found_case"]) }) to search for a different case, or
