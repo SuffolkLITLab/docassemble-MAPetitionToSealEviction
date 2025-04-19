@@ -311,11 +311,17 @@ code: |
   if can_check_efile and showifdef("case_search.found_case"):
     if trial_court.department == "Superior Court":
       petition_is_efileable = False
-    # Check the case type for a valid one
-    elif predicted_eviction_reason in ("eviction_reason_nofault", "eviction_reason_fault", "eviction_reason_nonpayment"):
+    elif "summary process" in case_search.found_case.case_category_name.lower():
+      # I guess that district court may not have correctly coded case types, so we don't know exact case type
+      # but it does seem that they can seal a 139 19 if it was coded under summary process anyway
       petition_is_efileable = True
     else:
       petition_is_efileable = False
+    # # Check the case type for a valid one
+    # elif predicted_eviction_reason in ("eviction_reason_nofault", "eviction_reason_fault", "eviction_reason_nonpayment"):
+    #   petition_is_efileable = True
+    # else:
+    #   petition_is_efileable = False
       # Currently, there is no Petition to Seal Eviction code for any other case types
 ---
 code: |
@@ -734,7 +740,7 @@ content: |
   If we found the wrong case, you can press the "${ all_variables(special="titles").get("back button label", "back") }" button to go back and find a different case
 ---
 code: |
-  if can_check_efile and case_search.found_case:
+  if can_check_efile and case_search.found_case and trial_court.department == "Housing Court":
     if 'no cause' in case_search.found_case.case_type_name.lower():
       predicted_eviction_reason = "eviction_reason_nofault"
     elif 'cause' in case_search.found_case.case_type_name.lower():
