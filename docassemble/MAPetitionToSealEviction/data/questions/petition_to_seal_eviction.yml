@@ -384,7 +384,7 @@ fields:
       - "Non-payment of rent: I owed money for rent": eviction_reason_nonpayment
       - "Fault: I broke the lease other than owing rent. For example: a noise complaint or damage to the apartment, or repeatedly paying the rent late.": eviction_reason_fault
       - "No fault: They did not want to rent to me any longer, but not because of something I did": eviction_reason_nofault
-      - "139 § 19: I broke the law and they filed an emergency eviction under G.L. c. 139, § 19. For example, they claim I had drugs, had an illegal weapon, acted violently, or violated another criminal law.": eviction_reason_139
+      - "139 § 19: I broke the law and they filed an emergency eviction under G.L. c. 139, § 19. For example, they claimed I had drugs, had an illegal weapon, acted violently, or violated another criminal law.": eviction_reason_139
     default: ${ showifdef("predicted_eviction_reason") if trial_court.department == "Housing Court" else '' }
 validation code: |
   # TODO: we can remove this validation code if we update template to new format
@@ -840,7 +840,7 @@ content: |
   If a dismissal judgment was entered against your landlord, check the box that says, 
   "The eviction case was dismissed by the court or in a written agreement."
   
-  You may also find the information on [MassCourts.org](https://masscourts.org):up-right-from-square: (opens in new tab).
+  You may also find the information on [MassCourts.org](https://masscourts.org)&nbsp;<sup>:up-right-from-square: (opens in new tab)</sup>.
 ---
 code: |
   case_dismissed = case_outcome == "dismissed"
