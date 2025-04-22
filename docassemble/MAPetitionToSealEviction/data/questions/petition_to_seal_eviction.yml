@@ -338,9 +338,7 @@ fields:
       variable: al_person_answering
       is: "attorney"
   - note: |
-      Okay. Because this is your first appearance in this eviction case, 
-      we will also make a **notice of appearance** form for you. The notice
-      of appearance will be filed along with the Petition to Seal Eviction.
+      Because this is your first appearance in the case, a notice of appearance will be generated through this interview. It will be filed along with your petition.
     show if: attorney_first_appearance
 ---
 id: Attorney Message
