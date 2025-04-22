@@ -672,13 +672,13 @@ fields:
     datatype: radio
     choices:
       - ${ other_parties }: plaintiff
-      - The Attorney for ${ other_parties }: plaintiff lawyer
+      - The attorney for ${ other_parties }: plaintiff lawyer
   - "I intend to send notice by:": notice_type
     datatype: radio
     choices:
       - Email: email
       - Mail: mail
-      - In Person: in person
+      - In person: in person
   - Email address: service_email_address
     datatype: email
     show if: 
