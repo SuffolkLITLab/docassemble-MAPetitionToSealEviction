@@ -4,5 +4,6 @@ Petition to Seal Eviction
 
 ## Author
 
-Taline
-
+Suffolk LIT Clinic
+- Rami
+- Taline

@@ -28,7 +28,7 @@ metadata:
     
     When you are finished, you will need to:
     
-    E-File the petition with the applicable court
+    E-file the petition with the applicable court
   maturity: production
   estimated_completion_minutes: 10
   estimated_completion_delta: 5
@@ -311,11 +311,12 @@ subquestion: |
 
   Before you get started, please gather:
     
-  1. The docket number of the eviction case you want to seal (<a href="https://www.mass.gov/info-details/how-to-search-court-dockets?_gl=1*1t4lg0v*_ga*Mjc1NTYwNDQxLjE3NDE2MjkwMjA.*_">find your docket number in a new tab</a>)
+  1. The docket number of the eviction case you want to seal<br>
+  ([find your docket number](https://www.mass.gov/info-details/how-to-search-court-dockets?_gl=1*1t4lg0v*_ga*Mjc1NTYwNDQxLjE3NDE2MjkwMjA.*_)&nbsp;<sup>:up-right-from-square:&nbsp;(opens in new tab)</sup>)
   2. The name of the court that your eviction case was heard in
-  3. Any other court documents from your eviction case.
+  3. Any other court documents from your eviction case
  
-  Your court documents should have the information you need to fill out a Petition. You can also find some of the information on [MassCourts.org](https://masscourts.org):up-right-from-square:(opens in new tab).
+  Your court documents should have the information you need to fill out a petition. You can also find some of the information on [MassCourts.org](https://masscourts.org)&nbsp;<sup>:up-right-from-square:&nbsp;(opens in new tab)</sup>.
 
   <b>NOTE:</b> When you are finished, you will need to file this petition with the Court, either by eFile using a valid email address or in person with the Clerk's office.
 
@@ -337,9 +338,7 @@ fields:
       variable: al_person_answering
       is: "attorney"
   - note: |
-      Okay. Because this is your first appearance in this eviction case, 
-      we will also make a **notice of appearance** form for you. The notice
-      of appearance will be filed along with the Petition to Seal Eviction.
+      Because this is your first appearance in the case, a notice of appearance will be generated through this interview. It will be filed along with your petition.
     show if: attorney_first_appearance
 ---
 id: Attorney Message
@@ -383,7 +382,7 @@ fields:
       - "Non-payment of rent: I owed money for rent": eviction_reason_nonpayment
       - "Fault: I broke the lease other than owing rent. For example: a noise complaint or damage to the apartment, or repeatedly paying the rent late.": eviction_reason_fault
       - "No fault: They did not want to rent to me any longer, but not because of something I did": eviction_reason_nofault
-      - "139 § 19: I broke the law and they filed an emergency eviction under G.L. c. 139, § 19. For example, they claim I had drugs, had an illegal weapon, acted violently, or violated another criminal law.": eviction_reason_139
+      - "139 § 19: I broke the law and they filed an emergency eviction under G.L. c. 139, § 19. For example, they claimed I had drugs, had an illegal weapon, acted violently, or violated another criminal law.": eviction_reason_139
     default: ${ showifdef("predicted_eviction_reason") if trial_court.department == "Housing Court" else '' }
 validation code: |
   # TODO: we can remove this validation code if we update template to new format
@@ -613,7 +612,7 @@ question: |
 subquestion: |
   In the last 4 years, since **${ today().minus(years=4) }**, has any other eviction or lessor action been brought against you in Massachusetts for not paying your rent?
 fields:
-  - A landlord has started a new case for me about nonpayment of rent or a lessor action was filed against me since ${ today().minus(years=4) }: non_payment_action
+  - A landlord has started a new case against me for nonpayment of rent **or** a lessor action has been filed against me since ${ today().minus(years=4) }: non_payment_action
     datatype: yesnoradio
 ---
 id: Fault Eviction
@@ -622,7 +621,7 @@ question: |
 subquestion: |
   Has someone filed a new eviction case or lessor action against you at any time in the **last 7 years?**
 fields:
-  - Another eviction case or lessor action was filed against me since **${ today().minus(years=7) }**.: prior_eviction_action
+  - Another eviction case or lessor action has been filed against me since ${ today().minus(years=7) }: prior_eviction_action
     datatype: yesnoradio
 ---
 id: Fault Action Section 139
@@ -671,13 +670,13 @@ fields:
     datatype: radio
     choices:
       - ${ other_parties }: plaintiff
-      - The Attorney for ${ other_parties }: plaintiff lawyer
+      - The attorney for ${ other_parties }: plaintiff lawyer
   - "I intend to send notice by:": notice_type
     datatype: radio
     choices:
       - Email: email
       - Mail: mail
-      - In Person: in person
+      - In person: in person
   - Email address: service_email_address
     datatype: email
     show if: 
@@ -772,7 +771,7 @@ id: tenancy_address
 question: |
   What is the address of the property for the eviction you want to seal?
 subquestion: |
-  Write the address of the property you were renting when the landlord filed the eviction.
+  Enter the address of the property you were renting when the landlord filed the eviction.
 fields:
   - code: |
       users[0].tenancy_address.address_fields(default_state='MA')
@@ -839,7 +838,7 @@ content: |
   If a dismissal judgment was entered against your landlord, check the box that says, 
   "The eviction case was dismissed by the court or in a written agreement."
   
-  You may also find the information on [MassCourts.org](https://masscourts.org):up-right-from-square: (opens in new tab).
+  You may also find the information on [MassCourts.org](https://masscourts.org)&nbsp;<sup>:up-right-from-square: (opens in new tab)</sup>.
 ---
 code: |
   case_dismissed = case_outcome == "dismissed"
@@ -852,7 +851,7 @@ subquestion: |
   
   ${ al_court_bundle.as_pdf(key='preview') }
 
-  Click the image to open it in a new tab. Click the "Edit answers" button
+  Click the image to open it in a new tab. Click the **Edit answers** button
   to edit your answers.
 
   ${ action_button_html(url_action('review_petition_to_seal_eviction'), label='Edit answers', color='info') }
@@ -928,7 +927,7 @@ fields:
 # subquestion: |
 #   The court that matches your docket number is ${ trial_court }.
 
-#   If this is not the right court, click the "Undo" button and try
+#   If this is not the right court, click the **Undo** button and try
 #   a different docket number.
 ---
 id: name of landlord
@@ -1021,9 +1020,9 @@ fields:
 ---
 id: affirmation and oath of no perjury
 question: |
-  Signing Under Oath
+  Signing under oath (tenant)
 subquestion: |
-  Your form must be signed under oath.
+  Your petition must be signed under oath.
   That means everything you say must be true as far as you know.
   You may be punished by a judge if you intentionally
   say something that is not true.
@@ -1334,11 +1333,11 @@ subquestion: |
   % else:
   Thank you ${users}. Your form is ready to download and deliver to the court.
 
-  Make sure you are able to print or eFile the form once you have reviewed.
+  Make sure you are able to print or e-file the form once you have reviewed.
 
   If you are not ready to file, make an account to save your completed form.
   
-  View and download your form below. Click the "Edit answers" button to fix any mistakes.
+  View and download your form below. Click the **Edit answers** button to fix any mistakes.
 
   % if defined("continue_inapplicable"):
   <div class="alert alert-warning" role="alert">
@@ -1351,13 +1350,13 @@ subquestion: |
   ${ action_button_html(url_action('review_petition_to_seal_eviction'), label='Edit answers', color='info') }
 
 
-  <!-- E-File button -->
+  <!-- E-file button -->
   % if can_check_efile and petition_is_efileable and not (defined('efile') and efile):
-  <h2 class="h4">E-File your form</h2>
+  <h2 class="h4">E-file your form</h2>
   
-  Click the "E-File" button below to e-file your form.
+  Click the **E-file** button below to e-file your form.
   
-  ${ action_button_html(url_ask([{'recompute': ['efile']}]), label='E-File', id_tag='efile-button', icon='file-export', size='md')}
+  ${ action_button_html(url_ask([{'recompute': ['efile']}]), label='E-file', id_tag='efile-button', icon='file-export', size='md')}
 
   % endif
 
