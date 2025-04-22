@@ -614,7 +614,7 @@ question: |
 subquestion: |
   In the last 4 years, since **${ today().minus(years=4) }**, has any other eviction or lessor action been brought against you in Massachusetts for not paying your rent?
 fields:
-  - A landlord has started a new case for me about nonpayment of rent or a lessor action was filed against me since ${ today().minus(years=4) }: non_payment_action
+  - A landlord has started a new case against me for nonpayment of rent **or** a lessor action has been filed against me since ${ today().minus(years=4) }: non_payment_action
     datatype: yesnoradio
 ---
 id: Fault Eviction
