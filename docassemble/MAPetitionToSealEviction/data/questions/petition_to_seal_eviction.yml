@@ -1151,17 +1151,11 @@ event: review_petition_to_seal_eviction
 question: |
   Review your answers
 review:
-  - Edit: attorneys.revisit
+  - Edit: attorneys[0].name.first
     button: |
-      % if attorneys.number() <= 1:
       **Attorney**
-      % else:
-      **${ noun_plural("Attorney") }**
-      % endif
 
-      % for item in attorneys:
-        * ${ item }
-      % endfor
+      ${ attorneys[0] }
   - Edit: users.revisit
     button: |
       % if users.number() <= 1:
@@ -1191,29 +1185,6 @@ review:
       % if defined("trial_court.name"):
       ${ trial_court.name }
       % endif
----
-continue button field: attorneys.revisit
-question: |
-  Edit attorneys
-subquestion: |
-  ${ attorneys.table }
-
-  ${ attorneys.add_action() }
----
-table: attorneys.table
-rows: attorneys
-columns:
-  - Email: |
-      row_item.email if defined("row_item.email") else ""
-  - Signature: |
-      row_item.signature if defined("row_item.signature") else ""
-  - Name: |
-      row_item.name.full() if defined("row_item.name.first") else ""
-edit:
-  - email
-  - signature
-  - name.first
-confirm: True
 ---
 continue button field: users.revisit
 question: |
