@@ -773,7 +773,7 @@ id: tenancy_address
 question: |
   What is the address of the property for the eviction you want to seal?
 subquestion: |
-  Write the address of the property you were renting when the landlord filed the eviction.
+  Enter the address of the property you were renting when the landlord filed the eviction.
 fields:
   - code: |
       users[0].tenancy_address.address_fields(default_state='MA')
