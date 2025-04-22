@@ -1153,33 +1153,43 @@ question: |
 review:
   - Edit: attorneys.revisit
     button: |
-      **Attorneys**
+      % if attorneys.number() <= 1:
+      **Attorney**
+      % else:
+      **${ noun_plural("Attorney") }**
+      % endif
 
       % for item in attorneys:
         * ${ item }
       % endfor
   - Edit: users.revisit
     button: |
-      **Users**
+      % if users.number() <= 1:
+      **Tenant**
+      % else:
+      **${ noun_plural("Tenant") }**
+      % endif
 
       % for item in users:
         * ${ item }
       % endfor
   - Edit: other_parties.revisit
     button: |
-      **Other parties**
+      % if other_parties.number() <= 1:
+      **Landlord**
+      % else:
+      **${ noun_plural("Landlord") }**
+      % endif
+      
       % for item in other_parties:
         * ${ item }
       % endfor
   - Edit: trial_court
     button: |
-      **Trial court**
-  
-      % if defined("trial_court.division"):
-      * division: ${ trial_court.division }
-      % endif
-      % if defined("trial_court.department"):
-      * department: ${ trial_court.department }
+      **Court**
+      
+      % if defined("trial_court.name"):
+      ${ trial_court.name }
       % endif
 ---
 continue button field: attorneys.revisit
@@ -1204,7 +1214,6 @@ edit:
   - signature
   - name.first
 confirm: True
-
 ---
 continue button field: users.revisit
 question: |
