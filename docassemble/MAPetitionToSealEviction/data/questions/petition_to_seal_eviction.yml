@@ -28,7 +28,7 @@ metadata:
     
     When you are finished, you will need to:
     
-    E-File the petition with the applicable court
+    E-file the petition with the applicable court
   maturity: production
   estimated_completion_minutes: 10
   estimated_completion_delta: 5
@@ -853,7 +853,7 @@ subquestion: |
   
   ${ al_court_bundle.as_pdf(key='preview') }
 
-  Click the image to open it in a new tab. Click the "Edit answers" button
+  Click the image to open it in a new tab. Click the **Edit answers** button
   to edit your answers.
 
   ${ action_button_html(url_action('review_petition_to_seal_eviction'), label='Edit answers', color='info') }
@@ -929,7 +929,7 @@ fields:
 # subquestion: |
 #   The court that matches your docket number is ${ trial_court }.
 
-#   If this is not the right court, click the "Undo" button and try
+#   If this is not the right court, click the **Undo** button and try
 #   a different docket number.
 ---
 id: name of landlord
@@ -1335,11 +1335,11 @@ subquestion: |
   % else:
   Thank you ${users}. Your form is ready to download and deliver to the court.
 
-  Make sure you are able to print or eFile the form once you have reviewed.
+  Make sure you are able to print or e-file the form once you have reviewed.
 
   If you are not ready to file, make an account to save your completed form.
   
-  View and download your form below. Click the "Edit answers" button to fix any mistakes.
+  View and download your form below. Click the **Edit answers** button to fix any mistakes.
 
   % if defined("continue_inapplicable"):
   <div class="alert alert-warning" role="alert">
@@ -1352,13 +1352,13 @@ subquestion: |
   ${ action_button_html(url_action('review_petition_to_seal_eviction'), label='Edit answers', color='info') }
 
 
-  <!-- E-File button -->
+  <!-- E-file button -->
   % if can_check_efile and petition_is_efileable and not (defined('efile') and efile):
-  <h2 class="h4">E-File your form</h2>
+  <h2 class="h4">E-file your form</h2>
   
-  Click the "E-File" button below to e-file your form.
+  Click the **E-file** button below to e-file your form.
   
-  ${ action_button_html(url_ask([{'recompute': ['efile']}]), label='E-File', id_tag='efile-button', icon='file-export', size='md')}
+  ${ action_button_html(url_ask([{'recompute': ['efile']}]), label='E-file', id_tag='efile-button', icon='file-export', size='md')}
 
   % endif
 
