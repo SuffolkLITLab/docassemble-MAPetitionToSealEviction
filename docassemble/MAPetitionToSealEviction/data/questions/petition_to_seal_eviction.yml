@@ -1020,7 +1020,7 @@ fields:
 ---
 id: affirmation and oath of no perjury
 question: |
-  Signing under oath
+  Signing under oath (tenant)
 subquestion: |
   Your petition must be signed under oath.
   That means everything you say must be true as far as you know.
