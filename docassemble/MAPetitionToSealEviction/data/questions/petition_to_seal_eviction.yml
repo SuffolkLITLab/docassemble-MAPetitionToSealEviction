@@ -1150,6 +1150,8 @@ id: petition to seal eviction review screen
 event: review_petition_to_seal_eviction
 question: |
   Review your answers
+subquestion: |
+  You can update some of your answers on this screen. If you don't see the answer you want to update, you can start over.
 review:
   - Edit: attorneys.revisit
     button: |
@@ -1165,23 +1167,15 @@ review:
       % for item in users:
         * ${ item }
       % endfor
-  - Edit: docket_number
-    button: |
-      **Docket number**:
-      ${ docket_number }
   - Edit: other_parties.revisit
     button: |
       **Other parties**
       % for item in other_parties:
         * ${ item }
       % endfor
-  - Edit: signature_date
-    button: |
-      **Date of Signature**:
-      ${ signature_date }
   - Edit: trial_court
     button: |
-      **Trial court**
+      **Court**
   
       % if defined("trial_court.division"):
       * division: ${ trial_court.division }
@@ -1189,66 +1183,6 @@ review:
       % if defined("trial_court.department"):
       * department: ${ trial_court.department }
       % endif
-  - Edit: notice_date
-    button: |
-      **Date of Notice**:
-      ${ notice_date }
-  - Edit: non_payment_hardship
-    button: |
-      **Unable to Pay Amount of Judgment**:
-      ${ word(yesno(non_payment_hardship)) }
-  - Edit: no_judgmt_appl_exp
-    button: |
-      **No Judgment in Section 139 Case**:
-      ${ word(yesno(no_judgmt_appl_exp)) }
-  - Edit: email
-    button: |
-      **Notice Given by Email**:
-      ${ word(yesno(email)) }
-  - Edit: plaintiff_notice
-    button: |
-      **Notice Given to Plaintiff**:
-      ${ word(yesno(plaintiff_notice)) }
-  - Edit: non_payment
-    button: |
-      **Eviction for non-payment**:
-      ${ word(yesno(non_payment)) }
-  - Edit: non_payment_cured
-    button: |
-      **Non-payment cured**:
-      ${ word(yesno(non_payment_cured != "False")) }
-  - Edit: ejp_appl_period_exp
-    button: |
-      **Appeal Period Expired in 139 Case**:
-      ${ word(yesno(ejp_appl_period_exp)) }
-  - Edit: mail
-    button: |
-      **Notice Given by Mail**:
-      ${ word(yesno(mail)) }
-  - Edit: no_fault
-    button: |
-      **Eviction Was No Fault**:
-      ${ word(yesno(no_fault)) }
-  - Edit: in_person
-    button: |
-      **Notice Given in Person**:
-      ${ word(yesno(in_person)) }
-  - Edit: case_dismissed
-    button: |
-      **Eviction Case Was Dismissed**:
-      ${ word(yesno(case_dismissed)) }
-  - Edit: fault_eviction
-    button: |
-      **Eviction Was Fault**:
-      ${ word(yesno(fault_eviction)) }
-  - Edit: plaintiff_lawyer
-    button: |
-      **Notice Given to Plaintiff's Lawyer**:
-      ${ word(yesno(plaintiff_lawyer)) }
-  - Edit: judgment_date
-    button: |
-      **Judgment Date**:
-      ${ judgment_date }
 ---
 continue button field: attorneys.revisit
 question: |
