@@ -623,7 +623,7 @@ question: |
 subquestion: |
   Has someone filed a new eviction case or lessor action against you at any time in the **last 7 years?**
 fields:
-  - Another eviction case or lessor action was filed against me since **${ today().minus(years=7) }**.: prior_eviction_action
+  - Another eviction case or lessor action has been filed against me since ${ today().minus(years=7) }: prior_eviction_action
     datatype: yesnoradio
 ---
 id: Fault Action Section 139
