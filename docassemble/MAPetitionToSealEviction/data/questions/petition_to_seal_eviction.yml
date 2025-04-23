@@ -986,7 +986,7 @@ sets:
   - users[i].name.first
   - users[i].name.last
   - users[i].name.middle
-  - users[i].name.suffix    
+  - users[i].name.suffix
 id: other users names
 question: |
   % if i == 0 and al_person_answering == "user":
@@ -1188,7 +1188,7 @@ review:
 ---
 continue button field: users.revisit
 question: |
-  Edit users
+  Edit tenants
 subquestion: |
   ${ users.table }
 
@@ -1197,24 +1197,20 @@ subquestion: |
 table: users.table
 rows: users
 columns:
-  - Email: |
-      row_item.email if defined("row_item.email") else ""
-  - Signature: |
-      row_item.signature if defined("row_item.signature") else ""
   - Name: |
       row_item.name.full() if defined("row_item.name.first") else ""
-  - Address: |
-      row_item.address.block() if defined("row_item.address.address") else ""
+  - Email: |
+      row_item.email if defined("row_item.email") else ""
   - Phone number: |
       row_item.phone_number if defined("row_item.phone_number") else ""
+  - Address: |
+      row_item.address.block() if defined("row_item.address.address") else ""
 edit:
-  - email
-  - signature
   - name.first
-  - address.address
+  - email
   - phone_number
+  - address.address
 confirm: True
-
 ---
 continue button field: other_parties.revisit
 question: |
