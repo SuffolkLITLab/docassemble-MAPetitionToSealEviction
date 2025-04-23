@@ -1199,17 +1199,8 @@ rows: users
 columns:
   - Name: |
       row_item.name.full() if defined("row_item.name.first") else ""
-  - Email: |
-      row_item.email if defined("row_item.email") else ""
-  - Phone number: |
-      row_item.phone_number if defined("row_item.phone_number") else ""
-  - Address: |
-      row_item.address.block() if defined("row_item.address.address") else ""
 edit:
   - name.first
-  - email
-  - phone_number
-  - address.address
 confirm: True
 ---
 continue button field: other_parties.revisit
