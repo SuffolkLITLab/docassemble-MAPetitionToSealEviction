@@ -986,7 +986,7 @@ sets:
   - users[i].name.first
   - users[i].name.last
   - users[i].name.middle
-  - users[i].name.suffix    
+  - users[i].name.suffix
 id: other users names
 question: |
   % if i == 0 and al_person_answering == "user":
@@ -1151,132 +1151,44 @@ event: review_petition_to_seal_eviction
 question: |
   Review your answers
 review:
-  - Edit: attorneys.revisit
+  - Edit: attorneys[0].name.first
     button: |
-      **Attorneys**
+      **Attorney**
 
-      % for item in attorneys:
-        * ${ item }
-      % endfor
+      ${ attorneys[0] }
   - Edit: users.revisit
     button: |
-      **Users**
+      % if users.number() <= 1:
+      **Tenant**
+      % else:
+      **${ noun_plural("Tenant") }**
+      % endif
 
       % for item in users:
         * ${ item }
       % endfor
-  - Edit: docket_number
-    button: |
-      **Docket number**:
-      ${ docket_number }
   - Edit: other_parties.revisit
     button: |
-      **Other parties**
+      % if other_parties.number() <= 1:
+      **Landlord**
+      % else:
+      **${ noun_plural("Landlord") }**
+      % endif
+      
       % for item in other_parties:
         * ${ item }
       % endfor
-  - Edit: signature_date
-    button: |
-      **Date of Signature**:
-      ${ signature_date }
   - Edit: trial_court
     button: |
-      **Trial court**
-  
-      % if defined("trial_court.division"):
-      * division: ${ trial_court.division }
+      **Court**
+      
+      % if defined("trial_court.name"):
+      ${ trial_court.name }
       % endif
-      % if defined("trial_court.department"):
-      * department: ${ trial_court.department }
-      % endif
-  - Edit: notice_date
-    button: |
-      **Date of Notice**:
-      ${ notice_date }
-  - Edit: non_payment_hardship
-    button: |
-      **Unable to Pay Amount of Judgment**:
-      ${ word(yesno(non_payment_hardship)) }
-  - Edit: no_judgmt_appl_exp
-    button: |
-      **No Judgment in Section 139 Case**:
-      ${ word(yesno(no_judgmt_appl_exp)) }
-  - Edit: email
-    button: |
-      **Notice Given by Email**:
-      ${ word(yesno(email)) }
-  - Edit: plaintiff_notice
-    button: |
-      **Notice Given to Plaintiff**:
-      ${ word(yesno(plaintiff_notice)) }
-  - Edit: non_payment
-    button: |
-      **Eviction for non-payment**:
-      ${ word(yesno(non_payment)) }
-  - Edit: non_payment_cured
-    button: |
-      **Non-payment cured**:
-      ${ word(yesno(non_payment_cured != "False")) }
-  - Edit: ejp_appl_period_exp
-    button: |
-      **Appeal Period Expired in 139 Case**:
-      ${ word(yesno(ejp_appl_period_exp)) }
-  - Edit: mail
-    button: |
-      **Notice Given by Mail**:
-      ${ word(yesno(mail)) }
-  - Edit: no_fault
-    button: |
-      **Eviction Was No Fault**:
-      ${ word(yesno(no_fault)) }
-  - Edit: in_person
-    button: |
-      **Notice Given in Person**:
-      ${ word(yesno(in_person)) }
-  - Edit: case_dismissed
-    button: |
-      **Eviction Case Was Dismissed**:
-      ${ word(yesno(case_dismissed)) }
-  - Edit: fault_eviction
-    button: |
-      **Eviction Was Fault**:
-      ${ word(yesno(fault_eviction)) }
-  - Edit: plaintiff_lawyer
-    button: |
-      **Notice Given to Plaintiff's Lawyer**:
-      ${ word(yesno(plaintiff_lawyer)) }
-  - Edit: judgment_date
-    button: |
-      **Judgment Date**:
-      ${ judgment_date }
----
-continue button field: attorneys.revisit
-question: |
-  Edit attorneys
-subquestion: |
-  ${ attorneys.table }
-
-  ${ attorneys.add_action() }
----
-table: attorneys.table
-rows: attorneys
-columns:
-  - Email: |
-      row_item.email if defined("row_item.email") else ""
-  - Signature: |
-      row_item.signature if defined("row_item.signature") else ""
-  - Name: |
-      row_item.name.full() if defined("row_item.name.first") else ""
-edit:
-  - email
-  - signature
-  - name.first
-confirm: True
-
 ---
 continue button field: users.revisit
 question: |
-  Edit users
+  Edit tenants
 subquestion: |
   ${ users.table }
 
@@ -1285,28 +1197,15 @@ subquestion: |
 table: users.table
 rows: users
 columns:
-  - Email: |
-      row_item.email if defined("row_item.email") else ""
-  - Signature: |
-      row_item.signature if defined("row_item.signature") else ""
   - Name: |
       row_item.name.full() if defined("row_item.name.first") else ""
-  - Address: |
-      row_item.address.block() if defined("row_item.address.address") else ""
-  - Phone number: |
-      row_item.phone_number if defined("row_item.phone_number") else ""
 edit:
-  - email
-  - signature
   - name.first
-  - address.address
-  - phone_number
 confirm: True
-
 ---
 continue button field: other_parties.revisit
 question: |
-  Edit other_parties
+  Edit landlords
 subquestion: |
   ${ other_parties.table }
 
