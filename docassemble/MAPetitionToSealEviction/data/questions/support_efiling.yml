@@ -796,9 +796,7 @@ question: |
   % endif
 subquestion: |
   % if efile_resp.response_code == 200:
-  You should receive a confirmation email within 10-15 minutes, and
-  you should receive an update from the ${ trial_court } clerk on your filing 
-  within 48 hours.
+  You should receive a confirmation email within 10-15 minutes. The court will contact you with next steps.
   
   We recommend you continue below to download the form for your own records.
   Click **Next** to get a copy of your forms and instructions.
