@@ -704,6 +704,9 @@ question: |
 fields:
   - code: |
       attorneys[0].name_fields()
+  - "Law firm name": attorneys[0].firm_name
+    maxlength: 130
+    required: False
   - Email: attorneys[0].email
     required: False
   - Phone number: attorneys[0].phone_number
