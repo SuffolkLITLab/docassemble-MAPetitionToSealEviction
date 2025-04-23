@@ -1214,7 +1214,7 @@ confirm: True
 ---
 continue button field: other_parties.revisit
 question: |
-  Edit other_parties
+  Edit landlords
 subquestion: |
   ${ other_parties.table }
 
