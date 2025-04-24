@@ -174,7 +174,7 @@ code: |
         prior_eviction_action
         if prior_eviction_action:
           continue_inapplicable_new_eviction
-        if appeal_period_expired_fault == False or (appeal_period_expired_fault is None and judgment_date > today().minus(years=7).minus(days=10)):
+        if appeal_period_expired_fault == False:
           continue_inapplicable_app_period
         fe_appl_period_exp
       elif eviction_reason_nonpayment:
@@ -717,52 +717,37 @@ id: appeal period expired for a nonpayment of rent case
 question: |
   Has it been at least 4 years since the appeal period expired?
 subquestion: |
-  If you are not sure, we can help you calculate it from the date your case
-  reached an agreement or the date the judge made a decision.
+  The appeal period usually begins on the date you reached an agreement with your landlord or the date the judge made a decision.
 fields:
-  - "Has it been at least 4 years since the appeal period expired?": appeal_period_expired_nonpayment
-    datatype: yesnomaybe
+  - no label: appeal_period_expired_nonpayment
+    datatype: yesnoradio
 ---
 id: appeal period expired for fault case
 question: |
   Has it been at least 7 years since the appeal period expired?
 subquestion: |
-  If you are not sure, we can help you calculate it from the date your case
-  reached an agreement or the date the judge made a decision.
+  The appeal period usually begins on the date you reached an agreement with your landlord or the date the judge made a decision.
 fields:
-  - "Has it been at least 7 years since the appeal period expired?": appeal_period_expired_fault
-    datatype: yesnomaybe
+  - no label: appeal_period_expired_fault
+    datatype: yesnoradio
 ---
 id: appeal period expired for 139 19 case
 question: |
   Has it been at least 7 years since the appeal period expired?
 subquestion: |
-  If you are not sure, we can help you calculate it from the date your case
-  reached an agreement or the date the judge made a decision.
+  The appeal period usually begins on the date you reached an agreement with your landlord or the date the judge made a decision.
 fields:
-  - "Has it been at least 7 years since the appeal period expired?": appeal_period_expired_139
-    datatype: yesnomaybe
+  - no label: appeal_period_expired_139
+    datatype: yesnoradio
 ---
 id: 139 appeal period expired judgment for tenant or no fault eviction
 question: |
   Has the appeal period expired for your case?
 subquestion: |
-  Your appeal period is usually **10 days** from the date of the decision or agreement.
-
-  If you are not sure, we can help you calculate it from the date your case
-  reached an agreement or the date the judge made a decision.
+  The appeal period usually begins on the date you reached an agreement with your landlord or the date the judge made a decision. Your appeal period is usually **10 days** from the date of the agreement or decision.
 fields:
-  - "Has the appeal period expired?": appeal_period_expired_dismissal_or_nofault
-    datatype: yesnomaybe
----
-id: Date of Judgment
-question: |
-  When was the court decision final?
-subquestion: |
-  The date that the court decision was final is called the **judgment date**.
-fields:
-  - "Judgment entered on:": judgment_date
-    datatype: ThreePartsDate
+  - no label: appeal_period_expired_dismissal_or_nofault
+    datatype: yesnoradio
 ---
 sets:
   - users[0].tenancy_address.address
@@ -1078,34 +1063,16 @@ code: |
     eviction_reason_nonpayment
     and judgment_outcome == "landlord"
     and not non_payment_action
-    and not (
-        appeal_period_expired_nonpayment == False
-        or (
-            appeal_period_expired_nonpayment is None
-            and judgment_date > today().minus(years=4).minus(days=10)
-        )
-    )
+    and not appeal_period_expired_nonpayment == False
   )
 ---
 code: |
-  nofault_judgment_period_exp = eviction_reason_nofault and not (
-    appeal_period_expired_dismissal_or_nofault == False
-    or (
-        appeal_period_expired_dismissal_or_nofault is None
-        and judgment_date > today().minus(days=10)
-    )
-  )
+  nofault_judgment_period_exp = eviction_reason_nofault and not appeal_period_expired_dismissal_or_nofault == False
 ---
 code: |
   no_judgmt_appl_exp = (
     case_outcome == "139_no_resolution"
-    and not (
-      appeal_period_expired_dismissal_or_nofault == False
-      or (
-        appeal_period_expired_dismissal_or_nofault is None
-        and judgment_date > today().minus(days=10)
-      )
-    )
+    and not appeal_period_expired_dismissal_or_nofault == False
   )
 ---
 code: |
@@ -1114,13 +1081,7 @@ code: |
     and judgment_outcome == "landlord"
     and not prior_139_action
     and not prior_139_offense
-    and not (
-        appeal_period_expired_139 == False
-        or (
-            appeal_period_expired_139 is None
-            and judgment_date > today().minus(years=7).minus(days=10)
-        )
-    )
+    and not appeal_period_expired_139 == False
   )
 ---
 code: |
@@ -1128,13 +1089,7 @@ code: |
     eviction_reason_fault
     and judgment_outcome == "landlord"
     and not prior_eviction_action
-    and not (
-        appeal_period_expired_fault == False
-        or (
-            appeal_period_expired_fault is None
-            and judgment_date.plus(years=7).plus(days=10) < today()
-        )
-    )
+    and not appeal_period_expired_fault == False
   )
 ---
 code: |
