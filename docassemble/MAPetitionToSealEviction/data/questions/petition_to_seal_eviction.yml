@@ -1022,10 +1022,7 @@ id: affirmation and oath of no perjury
 question: |
   Signing under oath (tenant)
 subquestion: |
-  Your petition must be signed under oath.
-  That means everything you say must be true as far as you know.
-  You may be punished by a judge if you intentionally
-  say something that is not true.
+  Your petition must be signed under oath. That means everything you say must be true as far as you know.
 fields:
   - no label: users[i].states_above_true
     datatype: checkboxes
