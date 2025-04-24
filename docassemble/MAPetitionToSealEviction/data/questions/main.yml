@@ -55,7 +55,7 @@ metadata:
     - Petition to seal eviction
   form_numbers: []
   update_notes: |
-----
+---
 code: |
   # changes the intro screen language
   form_approved_for_efiling = True

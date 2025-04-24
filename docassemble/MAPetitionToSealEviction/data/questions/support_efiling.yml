@@ -468,6 +468,75 @@ code: |
   # Because we cannot do name lookup
   case_search.docket_number_from_user = docket_number
 ---
+# Overrides a block from EFSPIntegration:case_search.yml
+# Forces a user to already be involved in the current case
+generic object: EFCaseSearch
+code: |
+  if len(x.maybe_user_partips) == 1:
+    person_word = word(x.maybe_user_partips[0].name.familiar())
+  else:
+    person_word = word('one of them')
+
+  if logged_in_user_is_admin:
+    x.self_in_case_choices = [
+      ['is_filing', word(f'I am filing for { person_word }')]
+    ]
+  else:
+    x.self_in_case_choices = [
+      ['is_self', word('Yes')],
+      ['is_filing', word(f'No, but I am filing for { person_word }')]
+    ]
+---
+# Overrides a block from EFSPIntegration:case_search.yml
+# Adds note to help guide users
+id: found-this-participant
+generic object: EFCaseSearch
+if: len(x.maybe_user_partips) == 1
+question: |
+  We found this participant in the existing case
+subquestion: |
+  Are you ${ x.maybe_user_partips[0] }?
+fields:
+  - no label: x.self_in_case
+    datatype: radio
+    code: |
+      x.self_in_case_choices
+  - note: |
+      If none of the options above apply to you, click "undo" below and search for a different docket number.
+---
+# Overrides a block from EFSPIntegration:case_search.yml
+# Adds note to help guide users
+id: found-these-participants
+generic object: EFCaseSearch
+if: len(x.maybe_user_partips) > 1
+question: |
+  We found these participants in the existing case
+subquestion: |
+  % for partip in x.maybe_user_partips:
+  * ${ partip }
+  % endfor
+  
+  Are you any of the above participants?
+fields:
+  - no label: x.self_in_case
+    datatype: radio
+    code: |
+      x.self_in_case_choices
+  - I am: x.self_partip_choice
+    datatype: object_radio
+    choices: |
+      x.maybe_user_partips
+    js show if: |
+      val("x.self_in_case") == "is_self"
+  - I am filing for: x.self_partip_choice
+    datatype: object_radio
+    choices: |
+      x.maybe_user_partips
+    js show if: |
+      val("x.self_in_case") == "is_filing"
+  - note: |
+      If none of the options above apply to you, click "undo" below and search for a different docket number.
+---
 code: |
   # petition_to_seal_eviction_attachment.filing_description = "Petition to Seal Eviction Record"
   # petition_to_seal_eviction_attachment.reference_number = docket_number
