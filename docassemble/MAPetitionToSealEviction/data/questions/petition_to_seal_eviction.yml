@@ -838,7 +838,7 @@ content: |
   If a dismissal judgment was entered against your landlord, check the box that says, 
   "The eviction case was dismissed by the court or in a written agreement."
   
-  You may also find the information on [MassCourts.org](https://masscourts.org)&nbsp;<sup>:up-right-from-square: (opens in new tab)</sup>.
+  You may also find the information on [MassCourts.org](https://masscourts.org)&nbsp;<sup>:up-right-from-square:&nbsp;(opens in new tab)</sup>.
 ---
 code: |
   case_dismissed = case_outcome == "dismissed"
@@ -1059,7 +1059,7 @@ template: find_my_docket_number_template
 subject: |
   How do I find my docket number?
 content: |
-  If you do not know your docket number, search by name on [MassCourts.org](https://masscourts.org):up-right-from-square: (opens in new tab).
+  If you do not know your docket number, search by name on [MassCourts.org](https://masscourts.org)&nbsp;<sup>:up-right-from-square:&nbsp;(opens in new tab)</sup>.
   You may also see the docket number written on paperwork that you got from the court or from your landlord.
 
   A docket number almost always:
