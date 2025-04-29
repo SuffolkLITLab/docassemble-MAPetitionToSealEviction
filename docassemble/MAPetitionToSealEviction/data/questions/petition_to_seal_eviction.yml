@@ -779,12 +779,8 @@ fields:
       - "**Dismissed** by the court or in a written agreement": dismissed
       - "Ended with a court ruling **in my favor**": decided_for_me # settled
       - Ended with a court ruling **against me**: decided_against_me # decided
-      - This was a 139 § 19 case and judgment did not enter for either party: 139_no_resolution
 validation code: |
-  if case_outcome == "139_no_resolution":
-    judgment_outcome = "nobody"
-    eviction_reason_139 = True
-  elif case_outcome == "decided_for_me":
+  if case_outcome == "decided_for_me":
     judgment_outcome = "tenant"
   elif case_outcome == "decided_against_me":
     judgment_outcome = "landlord"
