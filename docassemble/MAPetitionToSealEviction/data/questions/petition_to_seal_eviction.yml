@@ -630,9 +630,9 @@ question: |
 subquestion: |
   In the last 7 years (since ${ today().minus(years=7) }), has a landlord asked a judge to evict you for one of these reasons?
 fields:
-  - "Any fault reason: The landlord said I broke the lease for a reason other than nonpayment of rent.": prior_fault_action_139
+  - "The landlord said I broke the lease for a reason other than nonpayment of rent.": prior_fault_action_139
     datatype: yesnoradio
-  - "G.L. c. 139, § 19: The landlord said I broke the law and filed an emergency eviction": prior_139_action
+  - "The landlord filed an emergency eviction action under G.L. c. 139, § 19": prior_139_action
     datatype: yesnoradio
 ---
 id: Prior Criminal Offenses
