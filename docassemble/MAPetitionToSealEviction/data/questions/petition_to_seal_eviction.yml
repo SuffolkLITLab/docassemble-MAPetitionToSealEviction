@@ -747,7 +747,7 @@ id: 139 appeal period expired judgment for tenant or no fault eviction
 question: |
   Has the appeal period expired for your case?
 subquestion: |
-  The appeal period usually begins on the date you reached an agreement with your landlord or the date the judge made a decision. Your appeal period is usually **10 days** from the date of the agreement or decision.
+  Your appeal period is usually **30 days** from the date of the decision or agreement. If there was an appeal in your case, this would include the time the appeal was pending
 fields:
   - no label: appeal_period_expired_dismissal_or_nofault
     datatype: yesnoradio
