@@ -640,19 +640,23 @@ question: |
   Criminal offenses listed under G.L. c. 139, § 19
 subquestion: |
   Since **${ today().minus(years=7) }**, have you been convicted of a crime listed in G.L. c. 139, § 19?
-
-  These crimes include:
-
-  * Drug offenses
-  * Illegal weapons
-  * Prostitution
-  * Illegal gambling
-  * Illegal keeping or sale of alcohol, or habitually serving alcohol to somoene who is intoxicated or who you had reason to know would operate a vehicle under the influence
-  * Violence or threats against an employee in a public or subsidized housing unit
-
+  ${ collapse_template(prior_139_offense_template) }
 fields:
   - Have you been convicted of one of the above crimes in the last 7 years?: prior_139_offense
     datatype: yesnoradio
+---
+template: prior_139_offense_template
+subject: |
+  See examples
+content: |
+  Some of the criminal offenses listed in [G.L. c. 139, § 19](https://malegislature.gov/Laws/GeneralLaws/PartI/TitleXX/Chapter139/Section19) include:
+
+  * Drug offenses
+  * Keeping illegal weapons
+  * Prostitution
+  * Gambling
+  * Illegal sale of alcohol
+  * Violence against an employee or occupant of public or subsidized housing
 ---
 id: Notice
 question: |
