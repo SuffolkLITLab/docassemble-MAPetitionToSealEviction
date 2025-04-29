@@ -628,12 +628,11 @@ id: Fault Action Section 139
 question: |
   Evictions for a fault reason
 subquestion: |
-  In the last 7 years (since ${ today().minus(years=7) }), has a landlord asked a judge to evict you 
-  for one of these reasons?
+  In the last 7 years (since ${ today().minus(years=7) }), has a landlord asked a judge to evict you for one of these reasons?
 fields:
-  - "Any fault reason: I broke the lease for a reason other than nonpayment of rent.": prior_fault_action_139
+  - "Any fault reason: The landlord said I broke the lease for a reason other than nonpayment of rent.": prior_fault_action_139
     datatype: yesnoradio
-  - "139, §19: I broke the law and the landlord filed an emergency eviction": prior_139_action
+  - "G.L. c. 139, § 19: The landlord said I broke the law and filed an emergency eviction": prior_139_action
     datatype: yesnoradio
 ---
 id: Prior Criminal Offenses
