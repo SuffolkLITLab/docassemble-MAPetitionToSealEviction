@@ -38,6 +38,7 @@ code: |
         item.filing_component
         item.filing_type
         item.filing_parties
+        item.filing_attorney
       al_court_bundle.completed
 
       review_fees
@@ -1017,8 +1018,17 @@ code: |
     x.has_courtesy_copies
     x.added_necessary_opt_services
     x.optional_services.gather()
+    x.filing_attorney
     # x.as_pdf('preview', refresh=False)
   x.completed = True
+---
+generic object: ALDocumentBundle
+code: |
+  x.filing_attorney = "" # TODO: I don't actually know where this is supposed to be set to a real value. It only broke in production on docket 18H84SP004193
+---
+generic object: ALDocument
+code: |
+  x.filing_attorney = "" # TODO: See above - don't know why we need this or if setting it to "" might break something else later
 ---
 only sets:
   - case_search.warn_no_results
