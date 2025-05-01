@@ -88,8 +88,7 @@ objects:
   - service_address: ALAddress
 ---
 code: |
-  if al_person_answering == "attorney":
-    attorneys.there_are_any = True
+  attorneys.there_are_any = al_person_answering == "attorney"
 ---
 code: |
   # Limit to 1 attorney
@@ -711,11 +710,10 @@ fields:
     maxlength: 130
     required: False
   - Email: attorneys[0].email
-    required: False
   - Phone number: attorneys[0].phone_number
     required: False
-  - BBO Number: attorneys[0].bbo_number
-    required: False
+  - BBO Number (if you have one): attorneys[0].bbo_number
+    required: False      
   - code: |
       attorneys[0].address_fields()
 ---
@@ -992,10 +990,19 @@ fields:
 ---
 id: your contact information
 question: |
+  % if al_person_answering == "user":
   What is your contact information?
+  % else:
+  What is the tenant's contact information?
+  % endif
 subquestion: |
+  % if al_person_answering == "user":
   If you do not have a phone number or email address,
   write the phone number or email of someone who can reach you.
+  % else:
+  If you do not have a phone number or email address for the tenant,
+  write the phone number or email of someone who can reach them.
+  % endif
 fields:  
   - Mobile number: users[0].mobile_number
     required: False
