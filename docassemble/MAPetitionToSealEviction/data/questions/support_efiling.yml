@@ -883,7 +883,7 @@ content: |
 id: docket id
 generic object: EFCaseSearch
 question: |
-  What is the docket number for your eviction case?
+  What is the docket number (sometimes called the "case number") for your eviction case?
 subquestion: |
   We will search for your case using the docket number you enter below. Review and
   make sure that it is correct.
