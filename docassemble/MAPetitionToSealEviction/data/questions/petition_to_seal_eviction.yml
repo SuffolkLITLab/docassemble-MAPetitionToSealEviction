@@ -1081,7 +1081,7 @@ code: |
   ejp_appl_period_exp = (
     eviction_reason_139
     and judgment_outcome == "landlord"
-    and not prior_139_action
+    and not prior_fault_action_139
     and not prior_139_offense
     and not appeal_period_expired_139 == False
   )
