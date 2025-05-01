@@ -85,7 +85,6 @@ objects:
   - other_parties: ALPeopleList.using(there_are_any=True)
   - users: ALPeopleList.using(there_are_any=True)
   - users[i].tenancy_address: ALAddress
-  - service_address: ALAddress
 ---
 code: |
   if al_person_answering == "attorney":
@@ -667,6 +666,8 @@ subquestion: |
 
   Before you can file, you need to tell the court how you will serve the other side.
 
+  ${ collapse_template(how_to_choose_service_method_template) }
+
   I intend to serve notice on ${ other_parties } by:
 fields:
   - "Giving a copy of the petition to:": notice_recipient
@@ -680,16 +681,32 @@ fields:
       - Email: email
       - Mail: mail
       - In person: in person
-  - Email address: service_email_address
-    datatype: email
+  - Email address or addresses: service_email_address
     show if: 
       variable: notice_type
       is: email
-  - code: |
-      service_address.address_fields(show_if={"variable": "notice_type", "is": "mail"} )
+    help: |
+      A party can only be served by email if they have agreed to accept service by email, unless
+      they have an attorney.
+  - Mailing address or addresses: service_address
+    datatype: area
+    rows: 3
+    show if:
+      variable: notice_type
+      is: mail
   - "Service date": notice_date
     datatype: date
     default: ${ today().format("yyyy-MM-dd") }
+---
+template: how_to_choose_service_method_template
+subject: |
+  What method can I choose?
+content: |
+  If the landlord has an attorney, you can serve the attorney instead of the landlord.
+  You can use any method, including email.
+
+  If the landlord does not have an attorney, they must be served by mail or in person.
+  You can also serve them by email if they have agreed to accept service by email.
 ---
 id: Petitioner Signature
 question: |
