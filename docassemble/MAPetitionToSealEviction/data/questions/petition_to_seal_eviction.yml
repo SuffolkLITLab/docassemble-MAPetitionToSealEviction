@@ -22,7 +22,7 @@ metadata:
     Before you get started, please gather:
     
     1. The name of the court your eviction action was heard in
-    2. The docket number of your eviction action
+    2. The docket number (also called the "case number") of your eviction action
     3. Any other documents relating to your eviction action
     3. The name and email of your attorney (if you have one)
     
@@ -311,7 +311,7 @@ subquestion: |
 
   Before you get started, please gather:
     
-  1. The docket number of the eviction case you want to seal<br>
+  1. The docket number (also called the "case number") of the eviction case you want to seal<br>
   ([find your docket number](https://www.mass.gov/info-details/how-to-search-court-dockets?_gl=1*1t4lg0v*_ga*Mjc1NTYwNDQxLjE3NDE2MjkwMjA.*_)&nbsp;<sup>:up-right-from-square:&nbsp;(opens in new tab)</sup>)
   2. The name of the court that your eviction case was heard in
   3. Any other court documents from your eviction case
@@ -1022,7 +1022,7 @@ fields:
 ---
 id: docket number
 question: |
-  What is the docket number for your eviction case?
+  What is the docket number (also called the "case number") for your eviction case?
 subquestion: |
   ${ collapse_template(find_my_docket_number_template) }
 fields:
@@ -1043,7 +1043,7 @@ template: find_my_docket_number_template
 subject: |
   How do I find my docket number?
 content: |
-  If you do not know your docket number, search by name on [MassCourts.org](https://masscourts.org)&nbsp;<sup>:up-right-from-square:&nbsp;(opens in new tab)</sup>.
+  If you do not know your docket number (also called the "case number"), search by your name on [MassCourts.org](https://masscourts.org)&nbsp;<sup>:up-right-from-square:&nbsp;(opens in new tab)</sup>.
   You may also see the docket number written on paperwork that you got from the court or from your landlord.
 
   A docket number almost always:

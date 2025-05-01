@@ -13,7 +13,7 @@ metadata:
   can_I_use_this_form: |
     If you are a Massachusetts landlord who filed a case against a former tenant and received a judgment for their nonpayment of rent, you can use this form to let the court know that the tenant has since repaid the rent that they owed you.
   before_you_start: |
-    Before you get started, you will need to know the court in which you received the judgment for rent owed, as well as the docket number of the case.
+    Before you get started, you will need to know the court in which you received the judgment for rent owed, as well as the docket number (also called the "case number") of the case.
     
     If you are represented by an attorney, they will need to provide their signature, the date on which they signed the form, and their BBO number.
   maturity: production
@@ -130,7 +130,7 @@ question: |
 subquestion: |
   This interview will help you file a Satisfaction of Judgment.
   
-  Before you get started, you will need to know the court in which you received the judgment for rent owed, as well as the docket number of the case.
+  Before you get started, you will need to know the court in which you received the judgment for rent owed, as well as the docket number (also called the "case number") of the case.
   
   If you are represented by an attorney, they will need to provide their signature, the date on which they signed the form, and their BBO number.
 
