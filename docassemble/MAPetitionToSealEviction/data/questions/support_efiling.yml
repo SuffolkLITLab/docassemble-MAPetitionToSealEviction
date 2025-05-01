@@ -355,8 +355,8 @@ code: |
   petition_to_seal_eviction_attachment.filing_type_filters = ['Petition to Seal Eviction Record', 'Seal Eviction']
   petition_to_seal_eviction_attachment.filing_type_default = '101805'
 
-  notice_of_appearance_form_attachment.filing_type_filters = ['Attorney Appearance', 'Appearance Filed'] # Different filing codes in District vs Housing Court
-  notice_of_appearance_form_attachment.filing_type_default = '9124'
+  notice_of_appearance_form_attachment.filing_type_filters = ['Appearance filed']
+  notice_of_appearance_form_attachment.filing_type_default = '12770' # 12770 is for housing court, 
 
   al_court_bundle.filing_type_filters = ['Petition to Seal Eviction Record', 'Seal Eviction']
   al_court_bundle.filing_type_default = '101805'
