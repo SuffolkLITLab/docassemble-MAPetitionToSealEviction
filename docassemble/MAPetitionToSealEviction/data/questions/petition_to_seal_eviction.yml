@@ -181,6 +181,8 @@ code: |
         non_payment
         if non_payment:
           non_payment_cured
+          if non_payment_cured == "not_cured":
+            continue_inapplicable_nonpayment_not_cured
         if not non_payment:
           non_payment_hardship
           if non_payment_hardship:
@@ -579,20 +581,30 @@ fields:
     choices: 
       - My landlord filed a notice of satisfaction of judgment with the court: landlord_filed_satisfaction
       - A judge deemed all amounts due in rent were paid: judge_deemed_satisfied
-      - My payment has not been deemed satisfied by the court: False
-  - note: |
-      :triangle-exclamation:
+      - My payment has not been deemed satisfied by the court: not_cured
+---
+id: Off Ramp Non-Payment NOT Cured
+decoration: triangle-exclamation
+question: |
+  You may not be able to seal your eviction record
+subquestion: |
+  Based on your answers, you may not be eligible to complete the petition form using this guided interview.
 
-      If you have paid all the money you owed you can ask your landlord to file a Notice of Satisfaction of Judgment with the court. 
+  **
+  If you have paid all the money you owed you can ask your landlord to file a Notice of Satisfaction of Judgment with the court. 
 
-      If you cannot reach your landlord or they do not file the Notice of Satisfaction, you will need to file a 
-      Petition for Judgment or Agreement to be Deemed Satisfied.
+  If you cannot reach your landlord or they do not file the Notice of Satisfaction, you will need to file a Petition for Judgment or Agreement to be Deemed Satisfied.
       
-      Once the Notice of Satisfaction of Judgment has been filed, or Petition for Judgment or Agreement to be Deemed
-      Satisfied has been allowed by the court, come back and complete the interview and Petition to Seal your Eviction Record.
-    show if:
-      variable: non_payment_cured
-      is: False
+  Once the Notice of Satisfaction of Judgment has been filed, or Petition for Judgment or Agreement to be Deemed Satisfied has been allowed by the court, come back and complete the interview and Petition to Seal your Eviction Record.
+  **
+
+  You can find more information about petition eligibility and other ways to file the petition [here](https://www.mass.gov/).
+
+  Please contact your Clerk's Office if you have additional questions.
+sets: continue_inapplicable_nonpayment_not_cured
+buttons:
+  - Restart: restart
+  - Exit: exit
 ---
 id: Non Payment Not Paid
 question: |
