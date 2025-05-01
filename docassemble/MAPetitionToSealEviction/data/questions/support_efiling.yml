@@ -548,34 +548,43 @@ code: |
 code: |
   needs_all_info = False
 ---
+# generic object: ALDocument
+# id: extra e-filing questions
+# question: |
+#   Send a copy of this filing to someone else?
+# subquestion: |
+#   If you answer "yes", a copy of all notices will be delivered to the email below when the
+#   document is electronically filed.
+# fields:
+#   - Add a courtesy email: x.has_courtesy_copies
+#     datatype: yesnoradio
+#   - Courtesy emails (one per line): x.courtesy_copies_raw
+#     datatype: area
+#     show if: x.has_courtesy_copies
+# ---
+# generic object: ALDocumentBundle
+# id: extra e-filing questions
+# question: |
+#   Send a copy of this filing to someone else?
+# subquestion: |
+#   If you answer "yes", a copy of all notices will be delivered to the email below when the
+#   document is electronically filed.
+# fields:
+#   - Add a courtesy email: x.has_courtesy_copies
+#     datatype: yesnoradio
+#   - Courtesy emails (one per line): x.courtesy_copies_raw
+#     datatype: area
+#     show if: x.has_courtesy_copies
+---
+####### Skip the courtesy copies as trial court thinks this is redundant with the "send a copy by email" button we already have ##########
+---
 generic object: ALDocument
-id: extra e-filing questions
-question: |
-  Send a copy of this filing to someone else?
-subquestion: |
-  If you answer "yes", a copy of all notices will be delivered to the email below when the
-  document is electronically filed.
-fields:
-  - Add a courtesy email: x.has_courtesy_copies
-    datatype: yesnoradio
-  - Courtesy emails (one per line): x.courtesy_copies_raw
-    datatype: area
-    show if: x.has_courtesy_copies
+code: |
+  x.has_courtesy_copies = False
 ---
 generic object: ALDocumentBundle
-id: extra e-filing questions
-question: |
-  Send a copy of this filing to someone else?
-subquestion: |
-  If you answer "yes", a copy of all notices will be delivered to the email below when the
-  document is electronically filed.
-fields:
-  - Add a courtesy email: x.has_courtesy_copies
-    datatype: yesnoradio
-  - Courtesy emails (one per line): x.courtesy_copies_raw
-    datatype: area
-    show if: x.has_courtesy_copies
-
+code: |
+  x.has_courtesy_copies = False
 # ---
 # code: |
 #   al_court_bundle.existing_parties_payment_dict = DADict(elements={party: True for party in all_case_parties})
