@@ -14,21 +14,35 @@ metadata:
     Petition to Seal Eviction
   description: |-
     This interview helps someone in Massachusetts file a Petition to Seal a prior eviction from public record.
+
+    Sealing your eviction record means that a landlord cannot see your eviction record when they do a background check,
+    and that you can legally answer "no" when asked if you have ever been evicted.
+
+    This means that a landlord cannot use your eviction record against you when you apply for housing.
   can_I_use_this_form: |
-    If you are a tenant (defendant) who was evicted more than seven (7) years ago, you can use this interview to petition a court to seal the past eviction from public record.
+    If you are a tenant whose landlord started an eviction case, you may be able to use this petition
+    to seal your eviction record.
+
+    To seal your eviction record, you must:
+
+    * Have a judgment in your favor or a dismissal of the case, or
+    * Be evicted for a no-fault reason and be past the appeal window, or
+    * Be evicted for nonpayment of rent and have paid all amounts due in rent, or
+    * Be evicted for nonpayment of rent, be unable to pay the rent due to economic hardship, and have not been evicted for nonpayment of rent in the last 4 years, or
+    * Be evicted for a fault reason and have not been evicted for a fault reason in the last 7 years, or
+    * Be evicted for a 139 § 19 reason and have not been evicted for a 139 § 19 reason in the last 7 years or convicted of a related crime in the last 7 years.
+
+    The interview will help you understand if you qualify to seal your eviction record. It may be able to help you get some information
+    about your case from the court electronically.
   before_you_start: |
-    This interview will help you file a Petition to Seal an Eviction.
-    
     Before you get started, please gather:
     
-    1. The name of the court your eviction action was heard in
+    1. Your former address and the name of the court your eviction action was heard in
     2. The docket number (also called the "case number") of your eviction action
     3. Any other documents relating to your eviction action
-    3. The name and email of your attorney (if you have one)
     
-    When you are finished, you will need to:
-    
-    E-file the petition with the applicable court
+    When you are finished, you will need to e-file the petition with the applicable court.
+    Depending on the kind of decision you had in your case, you may also need to give a copy of the petition to your former landlord.
   maturity: production
   estimated_completion_minutes: 10
   estimated_completion_delta: 5
