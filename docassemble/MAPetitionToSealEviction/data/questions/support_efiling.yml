@@ -631,6 +631,13 @@ subquestion: |
   You need to use an eFileMA account to e-file this document. If you don't have an account yet, we can help you make one.
 
   ${ collapse_template(what_is_efile_ma_template) }
+
+  <div class="alert alert-warning" role="alert">
+    <strong>Warning</strong>: you need to use an individual filer account, not a "firm" account
+    to file this petition.
+    <br/>
+    Choose "new account" if you have an existing account but it is managed by your firm.
+  </div>
 fields:
   - I want to: user_login_or_make_new
     datatype: radio
@@ -654,6 +661,29 @@ fields:
     show if:
       variable: user_login_or_make_new
       is: existing_account
+---
+id: login with redis
+continue button field: continue_stored_login
+question: Log in to eFile${ state_name_to_code(jurisdiction_id) } as ${my_username}?
+subquestion: |
+  You recently logged in to eFile${ state_name_to_code(jurisdiction_id) } with the email **${ my_username }**.
+
+  <div class="alert alert-warning" role="alert">
+    <p>
+    <strong>Warning</strong>: you need to use an individual filer account, not a "firm" account
+    to file this petition.
+    <br/>
+    Make a new account if ${ my_username } is an account that is managed by your firm.
+    </p>
+  </div>
+
+  Would you like to continue with this email?
+fields:
+  - no label: continue_stored_login
+    input type: radio
+    choices:
+      - Yes, log me in with this email.: True
+      - No, I want to use a different login email.: False
 ---
 template: what_is_efile_ma_template
 subject: |
