@@ -74,6 +74,14 @@ question: |
 code: |
   efile_calculation_task = background_action("efile_calculation_background_task")
 ---
+template: brockton_session_warning
+content: |
+  <div class="alert alert-warning brockton_session_warning" role="alert" markdown="1" style="overflow: hidden;">
+    **Attention Housing Court filers**
+  
+    Cases filed on or before 2017 in the Southeast Division Brockton Session are now handled by the Metro South Division. Petitions associated with these cases cannot be filed electronically and must be filed in person in the Metro South Division.
+  </div>
+---
 event: efile_calculation_background_task
 code: |
   # All the time-consuming stuff that doesn't require user interaction  
@@ -386,6 +394,10 @@ subquestion: |
 
   If you do not want to e-file this document, you can print it at the end of this interview and deliver it to the court
   in-person or by mail.
+
+  % if trial_court.name == "Brockton District Court":
+  ${ brockton_session_warning }
+  % endif
 fields:
   - Do you want to e-file?: user_wants_efile
     datatype: yesnoradio
@@ -633,10 +645,7 @@ subquestion: |
   ${ collapse_template(what_is_efile_ma_template) }
 
   <div class="alert alert-warning" role="alert">
-    <strong>Warning</strong>: you need to use an individual filer account, not a "firm" account
-    to file this petition.
-    <br/>
-    Choose "new account" if you have an existing account but it is managed by your firm.
+    <strong>Warning</strong>: you need to use an individual filer account, not a "firm" account to file this petition. Choose "new account" if you have an existing account but it is managed by your firm.
   </div>
 fields:
   - I want to: user_login_or_make_new
@@ -929,6 +938,10 @@ subquestion: |
   make sure that it is correct.
 
   ${ collapse_template(find_my_docket_number_template) }
+
+  % if trial_court.name == "Brockton District Court":
+  ${ brockton_session_warning }
+  % endif
 fields:
   - ${ str(x.docket_lookup_choice) }: x.docket_number_from_user
     under text: |
