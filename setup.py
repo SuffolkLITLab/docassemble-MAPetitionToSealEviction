@@ -53,7 +53,7 @@ setup(name='docassemble.MAPetitionToSealEviction',
       license='The MIT License',
       url='https://courtformsonline.org',
       packages=find_namespace_packages(),
-      install_requires=['docassemble.AssemblyLine @ git+https://github.com/SuffolkLITLab/docassemble-AssemblyLine.git@main', 'docassemble.EFSPIntegration @ git+https://github.com/SuffolkLITLab/docassemble-EFSPIntegration.git@main'],
+      install_requires=['docassemble.AssemblyLine>=3.2.0', 'docassemble.EFSPIntegration>=1.5.1'],
       zip_safe=False,
       package_data=find_package_data(where='docassemble/MAPetitionToSealEviction/', package='docassemble.MAPetitionToSealEviction'),
      )
