@@ -645,10 +645,7 @@ subquestion: |
   ${ collapse_template(what_is_efile_ma_template) }
 
   <div class="alert alert-warning" role="alert">
-    <strong>Warning</strong>: you need to use an individual filer account, not a "firm" account
-    to file this petition.
-    <br/>
-    Choose "new account" if you have an existing account but it is managed by your firm.
+    <strong>Warning</strong>: you need to use an individual filer account, not a "firm" account to file this petition. Choose "new account" if you have an existing account but it is managed by your firm.
   </div>
 fields:
   - I want to: user_login_or_make_new
