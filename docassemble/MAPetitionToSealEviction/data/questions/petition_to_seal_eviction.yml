@@ -933,13 +933,33 @@ fields:
     datatype: object
     object labeler: court_short_label
     choices: all_courts.filter_courts(allowed_courts)
+    css class: trial_court_other_select
     show if:
       variable: trial_court
       is: null
   - note: |
       ${ brockton_session_warning }
-    js show if:
-      val("trial_court") === "all_courts[16]"
+script: |
+  <script>
+    // Shows and hides the `brockton_session_warning` template when "Brockton District Court" is selected.
+    const select = $('.trial_court_other_select-container select');
+    const warning = $('.brockton_session_warning');
+  
+    if ( select.css('display') === 'block' ) {
+      show_hide_warning();
+    }
+  
+    $(select).on('change', show_hide_warning);
+  
+    function show_hide_warning() {
+      let label = select.children('[value="' + select.val() + '"]').text();
+      if ( label === 'Brockton District Court') {
+        warning.show();
+      } else {
+        warning.hide();
+      }
+    }
+  </script>
 ---
 # code: |
 #   # Because we disabled name lookup

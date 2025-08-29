@@ -76,7 +76,7 @@ code: |
 ---
 template: brockton_session_warning
 content: |
-  <div class="alert alert-warning" role="alert" markdown="1" style="overflow: hidden;">
+  <div class="alert alert-warning brockton_session_warning" role="alert" markdown="1" style="overflow: hidden;">
     **Attention Housing Court filers**
   
     Cases filed on or before 2017 in the Southeast Division Brockton Session are now handled by the Metro South Division. Petitions associated with these cases cannot be filed electronically and must be filed in person in the Metro South Division.
