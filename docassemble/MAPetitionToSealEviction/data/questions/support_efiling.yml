@@ -1106,23 +1106,3 @@ back button label: Back
 validation code: |
   can_check_efile = False
 # Seems like this should work, but it doesn't * [Try a different docket number](${ url_ask(['docket_number', {"recompute": ["case_search.docket_number_from_user", "case_search.found_case"] }, "case_search.found_case"]) }) to search for a different case, or
----
-# TODO(bryce): remove these two blocks after 9/02
-id: check efile possibility
-sets:
-  - can_check_efile
-code: |
-  show_no_efile
-  can_check_efile = False
----
-id: you-will-not-be-able-to-efile
-question: |
-  You will *not* be able to e-file this document
-subquestion: |
-  Unfortunately, you cannot e-file with the ${ trial_court } at this time.
-  Some Trial Court systems are undergoing maintenance.
-  See the [Trial Court's notice](https://www.mass.gov/alerts/trial-court-system-maintenance-friday-august-29-to-tuesday-september-2#4777866)
-  for more information.
-
-  However, **you can still continue** and download a completed form at the end.
-continue button field: show_no_efile
