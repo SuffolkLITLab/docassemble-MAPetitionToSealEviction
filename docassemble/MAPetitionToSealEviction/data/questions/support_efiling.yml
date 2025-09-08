@@ -395,7 +395,7 @@ subquestion: |
   If you do not want to e-file this document, you can print it at the end of this interview and deliver it to the court
   in-person or by mail.
 
-  % if trial_court.name == "Brockton District Court":
+  % if trial_court.name == "Metro South Housing Court - Brockton Session":
   ${ brockton_session_warning }
   % endif
 fields:
@@ -939,7 +939,7 @@ subquestion: |
 
   ${ collapse_template(find_my_docket_number_template) }
 
-  % if trial_court.name == "Brockton District Court":
+  % if trial_court.name == "Metro South Housing Court - Brockton Session":
   ${ brockton_session_warning }
   % endif
 fields:
