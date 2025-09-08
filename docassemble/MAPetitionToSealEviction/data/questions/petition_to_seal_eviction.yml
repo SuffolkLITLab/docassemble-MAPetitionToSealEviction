@@ -941,7 +941,7 @@ fields:
       ${ brockton_session_warning }
 script: |
   <script>
-    // Shows and hides the `brockton_session_warning` template when "Brockton District Court" is selected.
+    // Shows and hides the `brockton_session_warning` template when the Brockton Session is selected.
     const select = $('.trial_court_other_select-container select');
     const warning = $('.brockton_session_warning');
   
@@ -953,7 +953,7 @@ script: |
   
     function show_hide_warning() {
       let label = select.children('[value="' + select.val() + '"]').text();
-      if ( label === 'Brockton District Court') {
+      if ( label === 'Metro South Housing Court - Brockton Session') {
         warning.show();
       } else {
         warning.hide();
@@ -1100,7 +1100,7 @@ question: |
 subquestion: |
   ${ collapse_template(find_my_docket_number_template) }
 
-  % if trial_court.name == "Brockton District Court":
+  % if trial_court.name == "Metro South Housing Court - Brockton Session":
   ${ brockton_session_warning }
   % endif
 fields:
