@@ -324,6 +324,8 @@ code: |
       # I guess that district court may not have correctly coded case types, so we don't know exact case type
       # but it does seem that they can seal a 139 19 if it was coded under summary process anyway
       petition_is_efileable = True
+    elif "civil" in case_search.found_case.case_type_name.lower() or "restraining order" in case_search.found_case.case_type_name.lower():
+      petition_is_efileable = True
     else:
       petition_is_efileable = False
     # # Check the case type for a valid one
@@ -876,8 +878,6 @@ code: |
       predicted_eviction_reason = "eviction_reason_nonpayment"
     elif 'foreclosure' in case_search.found_case.case_type_name.lower():
       predicted_eviction_reason = "eviction_reason_foreclosure"
-    elif "civil" in case_search.found_case.case_type_name.lower() or "restraining order" in case_search.found_case.case_type_name.lower():
-      predicted_eviction_reason = "eviction_reason_139"
     else:
       predicted_eviction_reason = None
   else:
@@ -895,14 +895,8 @@ subquestion: |
   This document cannot be e-filed in the Superior Court. You can still file this document in-person at the court.
 
   % else:
-  Only cases that are coded as "Summary Process" can be e-filed right now.
-
-  % if predicted_eviction_reason == "eviction_reason_139":
-  This case looks like it is a civil or 139 § 19 case. You can still file this document in-person at the court.
-  % else:
   It does not look like this is an eviction case. You can still bring this document in-person
   to the court and talk to a clerk about your sealing options.
-  % endif
   % endif
 ---
 id: submitted form
