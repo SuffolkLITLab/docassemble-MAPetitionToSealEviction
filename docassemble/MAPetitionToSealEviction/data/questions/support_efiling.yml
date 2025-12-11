@@ -951,9 +951,9 @@ fields:
       and make sure you do not include any spaces or dashes. Letters in a docket
       number are usually uppercase.
     js show if: | # Use javascript to validate the docket number
-      val("docket_number") != "" &&  
+      val("x.docket_number_from_user") != "" &&  
             !/^\d{2,4}(?:[A-Z]\d{2}|\d{2})[A-Z]{2}\d+$/.test(
-              val("docket_number")
+              val("x.docket_number_from_user")
             );
 ---
 only sets:
