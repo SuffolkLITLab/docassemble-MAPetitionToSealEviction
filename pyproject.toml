@@ -21,3 +21,10 @@ dependencies = [
 where = [
     ".",
 ]
+[tool.setuptools.package-data]
+"*" = [
+    "*.yml",
+    "*.yaml",
+    "*.docx",
+    "*.md",
+]
