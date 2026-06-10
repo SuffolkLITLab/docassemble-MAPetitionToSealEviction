@@ -14,7 +14,11 @@ license = "MIT"
 license-files = ["LICENSE"]
 dependencies = [
   "docassemble.AssemblyLine>=3.2.0",
-  "docassemble.EFSPIntegration>=1.5.1"
+  "docassemble.EFSPIntegration>=1.5.1",
+  "docassemble.MassAccess",
+  "docassemble.MATCTheme",
+  "docassemble.MANoticeOfAppearanceForm",
+  "docassemble.ALToolbox"
 ]
 
 [tool.setuptools.packages.find]
