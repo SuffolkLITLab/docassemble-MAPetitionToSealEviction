@@ -15,3 +15,8 @@ dependencies = [
   "docassemble.AssemblyLine>=3.2.0",
   "docassemble.EFSPIntegration>=1.5.1"
 ]
+
+[tool.setuptools.packages.find]
+where = [
+    ".",
+]
