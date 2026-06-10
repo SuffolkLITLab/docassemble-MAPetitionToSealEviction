@@ -1,3 +1,23 @@
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "docassemble.MAPetitionToSealEviction"
+version = "1.9.1"
+description = "Petition to Seal Eviction"
+readme = "README.md"
+authors = [
+  {name = "Taline, Rami", email = "litlab@suffolk.edu"}
+]
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = [
+  "docassemble.AssemblyLine>=3.2.0",
+  "docassemble.EFSPIntegration>=1.5.1"
+]
+
+[tool.setuptools.packages.find]
+where = [
+    ".",
+]
