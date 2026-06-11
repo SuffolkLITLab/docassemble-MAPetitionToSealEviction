@@ -17,7 +17,6 @@ dependencies = [
   "docassemble.EFSPIntegration>=1.5.1",
   "docassemble.MassAccess",
   "docassemble.MATCTheme",
-  "docassemble.MANoticeOfAppearanceForm",
   "docassemble.ALToolbox"
 ]
 
