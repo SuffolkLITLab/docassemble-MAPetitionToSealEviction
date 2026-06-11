@@ -17,6 +17,7 @@ dependencies = [
   "docassemble.EFSPIntegration>=1.5.1",
   "docassemble.MassAccess",
   "docassemble.MATCTheme",
+  "docassemble.MANoticeOfAppearanceForm @ git+https://github.com/SuffolkLITLab/docassemble-MANoticeOfAppearanceForm.git@main",
   "docassemble.ALToolbox"
 ]
 
