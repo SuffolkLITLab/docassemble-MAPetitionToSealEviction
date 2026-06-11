@@ -1,1 +1,6 @@
 include README.md
+graft docassemble/MAPetitionToSealEviction/data
+recursive-exclude * *.egg-info
+recursive-exclude .git *
+recursive-exclude * __pycache__
+recursive-exclude * *.pyc
