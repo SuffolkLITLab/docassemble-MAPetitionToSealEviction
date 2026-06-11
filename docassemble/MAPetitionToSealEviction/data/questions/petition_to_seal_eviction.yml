@@ -1353,5 +1353,43 @@ attachment:
   filename: petition_to_seal_eviction
   variable name: petition_to_seal_eviction_attachment[i]
   skip undefined: True
-  docx template file: petition_to_seal_eviction.docx
-  tagged pdf: True
+  pdf template file: petition_to_seal_eviction.pdf
+  fields:
+      - "docket_number": ${ docket_number }
+      - "trial_court_department": ${ trial_court.department }
+      - "trial_court_division": ${ trial_court.division }
+      - "other_parties1_name": ${ other_parties.full_names() }
+      - "users1_name": ${ users.full_names() }
+      - "case_dismissed": ${ case_dismissed }
+      - "judgment_outcome_tenant": ${ showifdef("judgment_outcome") == "tenant" }
+      - "judgment_outcome_landlord": ${ showifdef("judgment_outcome") == "landlord" }
+      - "non_payment": ${ showifdef("non_payment") }
+      - "non_payment_cured_landlord_filed_satisfaction": ${ showifdef("non_payment_cured") == "landlord_filed_satisfaction" }
+      - "non_payment_cured_judge_deemed_satisfied": ${ showifdef("non_payment_cured") == "judge_deemed_satisfied" }
+      - "eviction_reason_nonpayment": ${ showifdef("eviction_reason_nonpayment") and not showifdef("non_payment") }
+      - "nonpayment_appl_expired": ${ showifdef("nonpayment_appl_expired") }
+      - "eviction_reason_fault": ${ showifdef("eviction_reason_fault") }
+      - "fe_appl_period_exp": ${ showifdef("fe_appl_period_exp") }
+      - "nofault_judgment_period_exp": ${ showifdef("nofault_judgment_period_exp") }
+      - "eviction_reason_139_landlord": ${ showifdef("eviction_reason_139") and showifdef("judgment_outcome") == "landlord" }
+      - "ejp_appl_period_exp": ${ showifdef("ejp_appl_period_exp") }
+      - "notice_recipient_plaintiff": ${ notice_required and notice_recipient == "plaintiff" }
+      - "notice_recipient_plaintiffs_lawyer": ${ notice_required and notice_recipient == "plaintiff lawyer" }
+      - "notice_recipient_defendant": ${ notice_required and notice_recipient == "other defendant" }
+      - "notice_date": ${ notice_date if notice_required else "" }
+      - "notice_type_mail": ${ notice_required and notice_type == "mail" }
+      - "service_address": ${ service_address if notice_required and notice_type == "mail" else "" }
+      - "notice_type_in_person": ${ notice_required and notice_type == "in person" }
+      - "notice_type_email": ${ notice_required and notice_type == "email" }
+      - "service_email_address": ${ service_email_address if notice_required and notice_type == "email" else "" }
+      - "users1_name__1": ${ users[0].name_full() }
+      - "users1_signature": ${ users[0].signature_if_final(i) }
+      - "signature_date": ${ signature_date }
+      - "users1_address_on_one_line": ${ users[0].address.on_one_line() if not users[0].address.has_no_address else "" }
+      - "users1_mobile_number": ${ users[0].phone_numbers() }
+      - "users1_email": ${ users[0].email }
+      - "attorney_ghostwriting": ${ al_person_answering == "attorney_ghostwriting" }
+      - "attorneys1_name": ${ attorneys if attorneys.number_gathered() else "" }
+      - "signature_date__1": ${ signature_date if attorneys.number_gathered() else "" }
+      - "attorneys1_email": ${ attorneys[0].email if attorneys.number_gathered() else "" }
+      - "attorneys1_bbo_number": ${ attorneys[0].bbo_number if attorneys.number_gathered() else "" }
