@@ -39,6 +39,7 @@ code: |
         item.filing_type
         item.filing_parties
         item.filing_attorney
+        item.completed
       al_court_bundle.completed
 
       review_fees
@@ -636,7 +637,7 @@ code: |
   if fees_resp.is_ok():
     pass # There are never fees in this filing
   else:
-    bad_fees
+    raise Exception(f"Was not able to calculate fees: {fees_resp}")
   review_fees = True
 ---
 id: eFile Login
