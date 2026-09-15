@@ -1219,6 +1219,7 @@ review:
       % endif
 ---
 continue button field: users.revisit
+id: "edit tenants"
 question: |
   Edit tenants
 subquestion: |
@@ -1236,6 +1237,7 @@ edit:
 confirm: True
 ---
 continue button field: other_parties.revisit
+id: "edit landlords"
 question: |
   Edit landlords
 subquestion: |

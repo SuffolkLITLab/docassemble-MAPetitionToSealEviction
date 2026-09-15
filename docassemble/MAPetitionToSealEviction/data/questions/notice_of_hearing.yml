@@ -109,6 +109,7 @@ review:
       ${ hearing_time }
 ---
 continue button field: users.revisit
+id: "edit users"
 question: |
   Edit users
 subquestion: |
@@ -136,6 +137,7 @@ confirm: True
 
 ---
 continue button field: respondents.revisit
+id: "edit respondents"
 question: |
   Edit respondents
 subquestion: |
