@@ -68,6 +68,7 @@ code: |
   efile_once = True
 ---
 continue button field: interstitial_screen
+id: "we are ready to e file your forms"
 question: |
   We are ready to e-file your forms
 ---

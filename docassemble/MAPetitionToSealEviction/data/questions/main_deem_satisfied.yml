@@ -217,7 +217,7 @@ fields:
   - "Click to preview your answers": preview_answers
     datatype: button
 ---
-id: preview satisfaction_of_judgment
+id: "preview satisfaction_of_judgment 2"
 question: |
   Preview your answers before submitting the form.
 subquestion: |
@@ -226,7 +226,7 @@ fields:
   - "Click to preview your answers": preview_answers
     datatype: button
 ---
-id: preview satisfaction_of_judgment
+id: "preview satisfaction_of_judgment 3"
 question: |
   Preview your form before you sign it.
 subquestion: |
@@ -335,6 +335,7 @@ review:
       ${ attorneys2_bbo_number }
 ---
 continue button field: plaintiffs.revisit
+id: "edit plaintiffs"
 question: |
   Edit plaintiffs
 subquestion: |
@@ -356,6 +357,7 @@ confirm: True
 
 ---
 continue button field: defendants.revisit
+id: "edit defendants"
 question: |
   Edit defendants
 subquestion: |
@@ -374,6 +376,7 @@ confirm: True
 
 ---
 continue button field: attorneys.revisit
+id: "edit attorneys"
 question: |
   Edit attorneys
 subquestion: |
