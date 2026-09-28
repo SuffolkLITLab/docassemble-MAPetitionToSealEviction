@@ -46,9 +46,23 @@ to keep that assignment from intercepting the pre-login interview flow.
 - The complete petition interview opened successfully on apps-dev.
 - The real interview reached eFile Login, and all staging probes passed again
   after limiting the warning screen's variable registration.
-- A full test filing remains unverified: the supplied local test-account
-  credentials returned HTTP 403 for Massachusetts; API-key-only authentication
-  succeeded. No filing was submitted.
+- After correcting the Massachusetts staging username, authenticated filing
+  succeeded on apps-dev using Eastern Housing Court docket `23H84SP000009`.
+  The live case resolved to court `537`, type `8734` (Efiled SP Summons and
+  Complaint - Non-payment of Rent), and category `8730` (Summary Process).
+  The interview reported `petition_is_efileable=True`, `ready_to_efile=True`,
+  and no missing or invalid filing fields. Filing type `101805` resolved to
+  Petition to Seal Eviction Record. The preview and final signed PDFs were
+  checked, using synthetic test answers and a signature marked TEST FILING.
+  One click on Send to court reached the successful submission screen
+  (the screen's success condition is HTTP 200). This confirms submission,
+  not subsequent clerk acceptance.
+  The saved receipt independently confirmed HTTP 200, envelope `23382`, and
+  filing ID `200a56a2-5a4e-4008-8df8-ee7855e66367`. A separate filing-status
+  lookup returned HTTP 200, status `submitted`, and error code `0` (No error).
+  The API-created interview had a separate encrypted-token storage problem;
+  the successful test used the normal website form flow, with Playwright for
+  background-task completion and submission.
 - The apps-dev configuration has a populated Massachusetts waiver ID. Live test
   court code lookups succeeded; no original production session was replayed.
 
