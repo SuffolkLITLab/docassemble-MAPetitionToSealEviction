@@ -919,6 +919,8 @@ code: |
     predicted_eviction_reason = None
 ---
 id: warn_sorry_not_efileable
+only sets:
+  - warn_sorry_not_efileable
 continue button field: warn_sorry_not_efileable
 validation code: |
   if efiling_unavailable_reason:

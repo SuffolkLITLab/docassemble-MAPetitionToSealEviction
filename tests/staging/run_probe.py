@@ -146,7 +146,66 @@ def browser_manual(interview):
     assert "Eligible: False" in text
 
 
+def check_real_interview_reaches_login():
+    """Catch providers that accidentally intercept can_check_efile before login."""
+    interview = "docassemble.MAPetitionToSealEviction:data/questions/petition_to_seal_eviction.yml"
+    session = call("GET", "/api/session/new", params={"i": interview}).json()
+    try:
+        call(
+            "POST",
+            "/api/session",
+            json={
+                **session,
+                "variables": {
+                    "al_intro_screen": True,
+                    "petition_to_seal_eviction_intro": True,
+                    "al_person_answering": "user",
+                },
+            },
+        )
+        call(
+            "POST",
+            "/api/session",
+            json={
+                **session,
+                "variables": {
+                    "users[0].tenancy_address.address": "123 Test Street",
+                    "users[0].tenancy_address.city": "Boston",
+                    "users[0].tenancy_address.state": "MA",
+                    "users[0].tenancy_address.zip": "02108",
+                    "users[0].tenancy_address.unit": "",
+                },
+            },
+        )
+        variables = call("GET", "/api/session", params=session).json()
+        court = next(
+            c
+            for c in variables["all_courts"]["elements"]
+            if c.get("tyler_code") == "537"
+        )
+        q = call(
+            "POST",
+            "/api/session",
+            json={
+                **session,
+                "variables": {
+                    "trial_court": court,
+                    "user_wants_efile": True,
+                },
+            },
+        ).json()
+        assert q.get("id") in ("eFile Login", "login with redis"), q.get("questionText")
+        print("PASS: real interview reaches login before metadata/eligibility checks")
+    finally:
+        call(
+            "DELETE",
+            "/api/session",
+            params={"i": interview, "session": session["session"]},
+        )
+
+
 def main():
+    check_real_interview_reaches_login()
     uid = call("GET", "/api/user").json()["id"]
     fixture = Path(__file__).with_name("issue305_fixtures.py")
     upload(fixture.name, fixture.read_text(), "modules")

@@ -29,6 +29,12 @@ selection, and browser submission of the manual-completion option. Browser form
 submission is necessary because docassemble's variables API does not execute
 question validation code.
 
+It also starts the installed petition interview and confirms that choosing
+Eastern Housing Court and e-filing reaches the account login. This catches a
+warning screen being incorrectly registered as a provider of `can_check_efile`
+because its validation code assigns that variable. The warning uses `only sets`
+to keep that assignment from intercepting the pre-login interview flow.
+
 ## Verification on September 28, 2026
 
 - After moving shared metadata handling upstream: 35 petition policy tests passed;
@@ -38,6 +44,11 @@ question validation code.
   server under Python 3.12.3 (including parameterized subtests for null/malformed
   successful responses, failed responses, and valid court metadata).
 - The complete petition interview opened successfully on apps-dev.
+- The real interview reached eFile Login, and all staging probes passed again
+  after limiting the warning screen's variable registration.
+- A full test filing remains unverified: the supplied local test-account
+  credentials returned HTTP 403 for Massachusetts; API-key-only authentication
+  succeeded. No filing was submitted.
 - The apps-dev configuration has a populated Massachusetts waiver ID. Live test
   court code lookups succeeded; no original production session was replayed.
 
