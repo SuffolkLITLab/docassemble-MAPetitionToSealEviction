@@ -17,6 +17,25 @@ include:
   - docassemble.EFSPIntegration:case_search.yml
   - docassemble.EFSPIntegration:unauthenticated_actions.yml  
 ---
+modules:
+  - .efiling_metadata
+---
+initial: True
+reconsider: True
+only sets:
+  - efiling_metadata_refreshed
+code: |
+  # Refresh case labels and derived decisions on navigation and saved-session resume.
+  # Initial blocks can run repeatedly during dependency resolution. Clear once per
+  # request so resolving a second search result does not erase the first result.
+  if not defined("efiling_metadata_refreshed"):
+    if defined("case_search"):
+      for metadata_case in [case_search.__dict__.get("found_case")] + list(case_search.__dict__.get("found_cases") or []):
+        if metadata_case is not None:
+          metadata_case.__dict__.pop("case_type_name", None)
+          metadata_case.__dict__.pop("case_category_name", None)
+    efiling_metadata_refreshed = True
+---
 need:
   - notice_of_appearance_form_attachment.enabled
 ################ Trigger the e-filing variables in order #################
@@ -63,7 +82,10 @@ code: |
 ---
 id: efile
 code: |
-  # Q: I put this in its own block to prevent possible idempotency issues. Not sure if necessary
+  # Check current metadata and configuration before the irreversible filing call.
+  if not petition_is_efileable:
+    force_ask("warn_sorry_not_efileable")
+  tyler_payment_id
   efile
   efile_once = True
 ---
@@ -315,26 +337,29 @@ reload: 5
 code: |
   form_uses_efiling = True
 ---
+id: determine efiling availability
+reconsider: True
+only sets:
+  - petition_is_efileable
+  - efiling_unavailable_reason
 code: |
-  # TODO: add any restrictions here
-  # e.g., currently we don't handle 139 section 19 cases
+  petition_is_efileable = False
+  efiling_unavailable_reason = None
   if can_check_efile and showifdef("case_search.found_case"):
-    if trial_court.department == "Superior Court":
-      petition_is_efileable = False
-    elif "summary process" in case_search.found_case.case_category_name.lower():
-      # I guess that district court may not have correctly coded case types, so we don't know exact case type
-      # but it does seem that they can seal a 139 19 if it was coded under summary process anyway
-      petition_is_efileable = True
-    elif "civil" in case_search.found_case.case_type_name.lower() or "restraining order" in case_search.found_case.case_type_name.lower():
-      petition_is_efileable = True
-    else:
-      petition_is_efileable = False
-    # # Check the case type for a valid one
-    # elif predicted_eviction_reason in ("eviction_reason_nofault", "eviction_reason_fault", "eviction_reason_nonpayment"):
-    #   petition_is_efileable = True
-    # else:
-    #   petition_is_efileable = False
-      # Currently, there is no Petition to Seal Eviction code for any other case types
+    if trial_court.department != "Superior Court":
+      metadata_status = sealing_case_status(case_search.found_case.case_type_name, case_search.found_case.case_category_name)
+      if metadata_status is None:
+        efiling_unavailable_reason = "metadata"
+      elif metadata_status:
+        if waiver_payment_id(get_config('efile proxy')):
+          petition_is_efileable = True
+        else:
+          efiling_unavailable_reason = "payment"
+---
+id: retry efiling metadata
+event: retry_efiling_metadata
+code: |
+  undefine("warn_sorry_not_efileable")
 ---
 code: |
   is_initial_filing = False
@@ -345,15 +370,37 @@ objects:
 code: |
   target_case = case_search
 ---
+id: validated waiver payment account
+reconsider: True
 code: |
   # We use a global waiver account since this filing never uses a filing fee
-  tyler_payment_id = get_config('efile proxy', {}).get('global waivers', {}).get('massachusetts', '')
+  if not waiver_payment_id(get_config('efile proxy')):
+    force_ask('efiling_payment_unavailable')
+  tyler_payment_id = waiver_payment_id(get_config('efile proxy'))
+---
+id: efiling payment unavailable
+event: efiling_payment_unavailable
+question: |
+  E-filing is temporarily unavailable
+subquestion: |
+  We could not verify the court's fee waiver account. Your forms have not been submitted.
+  You can download your forms and file them at the court.
+buttons:
+  - Try again: retry_efiling_metadata
+  - Continue without e-filing: continue_without_efiling
+---
+event: continue_without_efiling
+code: |
+  can_check_efile = False
+  undefine("petition_is_efileable", "interview_order_efiling")
 ---
 code: |
   jurisdiction_id = 'massachusetts'
 ---
 code: |
-  # TODO: rename?
+  # A missing proxy configuration must offer manual completion before login.
+  if not waiver_payment_id(get_config('efile proxy')):
+    force_ask('efiling_payment_unavailable')
   proxy_conn = ProxyConnection(credentials_code_block='tyler_login', default_jurisdiction=jurisdiction_id)
 ---
 code: |
@@ -844,23 +891,27 @@ subquestion: |
   #### ${ x.found_case.title} ${ '(' + x.found_case.date + ')' if x.found_case.date.year > 1000 else '' }
   * ${ str(x.docket_lookup_choice) }: ${ x.found_case.docket_number }
   * Court ID: ${ x.found_case.court_id }
-  * Case Category: ${ x.found_case.case_category_name }
-  * Case Type: ${ x.found_case.case_type_name }  
+  * Case Category: ${ x.found_case.case_category_name or "Unavailable" }
+  * Case Type: ${ x.found_case.case_type_name or "Unavailable" }
   % endif
 
   ${ collapse_template(x.not_actually_case) }
 ---
+id: resolve selected case labels
 generic object: EFCaseSearch
+only sets:
+  - x.found_case.case_type_name
+  - x.found_case.case_category_name
 code: |
-  # Note the proxy connection needs to be called proxy_conn for this to work
-  x.found_case.case_type_name = proxy_conn.get_case_type(court_id, x.found_case.case_type).data.get('name', x.found_case.case_type)
-  x.found_case.case_category_name = x.case_category_map.get(x.found_case.category, {}).get('name', x.found_case.category)
+  x.found_case.case_type_name, x.found_case.case_category_name = case_labels(proxy_conn, x.found_case.court_id, x.found_case.case_type, x.found_case.category)
 ---
+id: resolve search result labels
 generic object: EFCaseSearch
+only sets:
+  - x.found_cases[i].case_type_name
+  - x.found_cases[i].case_category_name
 code: |
-  # found case instance name might be weird if it's a name search
-  x.found_cases[i].case_type_name = proxy_conn.get_case_type(court_id, x.found_cases[i].case_type).data.get('name', x.found_cases[i].case_type)
-  x.found_cases[i].case_category_name = x.case_category_map.get(x.found_cases[i].category, {}).get('name', x.found_cases[i].category)
+  x.found_cases[i].case_type_name, x.found_cases[i].case_category_name = case_labels(proxy_conn, x.found_cases[i].court_id, x.found_cases[i].case_type, x.found_cases[i].category)
 ---
 generic object: EFCaseSearch
 template: x.not_actually_case
@@ -869,8 +920,10 @@ subject: |
 content: |
   If we found the wrong case, you can press the "${ all_variables(special="titles").get("back button label", "back") }" button to go back and find a different case
 ---
+id: predict eviction reason from verified metadata
+reconsider: True
 code: |
-  if can_check_efile and case_search.found_case and trial_court.department == "Housing Court":
+  if can_check_efile and case_search.found_case and trial_court.department == "Housing Court" and case_search.found_case.case_type_name:
     if 'no cause' in case_search.found_case.case_type_name.lower():
       predicted_eviction_reason = "eviction_reason_nofault"
     elif 'cause' in case_search.found_case.case_type_name.lower():
@@ -886,10 +939,25 @@ code: |
 ---
 id: warn_sorry_not_efileable
 continue button field: warn_sorry_not_efileable
+validation code: |
+  if efiling_unavailable_reason:
+    can_check_efile = False
 decoration: info-circle
 question: |
+  % if efiling_unavailable_reason:
+  E-filing is temporarily unavailable
+  % else:
   You cannot e-file this document
+  % endif
 subquestion: |
+  % if efiling_unavailable_reason:
+  We could not verify ${ "your case information" if efiling_unavailable_reason == "metadata" else "the court's fee waiver account" } with the e-filing system.
+  This does not mean your case is ineligible for sealing.
+
+  ${ action_button_html(url_action('retry_efiling_metadata'), label='Try again') }
+
+  You can also click **Next** to finish your forms and download them to file at the court.
+  % else:
   This document cannot currently be e-filed. 
   
   % if trial_court.department == "Superior Court":
@@ -898,6 +966,7 @@ subquestion: |
   % else:
   It does not look like this is an eviction case. You can still bring this document in-person
   to the court and talk to a clerk about your sealing options.
+  % endif
   % endif
 ---
 id: submitted form
