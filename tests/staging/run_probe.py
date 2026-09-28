@@ -56,19 +56,18 @@ def probe_blocks(uid, indexed=False):
     )
     blocks = [b for b in yaml.safe_load_all(source.read_text()) if isinstance(b, dict)]
     ids = {
-        "resolve selected case labels",
-        "resolve search result labels",
         "determine efiling availability",
         "retry efiling metadata",
         "predict eviction reason from verified metadata",
         "warn_sorry_not_efileable",
     }
-    result = [b for b in blocks if b.get("initial")]
+    result = [{"include": ["docassemble.EFSPIntegration:case_metadata.yml"]}]
+    result += [b for b in blocks if b.get("initial")]
     result += [
         dict(
             modules=[
                 "docassemble.EFSPIntegration.interview_logic",
-                "docassemble.MAPetitionToSealEviction.efiling_metadata",
+                "docassemble.MAPetitionToSealEviction.efiling_policy",
                 f"docassemble.playground{uid}.issue305_fixtures",
             ]
         ),

@@ -14,7 +14,7 @@ license = "MIT"
 license-files = ["LICENSE"]
 dependencies = [
   "docassemble.AssemblyLine>=3.2.0",
-  "docassemble.EFSPIntegration>=1.5.1",
+  "docassemble.EFSPIntegration>=1.8.2",
   "docassemble.MassAccess",
   "docassemble.MATCTheme",
   "docassemble.MANoticeOfAppearanceForm @ git+https://github.com/SuffolkLITLab/docassemble-MANoticeOfAppearanceForm.git@main",

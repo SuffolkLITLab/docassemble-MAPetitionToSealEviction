@@ -18,7 +18,7 @@ include:
   - docassemble.EFSPIntegration:unauthenticated_actions.yml  
 ---
 modules:
-  - .efiling_metadata
+  - .efiling_policy
 ---
 initial: True
 reconsider: True
@@ -30,10 +30,7 @@ code: |
   # request so resolving a second search result does not erase the first result.
   if not defined("efiling_metadata_refreshed"):
     if defined("case_search"):
-      for metadata_case in [case_search.__dict__.get("found_case")] + list(case_search.__dict__.get("found_cases") or []):
-        if metadata_case is not None:
-          metadata_case.__dict__.pop("case_type_name", None)
-          metadata_case.__dict__.pop("case_category_name", None)
+      clear_case_labels(case_search)
     efiling_metadata_refreshed = True
 ---
 need:
@@ -896,22 +893,6 @@ subquestion: |
   % endif
 
   ${ collapse_template(x.not_actually_case) }
----
-id: resolve selected case labels
-generic object: EFCaseSearch
-only sets:
-  - x.found_case.case_type_name
-  - x.found_case.case_category_name
-code: |
-  x.found_case.case_type_name, x.found_case.case_category_name = case_labels(proxy_conn, x.found_case.court_id, x.found_case.case_type, x.found_case.category)
----
-id: resolve search result labels
-generic object: EFCaseSearch
-only sets:
-  - x.found_cases[i].case_type_name
-  - x.found_cases[i].case_category_name
-code: |
-  x.found_cases[i].case_type_name, x.found_cases[i].case_category_name = case_labels(proxy_conn, x.found_cases[i].court_id, x.found_cases[i].case_type, x.found_cases[i].category)
 ---
 generic object: EFCaseSearch
 template: x.not_actually_case

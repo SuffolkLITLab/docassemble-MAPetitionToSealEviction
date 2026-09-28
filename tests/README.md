@@ -3,12 +3,13 @@
 Run the isolated tests from the repository root:
 
 ```sh
-python -m pytest tests/test_efiling_metadata.py -q
+python -m pytest tests/test_efiling_policy.py -q
 ```
 
-These execute the actual YAML code blocks, including both generic label paths,
-classification, prediction, payment validation, submission gating, and refresh.
-One test reproduces the original `NoneType.get` error with the original expression.
+These execute the petition policy YAML blocks: classification, prediction, payment
+validation, submission gating, and once-per-request refresh orchestration.
+Response normalization, both generic label paths, the original crash reproduction,
+and clearing cached labels are tested in EFSPIntegration’s `test_case_metadata.py`.
 
 After installing this branch on **apps-dev.suffolklitlab.org**, run:
 
@@ -30,7 +31,8 @@ question validation code.
 
 ## Verification on September 28, 2026
 
-- 70 local pytest checks passed.
+- After moving shared metadata handling upstream: 35 petition policy tests passed;
+  39 EFSPIntegration metadata/court tests and 26 subtests passed.
 - All staging probe scenarios above passed.
 - The companion EFSPIntegration branch's three court-info tests passed on the
   server under Python 3.12.3 (including parameterized subtests for null/malformed
@@ -40,8 +42,11 @@ question validation code.
   court code lookups succeeded; no original production session was replayed.
 
 The companion checkout is `/tmp/docassemble-EFSPIntegration-305`, branch
-`fix/305-case-type-metadata`. It hardens `get_full_court_info()` and the non-indexed
-case consumer. Both packages were deployed only to apps-dev.
+`fix/305-case-type-metadata`. It owns the resolver, generic label blocks, and cache-clearing operation, and hardens
+`get_full_court_info()` and the non-indexed case consumer. Both packages were
+deployed only to apps-dev. The petition requires EFSPIntegration >=1.8.2; merge
+and publish the dependency first. The package version is prepared in the upstream
+PR but no release has been published by this work.
 
 The case-type endpoint is correct: its successful response contains both links
 and metadata. There is no endpoint change. This fix does not address

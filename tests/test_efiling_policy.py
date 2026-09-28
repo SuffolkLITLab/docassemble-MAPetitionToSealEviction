@@ -12,7 +12,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 PKG = ROOT / "docassemble/MAPetitionToSealEviction"
-spec = importlib.util.spec_from_file_location("metadata", PKG / "efiling_metadata.py")
+spec = importlib.util.spec_from_file_location("metadata", PKG / "efiling_policy.py")
 m = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(m)
 BLOCKS = list(
@@ -22,92 +22,6 @@ BLOCKS = list(
 
 def block(block_id):
     return next(b["code"] for b in BLOCKS if b and b.get("id") == block_id)
-
-
-def response(data, status=200):
-    return SimpleNamespace(
-        data=data, response_code=status, is_ok=lambda: 200 <= status <= 205
-    )
-
-
-@pytest.mark.parametrize("branch", ["selected case", "search result"])
-@pytest.mark.parametrize(
-    "data",
-    [
-        None,
-        {},
-        [],
-        "bad",
-        123,
-        {"name": None},
-        {"name": ""},
-        {"name": " "},
-        {"name": 3},
-    ],
-)
-def test_nullable_labels_in_actual_blocks(branch, data):
-    case = SimpleNamespace(court_id="child", case_type="42", category="7")
-    proxy = SimpleNamespace(
-        get_case_type=Mock(return_value=response(data)),
-        get_case_categories=Mock(return_value=response(None)),
-    )
-    scope = dict(
-        x=SimpleNamespace(found_case=case, found_cases=[case]),
-        i=0,
-        proxy_conn=proxy,
-        case_labels=m.case_labels,
-        court_id="parent",
-    )
-    exec(block("resolve " + branch + " labels"), scope)
-    assert case.case_type_name is None
-    assert case.case_category_name is None
-    assert m.sealing_case_status(case.case_type_name, case.case_category_name) is None
-    proxy.get_case_type.assert_called_once_with("child", "42")
-    assert (case.case_type, case.category) == ("42", "7")
-
-
-@pytest.mark.parametrize("status", [401, 403, 404, 429, 500, 502, 503, -1])
-def test_error_names_are_not_trusted(status):
-    proxy = SimpleNamespace(
-        get_case_type=Mock(return_value=response({"name": "Civil"}, status)),
-        get_case_categories=Mock(
-            return_value=response([{"code": "7", "name": "Summary Process"}], status)
-        ),
-    )
-    assert m.case_labels(proxy, "court", "42", "7") == (None, None)
-
-
-@pytest.mark.parametrize(
-    "data",
-    [
-        None,
-        {},
-        "bad",
-        5,
-        [None],
-        [{"code": "7", "name": None}],
-        [{"code": "7", "name": 6}],
-    ],
-)
-def test_malformed_categories(data):
-    proxy = SimpleNamespace(
-        get_case_type=Mock(return_value=None),
-        get_case_categories=Mock(return_value=response(data)),
-    )
-    assert m.case_labels(proxy, "court", "42", "7") == (None, None)
-
-
-def test_recovery():
-    proxy = SimpleNamespace(
-        get_case_type=Mock(
-            side_effect=[response(None), response({"name": "No Cause"})]
-        ),
-        get_case_categories=Mock(
-            return_value=response([{"code": "7", "name": "Summary Process"}])
-        ),
-    )
-    assert m.case_labels(proxy, "court", "42", "7") == (None, "Summary Process")
-    assert m.case_labels(proxy, "court", "42", "7") == ("No Cause", "Summary Process")
 
 
 @pytest.mark.parametrize(
@@ -187,21 +101,6 @@ def test_prediction(name, expected):
     assert scope["predicted_eviction_reason"] == expected
 
 
-def test_original_failure_reproduced():
-    scope = dict(
-        proxy_conn=SimpleNamespace(get_case_type=lambda *args: response(None)),
-        court_id="court",
-        x=SimpleNamespace(found_case=SimpleNamespace(case_type="42")),
-    )
-    with pytest.raises(
-        AttributeError, match="'NoneType' object has no attribute 'get'"
-    ):
-        exec(
-            "# original block\nx.found_case.case_type_name = proxy_conn.get_case_type(court_id, x.found_case.case_type).data.get('name', x.found_case.case_type)",
-            scope,
-        )
-
-
 @pytest.mark.parametrize(
     "department,type_name,category_name,payment,expected,reason",
     [
@@ -254,18 +153,13 @@ def test_submission_does_not_run_without_eligibility():
 
 def test_refresh_runs_once_per_request_for_multiple_results():
     refresh = next(b["code"] for b in BLOCKS if b and b.get("initial"))
-    first = SimpleNamespace(case_type_name="stale", case_category_name="stale")
-    second = SimpleNamespace(case_type_name="stale", case_category_name="stale")
-    scope = dict(
-        case_search=SimpleNamespace(found_case=second, found_cases=[first, second])
-    )
+    search = SimpleNamespace()
+    clear = Mock()
+    scope = dict(case_search=search, clear_case_labels=clear)
     scope["defined"] = lambda name: name in scope
     exec(refresh, scope)
-    assert not first.__dict__ and not second.__dict__
-    first.case_type_name = "resolved"
     exec(refresh, scope)
-    assert first.case_type_name == "resolved"
-    # docassemble's reconsider directive clears this flag for the next request.
+    clear.assert_called_once_with(search)
     del scope["efiling_metadata_refreshed"]
     exec(refresh, scope)
-    assert not first.__dict__
+    assert clear.call_count == 2
