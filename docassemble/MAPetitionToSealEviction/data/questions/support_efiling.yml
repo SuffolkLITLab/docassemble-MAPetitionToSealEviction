@@ -555,11 +555,12 @@ fields:
       If none of the options above apply to you, click "undo" below and search for a different docket number.
 ---
 code: |
-  # petition_to_seal_eviction_attachment.filing_description = "Petition to Seal Eviction Record"
-  # petition_to_seal_eviction_attachment.reference_number = docket_number
-
   al_court_bundle.filing_description = "Petition to Seal Eviction Record"
   al_court_bundle.reference_number = docket_number
+---
+code: |
+  petition_to_seal_eviction_attachment.filing_description = "Petition to Seal Eviction Record"
+  petition_to_seal_eviction_attachment.reference_number = docket_number
 ---
 code: |
   needs_all_info = False
