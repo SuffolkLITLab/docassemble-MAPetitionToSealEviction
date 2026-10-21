@@ -755,7 +755,7 @@ only sets:
 code: |
   if user_login_or_make_new == 'new_account':
     person_to_reg.email
-    tyler_register_resp = proxy_conn.register_user(person_to_reg, registration_type=reg_type)
+    tyler_register_resp = proxy_conn.register_user(person_to_reg, registration_type=reg_type, password=new_password)
     if not tyler_register_resp.is_ok():
       log(f'Failed to register: {tyler_register_resp}')
     register_status
