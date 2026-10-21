@@ -609,6 +609,12 @@ code: |
 code: |
   al_court_bundle.filing_action = "efile"
 ---
+code: |
+  petition_to_seal_eviction_attachment.filing_action = "efile"
+---
+code: |
+  notice_of_appearance_form_attachment.filing_action = "efile"
+---
 generic object: ALDdocument
 code: |
   x.filing_parties = ['users[0]']
