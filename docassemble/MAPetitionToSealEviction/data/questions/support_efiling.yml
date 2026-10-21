@@ -806,19 +806,19 @@ code: |
 if: can_connect_to_proxy
 id: unauth-register-done
 question: |
-  % if register_resp.is_ok():
+  % if tyler_register_resp.is_ok():
   Successfully registered
   % else:
   Something went wrong when we tried to register your account
   % endif
 subquestion: |
-  % if register_resp.is_ok():
+  % if tyler_register_resp.is_ok():
   You will get an email from efile${ state_name_to_code(jurisdiction_id) } asking you to activate your account.
 
   Click "next" when you have clicked the link to activate your account.
 
   % else:
-  ${ debug_display(register_resp) }
+  ${ debug_display(tyler_register_resp) }
   % endif
 
 continue button field: register_status  
